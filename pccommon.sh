@@ -24,7 +24,9 @@ mysql -te 'select host as "Hypervisor", instances.display_name as "Instance Name
 function rpc-hypervisor-free {
 CPU_RATIO=`awk -F= '/^cpu_allocation_ratio=/ {print $2}' /etc/nova/nova.conf`
 RAM_RATIO=`awk -F= '/^ram_allocation_ratio=/ {print $2}' /etc/nova/nova.conf`
-mysql -te "select hypervisor_hostname as Hypervisor,((memory_mb*${RAM_RATIO})-memory_mb_used)/1024 as FreeMemGB,(vcpus*${CPU_RATIO})-vcpus_used as FreeVCPUs, free_disk_gb FreeDiskGB,running_vms ActiveVMs from compute_nodes where deleted = 0;" nova
+DISK_RATIO=`awk -F= '/^disk_allocation_ratio=/ {print $2}' /etc/nova/nova.conf`
+
+mysql -te "select hypervisor_hostname as Hypervisor,((memory_mb*${RAM_RATIO})-memory_mb_used)/1024 as FreeMemGB,(vcpus*${CPU_RATIO})-vcpus_used as FreeVCPUs, (free_disk_gb*${DISK_RATIO}) as FreeDiskGB,running_vms ActiveVMs from compute_nodes where deleted = 0;" nova
 unset CPU_RATIO RAM_RATIO
 }
 
@@ -67,7 +69,7 @@ function rpc-common-errors-scan() {
 
   echo "  - OpenVSwitch"
   # Networks without dhcp agents
-  for net in `neutron net-list | awk '/[0-9]/ {print $2}'`; do neutron dhcp-agent-list-hosting-net $net | grep True > /dev/null 2>&1; [ $? -eq 0 ] && echo "        [OK] `echo $net | rpc-filter`"; done  
+  for net in `$OS_NETCMD net-list | awk '/[0-9]/ {print $2}'`; do $OS_NETCMD dhcp-agent-list-hosting-net $net | grep True > /dev/null 2>&1; [ $? -eq 0 ] && echo "        [OK] `echo $net | rpc-filter`"; done  
 
   # Dead taps
   ovs-vsctl show | grep -A1 \"tap | egrep "tag: 4095" > /dev/null 2>&1
@@ -222,7 +224,7 @@ function rpc-environment-scan() {
 
   echo "  - Networking ($OS_NETCMD)"
 
-  net_repl=`nova net-list | awk '/[0-9]/ {print "s/"$2"/[[Network: "$4"]]/g;"}'`
+  net_repl=`$OS_NETCMD net-list | awk '/[0-9]/ {print "s/"$2"/[[Network: "$4"]]/g;"}'`
 
   echo "  - Nova"
   host_repl=`nova list | awk '/[0-9]/ {print "s/"$2"/[[Instance: "$4"]]/g;"}' 2> /dev/null`
@@ -241,6 +243,103 @@ function rpc-os-version-check() {
   [ $? -eq 0 ] && echo -n "Running Latest Available Version: " || echo -n "NOT Running Latest Available Version: "
   apt-cache policy nova-common | egrep 'Installed|Candidate' | cut -d: -f3 | sort -ur | head -1
 }
+
+################
+[ ${Q=0} -eq 0 ] && echo "  - rpc-instance-per-network-per-hypervisor() - Per network, spin up an instance on each hypervisor, ping, and tear down"
+function rpc-instance-per-network-per-hypervisor() {
+  for NET in `$OS_NETCMD net-list | awk -F\| '$4 ~ /[0-9]+/ { print $2 }'`; do
+    echo "Spinning up instance per hypervisor on network $NET"
+    UUID_LIST=""
+    for COMPUTE in `nova hypervisor-list | awk '/[0-9]/ {print $4}'`; do 
+      echo "- $COMPUTE"
+      INSTANCE_NAME="rpctest-$$-${COMPUTE}-${NET}"
+      IMAGE=`nova image-list | awk '/Ubuntu/ {print $2}' | tail -1`
+
+      NEWID=`nova boot --image $IMAGE \
+      --flavor 2 \
+      --security-group rpc-support \
+      --key-name controller-id_rsa \
+      --nic net-id=$NET \
+      --availability-zone nova:$COMPUTE \
+      $INSTANCE_NAME | awk '/ id / { print $4 }'`
+
+      UUID_LIST="${NEWID} ${UUID_LIST}"
+    done;
+
+    BOOT_TIMEOUT=180
+    SPAWN_TIMEOUT=30
+
+    echo -n "-- Waiting up to $SPAWN_TIMEOUT seconds for last instance to spawn..."
+    CTR=0
+    while [ "${STATE="spawning"}" == "spawning" -a $CTR -lt $SPAWN_TIMEOUT ]; do
+      STATE=`nova show $NEWID | awk '/status/ { print $4 }'`
+      CTR=$(( $CTR + 1 ))
+      sleep 1
+    done
+    unset DONE
+
+    if [ $CTR -ge $SPAWN_TIMEOUT ]; then
+      echo ""
+      echo "*!* Took too long for last instance to spawn.  Proceeding anyway.  Hold on to your butts."
+    else
+      echo "Done"
+    fi
+
+    echo -n "-- Waiting up to $BOOT_TIMEOUT seconds for last instance to boot..."
+    CTR=0
+    R=1
+    while [ ${R} -gt 0 -a $CTR -lt $BOOT_TIMEOUT ]; do
+      nova console-log $NEWID 2> /dev/null | egrep -i '^cloud-init .* finished' > /dev/null 2>&1
+      R=$?
+      CTR=$(( $CTR + 3 ))
+      sleep 3
+      echo -n "."
+    done
+
+    if [ $CTR == $BOOT_TIMEOUT ]; then
+      echo ""
+      echo "*!* Took too long for last instance to boot up.  Proceeding anyway.  Hold on to your butts."
+    else
+      echo "Done"
+    fi
+
+    echo "Testing Instances..."
+    for ID in $UUID_LIST; do 
+      echo -n "- $ID : "
+      IP=`nova show $ID | awk -F\| '/ network / { print $3 }' | tr -d ' '`
+
+      CMD="nc -w0 $IP 22"
+      R=`ip netns exec qdhcp-$NET $CMD > /dev/null 2>&1; echo $?`
+
+      if [ ${R=1} -eq 0 ]; then
+        echo -n "[SSH: SUCCESS] "
+
+        # If we can SSH, let's ping out...
+        CMD="ping -c3 -i0.5 -w3 8.8.8.8"
+        R=`ip netns exec qdhcp-$NET ssh -q -o StrictHostKeyChecking=no ubuntu@$IP "$CMD > /dev/null 2>&1; echo $?"`
+
+        if [ ${R=1} -eq 0 ]; then
+          echo "[PING GOOGLE: SUCCESS]"
+        else
+          echo "[PING GOOGLE: FAILURE]"
+        fi
+      else
+        echo "[SSH: FAILURE] "
+      fi
+    done
+
+    echo "Deleting instances..."
+    echo
+    for ID in $UUID_LIST; do 
+      echo "$ID"
+      nova delete $ID
+      sleep 1
+    done
+    unset UUID_LIST NEWID INSTANCE_NAME TIMEOUT CTR DONE
+  done
+  unset UUID_LIST NEWID IMAGE INSTANCE_NAME TIMEOUT CTR DONE
+}
+
 
 ################
 # Unlisted helper functions
