@@ -342,6 +342,44 @@ function rpc-instance-per-network-per-hypervisor() {
 
 
 ################
+[ ${Q=0} -eq 0 ] && echo "  - rpc-sg-rules() - Makes security groups easier to read.  Pass it a Security Group ID (not name)"
+function rpc-sg-rules () {
+  if [ ! "$1" ]; then
+    echo "Usage: rpc-sg-rules <securityGroupID>"
+    return 1
+  fi
+
+  if [ "$( echo $OS_NETCMD | egrep '(neutron|quantum)')" ]; then
+    RULES=`mysql -BN -e "select remote_group_id,direction,ethertype,protocol,port_range_min,port_range_max,remote_ip_prefix from securitygrouprules where security_group_id = '$1' order by direction desc,min_port_range asc" $OS_NETCMD | tr '\t' ,`
+  else
+    echo crap
+  fi
+
+  echo
+  echo -e "Dir\tType\tProto\tPortMin\tPortMax\tRemoteIP\t\tRemoteGroupID"
+  echo -e "-----------------------------------------------------------------------------------------"
+
+  for RULE in $RULES; do
+    RGID=`echo $RULE | cut -d, -f1 | sed 's/NULL/       /g'`
+    DIR=`echo $RULE | cut -d, -f2 |  sed 's/NULL/_______/g'`
+    ETHER=`echo $RULE | cut -d, -f3 |  sed 's/NULL/_______/g'`
+    PROT=`echo $RULE | cut -d, -f4 | sed 's/NULL/_______/g'`
+    PMIN=`echo $RULE | cut -d, -f5 | sed 's/NULL/_______/g'`
+    PMAX=`echo $RULE | cut -d, -f6 | sed 's/NULL/_______/g'`
+    RIP=`echo $RULE | cut -d, -f7 | sed 's/NULL/_______/g'`
+
+    if [ "$RIP" == "_______" ]; then 
+      RIP="$RIP\t\t"
+    fi
+
+    echo -e "$DIR\t$ETHER\t$PROT\t$PMIN\t$PMAX\t$RIP\t$RGID"
+  done
+
+  unset RULES RULE RGID DIR ETHER PROT PMIN PMAX RIP
+}
+
+
+################
 # Unlisted helper functions
 function humanize_kb () {
 
