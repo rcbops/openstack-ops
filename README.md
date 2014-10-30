@@ -1,5 +1,25 @@
 *** If you add something to this repo, document it below ***
 
+es-cli.sh
+---------
+Search server logs from the comfort of your terminal!
+
+This is a command-line wrapper for Elasticsearch's RESTful API.
+This is super-beta, version .000001-alpha. Questions/comments/hatemail to Kale Stedman,
+I'm so sorry. You should probably pipe the output to less.
+
+    usage: ./es-cli.sh -u $USER -p $PASS -h es-hostname -q "$query" -t $time -n 500
+    ex: ./es-cli.sh -u kstedman -p hunter2 -h es.hostname.com -q "program:crond" -t 5 -n 50
+    
+    -h host      The Elasticsearch host you're trying to connect to.
+    -u username  Optional: If your ES cluster is proxied through apache and you have http auth enabled, username goes here
+    -p password  Optional: If your ES cluster is proxied through apache and you have http auth enabled, password goes here
+    -q query     Optional: Query to pass to ES. If not given, "*" will be used.
+    -t timeframe Optional: How far back to search. Value is in mimutes. If not given, defaults to 5.
+    -n results   Optional: Number of results to return. If not given, defaults to 500.
+
+[Shamelessly stolen from http://tech.superhappykittymeow.com/?p=356]
+
 pccommon.sh
 -----------
 
@@ -17,11 +37,15 @@ Provides the following functions for private cloud admins:
      - rpc-port-stats() - Show live interface usage by port
      - rpc-environment-scan() - Update list of internal filters
      - rpc-os-version-check() - Are we running latest available openstack versions?
+     - rpc-sg-rules() - Makes security groups easier to read.  Pass it a Security Group ID (not name)"
+
 
 On load, this script will scan the environment for various openstack things in order to pre-populate the rpc 
 filters.  This process takes a few seconds to complete, and can be skipped by setting S=1 in your environment:
 
     $ S=1 source ./pccommon.sh
+
+** the rpc-sg-rules() function will not work if you skip the scan **
 
 You can also suppress all messages entirely by adding Q=1
 
