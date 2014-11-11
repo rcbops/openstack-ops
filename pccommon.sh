@@ -350,7 +350,7 @@ function rpc-sg-rules () {
   fi
 
   if [ "$( echo $OS_NETCMD | egrep '(neutron|quantum)')" ]; then
-    RULES=`mysql -BN -e "select remote_group_id,direction,ethertype,protocol,port_range_min,port_range_max,remote_ip_prefix from securitygrouprules where security_group_id = '$1' order by direction desc,min_port_range asc" $OS_NETCMD | tr '\t' ,`
+    RULES=`mysql -BN -e "select remote_group_id,direction,ethertype,protocol,port_range_min,port_range_max,remote_ip_prefix from securitygrouprules where security_group_id = '$1' order by direction desc,port_range_min asc" $OS_NETCMD | tr '\t' ,`
   else
     echo crap
   fi
