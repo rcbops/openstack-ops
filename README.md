@@ -87,13 +87,14 @@ shelob.sh
 
 $ shelob.sh -v VLAN -i NIC -s SOURCEIP -d DESTIP -l LISTFILE
 
-    All parameters are required.
+    SRCIP and DESTIP are optional.  They have defaults which can be overridden.
 
     - LISTFILE should contain IP addresses or hostnames of remote systems to test.
-    - SOURCEIP and DESTIP should be two unused addresses within the same network
     - NIC is pretty self-explanatory.
 
     This script will configure a local VLAN-tagged interface, then connect remotely
     to each system listed in LISTFILE, configure another tagged interface, then ping
     across in order to definitively test connectivity.
+
+    Script attempts to detect duplicate IP addresses so it doesn't stomp on others.
 
