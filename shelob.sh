@@ -115,15 +115,13 @@ function parse_args() {
           exit 1
         fi
 
-        echo -n "# Parsing $OPTARG for errors..."
         exec 7< $OPTARG
         while read ip <&7; do 
           if [ ! "$( echo $ip | awk -F. '$1 >= 1 && $1 < 224 && $2 >= 0 && $2 <= 255 && $3 >= 0 && $3 <= 255 && $4 >= 0 && $4 < 255 { print $0 }')" ]; then
-            echo -e "\nInvalid Mgmt IP in $OPTARG: $ip"
+            echo "Invalid Mgmt IP in $OPTARG: $ip"
             exit 1
           fi
         done
-        echo "Ok!"
         LIST=$OPTARG
       ;;
     esac
@@ -131,18 +129,20 @@ function parse_args() {
 }
 
 function check_prereqs() {
-  echo "# Checking remote servers for prerequisite packages..."
+  echo -n "# Checking remote servers for prerequisite packages..."
   for ip in `cat $LIST`; do 
+    echo -n "."
     ssh $ip 'dpkg -l vlan  | grep ^ii > /dev/null 2>&1'
     if [ $? -eq 1 ]; then
-      echo "#   Installing 'vlan' package on $ip"
+      echo -e "\n#   Installing 'vlan' package on $ip"
       ssh $ip 'apt-get install -y vlan > /dev/null 2>&1'
       if [ $? -gt 0 ]; then
-        echo "!  Unable to install 'vlan' package.  Please install before proceeding."
+        echo -e "\n!  Unable to install 'vlan' package.  Please install before proceeding."
         exit 1
       fi
     fi
   done
+  echo ""
 
   for pkg in vlan arping; do 
     dpkg -l $pkg | grep ^ii > /dev/null 2>&1
@@ -159,7 +159,6 @@ function check_prereqs() {
 
 function configure_local_network() {
 
-  echo "# Configuring local tagged interface ${NIC}.${VLANID}"
   vconfig add $NIC $VLANID > /dev/null 2>&1
 
   if [ $? -gt 0 ]; then
