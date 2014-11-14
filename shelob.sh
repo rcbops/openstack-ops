@@ -59,7 +59,6 @@ function usage() {
   echo "SRCIP and DESTIP are optional.  They have defaults which can be overridden."
   echo ""
   echo "- LISTFILE should contain IP addresses of remote systems to test."
-  echo "- SOURCEIP and DESTIP should be two unused addresses within the same network"
   echo "- NIC is pretty self-explanatory."
   echo ""
   echo "This script will configure a local VLAN-tagged interface, then connect remotely"
