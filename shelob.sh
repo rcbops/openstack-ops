@@ -2,7 +2,7 @@
 #
 # Test end-to-end VLAN connectivity between this and other nodes.
 #
-# -v VLANID -i INTERFACE -s SOURCEIP -d DESTIP -l LISTFILE
+# -v VLANID -i INTERFACE [-s SOURCEIP] [-d DESTIP] -l LISTFILE
 #
 #
 #  Given a list of IPs in LISTFILE, this script will create a 
@@ -15,36 +15,48 @@
 #
 #  Questions, Comments -> Aaron Segura / RPC
 #
+#============================================================================#
+VLANID=
+NIC=
+SRCIP=192.168.231.102
+DSTIP=192.168.231.103
+LIST=
+CLEAN=0
+TOCLEAN=
+export VLANID NIC SRCIP DSTIP LIST TOCLEAN CLEAN
+#============================================================================#
 
-export CLEAN=0
 function cleanup() {
   [ $CLEAN -ne 0 ] && return || CLEAN=1
   echo ""
   echo "# Running cleanup..."
 
-  for ip in `cat $LIST`; do 
-    #echo -n "  $ip: "
-    ssh $ip "grep ${NIC}.${VLANID} /proc/net/dev )" > /dev/null 2>&1
-    [ $? -gt 0 ] && ssh $ip "vconfig rem ${NIC}.${VLANID}" > /dev/null 2>&1
-    if [ $? -gt 0 ]; then
-      echo "# Unable to remove tagged interface ${NIC}.${VLANID} on $ip"
-    #else
-      #echo "OK"
+  for ip in $TOCLEAN; do 
+    if [ "$ip" != "local" ]; then
+      ssh $ip "grep ${NIC}.${VLANID} /proc/net/dev" > /dev/null 2>&1
+      if [ $? -eq 0 ]; then 
+        ssh $ip "vconfig rem ${NIC}.${VLANID}" > /dev/null 2>&1
+        if [ $? -gt 0 ]; then
+          echo "# Unable to remove tagged interface ${NIC}.${VLANID} on $ip"
+        fi
+      fi
+    else
+      vconfig rem ${NIC}.${VLANID} > /dev/null 2>&1
+      if [ $? -gt 0 ]; then
+        echo "# Unable to remove local tagged interface ${NIC}.${VLANID}"
+      fi
     fi
   done
-  vconfig rem ${NIC}.${VLANID} > /dev/null 2>&1
-  if [ $? -gt 0 ]; then
-    echo "# Unable to remove local tagged interface ${NIC}.${VLANID}"
-  fi
+
   echo
 }
 
 function usage() {
   echo "`basename $0`, by Aaron Segura - Rackspace Private Cloud"
   echo ""
-  echo "$ `basename $0` -v VLAN -i NIC -s SOURCEIP -d DESTIP -l LISTFILE"
+  echo "$ `basename $0` <-v VLAN> <-i NIC> <-l LISTFILE> [-s SOURCEIP] [-d DESTIP]"
   echo ""
-  echo "All parameters are required."
+  echo "SRCIP and DESTIP are optional.  They have defaults which can be overridden."
   echo ""
   echo "- LISTFILE should contain IP addresses of remote systems to test."
   echo "- SOURCEIP and DESTIP should be two unused addresses within the same network"
@@ -145,21 +157,41 @@ function check_prereqs() {
   done
 }
 
-function do_work() {
+function configure_local_network() {
+
   echo "# Configuring local tagged interface ${NIC}.${VLANID}"
   vconfig add $NIC $VLANID > /dev/null 2>&1
+
   if [ $? -gt 0 ]; then
     echo "!!! Unable to create local tagged interface.  Giving up."
     exit 1
   else
-    ip a a ${SRCIP}/24 dev ${NIC}.${VLANID} > /dev/null 2>&1
+    TOCLEAN="local"
     ip l set up ${NIC}.${VLANID}
+
+    arping -c1 -S $DSTIP -p -i ${NIC}.${VLANID} $SRCIP > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+      echo ""
+      echo "    Unable to use source IP $SRCIP, already in use!  Choose another."
+      exit 1
+    fi
+
+    ip a a ${SRCIP}/24 dev ${NIC}.${VLANID} > /dev/null 2>&1
     if [ $? -gt 0 ]; then
       echo "!!! Unable to add ${SRCIP} to ${NIC}${VLANID}.  Giving up."
       exit 1
     fi
   fi
 
+  arping -c1 -S $SRCIP -p -i ${NIC}.${VLANID} $DSTIP > /dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    echo "Unable to use dest IP $DSTIP, already in use!  Choose another."
+    exit 1
+  fi
+
+}
+
+function do_work() {
   echo "# Testing Remote Systems..."
   echo
   for ip in `cat $LIST`; do 
@@ -167,13 +199,14 @@ function do_work() {
     ssh $ip vconfig add $NIC $VLANID > /dev/null 2>&1
     if [ $? -gt 0 ]; then
       echo "Unable to create VLAN tagged interface"
-      exit 1
+      continue
     else
+      TOCLEAN="$ip ${TOCLEAN}"
       ssh $ip ip a a ${DSTIP}/24 dev ${NIC}.${VLANID}
       ssh $ip ip l set up ${NIC}.${VLANID}
       if [ $? -gt 0 ]; then
         echo "Unable to put address on tagged interface: $R"
-        exit 1
+        continue
       else
         ssh $ip ping -c3 -i0.25 -w1 $SRCIP > /dev/null 2>&1
         if [ $? -gt 0 ]; then
@@ -192,15 +225,6 @@ function do_work() {
   echo
 }
 
-#============================================================================#
-VLANID=
-NIC=
-SRCIP=
-DSTIP=
-LIST=
-export VLANID NIC SRCIP DSTIP LIST
-
-#============================================================================#
 if [ $UID -ne 0 ]; then
   echo "You must be root to use this script."
   exit 1
@@ -212,8 +236,10 @@ if [ ! "$VLANID" -o ! "$NIC" -o ! "$SRCIP" -o ! "$DSTIP" -o ! "$LIST" ]; then
   usage
 fi
 
-trap cleanup SIGINT SIGTERM SIGHUP EXIT
 check_prereqs
+
+trap cleanup SIGINT SIGTERM SIGHUP EXIT
+configure_local_network
 do_work
 
 #============================================================================#
