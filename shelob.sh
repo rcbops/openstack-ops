@@ -198,6 +198,11 @@ LIST=
 export VLANID NIC SRCIP DSTIP LIST
 
 #============================================================================#
+if [ $UID -ne 0 ]; then
+  echo "You must be root to use this script."
+  exit 1
+fi
+
 parse_args "$@"
 
 if [ ! "$VLANID" -o ! "$NIC" -o ! "$SRCIP" -o ! "$DSTIP" -o ! "$LIST" ]; then
