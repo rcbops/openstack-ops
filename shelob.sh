@@ -132,15 +132,17 @@ function check_prereqs() {
     fi
   done
 
-  dpkg -l vlan | grep ^ii > /dev/null 2>&1
-  if [ $? -gt 0 ]; then
-    echo "# Installing 'vlan' package locally..."
-    apt-get install -y vlan > /dev/null 2>&1
+  for pkg in vlan arping; do 
+    dpkg -l $pkg | grep ^ii > /dev/null 2>&1
     if [ $? -gt 0 ]; then
-      echo "!   Unable to install 'vlan' package locally.  Please install before proceeding."
-      exit 1
+      echo "# Installing $pkg package locally..."
+      apt-get install -y $pkg > /dev/null 2>&1
+      if [ $? -gt 0 ]; then
+        echo "!   Unable to install $pkg locally.  Please install before proceeding."
+        exit 1
+      fi
     fi
-  fi
+  done
 }
 
 function do_work() {
