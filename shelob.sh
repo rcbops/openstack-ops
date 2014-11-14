@@ -38,9 +38,28 @@ function cleanup() {
   echo
 }
 
+function usage() {
+  echo "`basename $0`, by Aaron Segura - Rackspace Private Cloud"
+  echo ""
+  echo "$ `basename $0` -v VLAN -i NIC -s SOURCEIP -d DESTIP -l LISTFILE"
+  echo ""
+  echo "All parameters are required."
+  echo ""
+  echo "- LISTFILE should contain IP addresses or hostnames of remote systems to test."
+  echo "- SOURCEIP and DESTIP should be two unused addresses within the same network"
+  echo "- NIC is pretty self-explanatory."
+  echo ""
+  echo "This script will configure a local VLAN-tagged interface, then connect remotely"
+  echo " to each system listed in LISTFILE, configure another tagged interface, then ping"
+  echo " across in order to definitively test connectivity."
+  exit 1
+}
+
+
 function parse_args() {
-  while getopts "v:i:s:d:l:" OPT; do
+  while getopts ":hv:i:s:d:l:" OPT; do
     case "$OPT" in
+      "h") usage ;;
       "v")
         if [ ! "$( echo $OPTARG | egrep '^[0-9]{1,4}$' )" ]; then
           echo "Invalid VLAN ID: $OPTARG"
@@ -153,7 +172,7 @@ function do_work() {
         echo "Unable to put address on tagged interface: $R"
         exit 1
       else
-        ssh $ip ping -c3 -i0.25 $SRCIP > /dev/null 2>&1
+        ssh $ip ping -c3 -i0.25 -w1 $SRCIP > /dev/null 2>&1
         if [ $? -gt 0 ]; then
           echo "FAILED"
         else
@@ -180,6 +199,11 @@ export VLANID NIC SRCIP DSTIP LIST
 
 #============================================================================#
 parse_args "$@"
+
+if [ ! "$VLANID" -o ! "$NIC" -o ! "$SRCIP" -o ! "$DSTIP" -o ! "$LIST" ]; then
+  usage
+fi
+
 trap cleanup SIGINT SIGTERM SIGHUP EXIT
 check_prereqs
 do_work
