@@ -19,16 +19,17 @@
 export CLEAN=0
 function cleanup() {
   [ $CLEAN -ne 0 ] && return || CLEAN=1
+  echo ""
   echo "# Running cleanup..."
 
   for ip in `cat $LIST`; do 
-    echo -n "  $ip: "
+    #echo -n "  $ip: "
     ssh $ip "grep ${NIC}.${VLANID} /proc/net/dev )" > /dev/null 2>&1
     [ $? -gt 0 ] && ssh $ip "vconfig rem ${NIC}.${VLANID}" > /dev/null 2>&1
     if [ $? -gt 0 ]; then
-      echo "# Unable to remove tagged interface ${NIC}.${VLANID}"
-    else
-      echo "OK"
+      echo "# Unable to remove tagged interface ${NIC}.${VLANID} on $ip"
+    #else
+      #echo "OK"
     fi
   done
   vconfig rem ${NIC}.${VLANID} > /dev/null 2>&1
