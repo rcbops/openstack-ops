@@ -20,6 +20,7 @@ I'm so sorry. You should probably pipe the output to less.
 
 [Shamelessly stolen from http://tech.superhappykittymeow.com/?p=356]
 
+
 pccommon.sh
 -----------
 
@@ -79,4 +80,20 @@ Will perform basic healthcheck of RPC environment:
   - Destroy cinder volume
   - Test MySQL Replication
   - Verify Horizon Login Page
+
+
+shelob.sh
+---------
+
+$ shelob.sh -v VLAN -i NIC -s SOURCEIP -d DESTIP -l LISTFILE
+
+    All parameters are required.
+
+    - LISTFILE should contain IP addresses or hostnames of remote systems to test.
+    - SOURCEIP and DESTIP should be two unused addresses within the same network
+    - NIC is pretty self-explanatory.
+
+    This script will configure a local VLAN-tagged interface, then connect remotely
+    to each system listed in LISTFILE, configure another tagged interface, then ping
+    across in order to definitively test connectivity.
 
