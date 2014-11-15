@@ -29,9 +29,10 @@ export VLANID NIC SRCIP DSTIP LIST TOCLEAN CLEAN
 function cleanup() {
   [ $CLEAN -ne 0 ] && return || CLEAN=1
   echo ""
-  echo "# Running cleanup..."
+  echo -n "# Running cleanup..."
 
   for ip in $TOCLEAN; do 
+    echo -n "."
     if [ "$ip" != "local" ]; then
       ssh $ip "grep ${NIC}.${VLANID} /proc/net/dev" > /dev/null 2>&1
       if [ $? -eq 0 ]; then 
@@ -194,7 +195,7 @@ function do_work() {
   echo "# Testing Remote Systems..."
   echo
   for ip in `cat $LIST`; do 
-    echo -n "  $ip: "
+    echo -n "  $ip, "
     ssh $ip vconfig add $NIC $VLANID > /dev/null 2>&1
     if [ $? -gt 0 ]; then
       echo "Unable to create VLAN tagged interface"
@@ -209,9 +210,9 @@ function do_work() {
       else
         ssh $ip ping -c1 -w1 $SRCIP > /dev/null 2>&1
         if [ $? -gt 0 ]; then
-          echo "FAILED"
+          echo "VLAN $VLANID [FAILED]"
         else
-          echo "SUCCESS"
+          echo "VLAN $VLANID [SUCCESS]"
         fi
       fi
     fi
