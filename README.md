@@ -98,3 +98,6 @@ $ shelob.sh -v VLAN -i NIC -s SOURCEIP -d DESTIP -l LISTFILE
 
     Script attempts to detect duplicate IP addresses so it doesn't stomp on others.
 
+    It would be a REALLY good idea to set up SSH keys for root logins before running
+      this script.
+
