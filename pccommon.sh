@@ -245,28 +245,122 @@ function rpc-os-version-check() {
 }
 
 ################
+[ ${Q=0} -eq 0 ] && echo "  - rpc-instance-per-network() - Per network, spin up an instance on each hypervisor, ping, and tear down"
+function rpc-instance-per-network() {
+  UUID_LIST=""
+  for NET in `$OS_NETCMD net-list | awk -F\| '$4 ~ /[0-9]+/ { print $2 }'`; do
+    echo "Spinning up instance on network $NET"
+    INSTANCE_NAME="rpctest-$$-NET-${NET}"
+    IMAGE=`nova image-list | awk '/Ubuntu/ {print $2}' | tail -1`
+
+    NEWID=`nova boot --image $IMAGE \
+      --flavor 2 \
+      --security-group rpc-support \
+      --key-name rpc_support \
+      --nic net-id=$NET \
+      --availability-zone nova:$COMPUTE \
+      $INSTANCE_NAME | awk '/ id / { print $4 }'`
+
+    UUID_LIST="${NEWID} ${UUID_LIST}"
+  done;
+
+  BOOT_TIMEOUT=60
+  SPAWN_TIMEOUT=30
+
+  echo -n "-- Waiting up to $SPAWN_TIMEOUT seconds for last instance to spawn..."
+  CTR=0
+  while [ "${STATE="spawning"}" == "spawning" -a $CTR -lt $SPAWN_TIMEOUT ]; do
+    STATE=`nova show $NEWID | awk '/status/ { print $4 }'`
+    CTR=$(( $CTR + 1 ))
+    sleep 1
+  done
+  unset DONE
+
+  if [ $CTR -ge $SPAWN_TIMEOUT ]; then
+    echo ""
+    echo "*!* Took too long for last instance to spawn.  Proceeding anyway.  Hold on to your butts."
+  else
+    echo "Done"
+  fi
+
+  echo -n "-- Waiting up to $BOOT_TIMEOUT seconds for last instance to boot..."
+  CTR=0
+  R=1
+  while [ ${R} -gt 0 -a $CTR -lt $BOOT_TIMEOUT ]; do
+    nova console-log $NEWID 2> /dev/null | egrep -i '^cloud-init .* finished' > /dev/null 2>&1
+    R=$?
+    CTR=$(( $CTR + 3 ))
+    sleep 3
+    echo -n "."
+  done
+
+  if [ $CTR == $BOOT_TIMEOUT ]; then
+    echo ""
+    echo "*!* Took too long for last instance to boot up.  Proceeding anyway.  Hold on to your butts."
+  else
+    echo "Done"
+  fi
+
+  echo "Testing Instances..."
+  for ID in $UUID_LIST; do 
+    IP=`nova show $ID | awk -F\| '/ network / { print $3 }' | tr -d ' '`
+
+    echo -n "$IP : "
+    CMD="nc -w0 $IP 22"
+    ip netns exec qdhcp-$NET $CMD > /dev/null 2>&1 
+
+    if [ $? -eq 0 ]; then
+      echo -n "[SSH: SUCCESS] "
+
+      # If we can SSH, let's ping out...
+      CMD="ping -c1 -w2 8.8.8.8"
+      ip netns exec qdhcp-$NET ssh -q -o StrictHostKeyChecking=no ubuntu@$IP "$CMD > /dev/null 2>&1"
+
+      if [ $? -eq 0 ]; then
+        echo "[PING GOOGLE: SUCCESS]"
+      else
+        echo "[PING GOOGLE: FAILURE]"
+      fi
+    else
+      echo "[SSH: FAILURE] "
+    fi
+  done
+
+  echo
+  echo -n "Deleting instances..."
+  for ID in $UUID_LIST; do 
+    echo -n "."
+    nova delete $ID > /dev/null
+    sleep 1
+  done
+  echo
+  unset UUID_LIST NEWID INSTANCE_NAME TIMEOUT CTR DONE IMAGE
+}
+
+################
 [ ${Q=0} -eq 0 ] && echo "  - rpc-instance-per-network-per-hypervisor() - Per network, spin up an instance on each hypervisor, ping, and tear down"
 function rpc-instance-per-network-per-hypervisor() {
-  for NET in `$OS_NETCMD net-list | awk -F\| '$4 ~ /[0-9]+/ { print $2 }'`; do
-    echo "Spinning up instance per hypervisor on network $NET"
+  for NET in `$OS_NETCMD net-list | awk -F\| '$4 ~ /[0-9]+/ { print $2 }' | sort -R`; do
+    echo -n "Spinning up instance per hypervisor on network $NET..."
     UUID_LIST=""
     for COMPUTE in `nova hypervisor-list | awk '/[0-9]/ {print $4}'`; do 
-      echo "- $COMPUTE"
+      echo -n "."
       INSTANCE_NAME="rpctest-$$-${COMPUTE}-${NET}"
       IMAGE=`nova image-list | awk '/Ubuntu/ {print $2}' | tail -1`
 
       NEWID=`nova boot --image $IMAGE \
       --flavor 2 \
       --security-group rpc-support \
-      --key-name controller-id_rsa \
+      --key-name rpc_support \
       --nic net-id=$NET \
       --availability-zone nova:$COMPUTE \
       $INSTANCE_NAME | awk '/ id / { print $4 }'`
 
       UUID_LIST="${NEWID} ${UUID_LIST}"
     done;
+    echo
 
-    BOOT_TIMEOUT=180
+    BOOT_TIMEOUT=60
     SPAWN_TIMEOUT=30
 
     echo -n "-- Waiting up to $SPAWN_TIMEOUT seconds for last instance to spawn..."
@@ -305,20 +399,19 @@ function rpc-instance-per-network-per-hypervisor() {
 
     echo "Testing Instances..."
     for ID in $UUID_LIST; do 
-      echo -n "- $ID : "
       IP=`nova show $ID | awk -F\| '/ network / { print $3 }' | tr -d ' '`
-
+      echo -n "$IP :"
       CMD="nc -w0 $IP 22"
-      R=`ip netns exec qdhcp-$NET $CMD > /dev/null 2>&1; echo $?`
+      ip netns exec qdhcp-$NET $CMD > /dev/null 2>&1 
 
-      if [ ${R=1} -eq 0 ]; then
+      if [ $? -eq 0 ]; then
         echo -n "[SSH: SUCCESS] "
 
         # If we can SSH, let's ping out...
-        CMD="ping -c3 -i0.5 -w3 8.8.8.8"
-        R=`ip netns exec qdhcp-$NET ssh -q -o StrictHostKeyChecking=no ubuntu@$IP "$CMD > /dev/null 2>&1; echo $?"`
+        CMD="ping -c1 -w5 8.8.8.8"
+        ip netns exec qdhcp-$NET ssh -q -o StrictHostKeyChecking=no ubuntu@$IP "$CMD > /dev/null 2>&1"
 
-        if [ ${R=1} -eq 0 ]; then
+        if [ $? -eq 0 ]; then
           echo "[PING GOOGLE: SUCCESS]"
         else
           echo "[PING GOOGLE: FAILURE]"
@@ -328,13 +421,14 @@ function rpc-instance-per-network-per-hypervisor() {
       fi
     done
 
-    echo "Deleting instances..."
     echo
+    echo -n "Deleting instances..."
     for ID in $UUID_LIST; do 
-      echo "$ID"
-      nova delete $ID
+      echo -n "."
+      nova delete $ID > /dev/null
       sleep 1
     done
+    echo;echo
     unset UUID_LIST NEWID INSTANCE_NAME TIMEOUT CTR DONE
   done
   unset UUID_LIST NEWID IMAGE INSTANCE_NAME TIMEOUT CTR DONE
