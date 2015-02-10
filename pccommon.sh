@@ -474,7 +474,8 @@ function rpc-sg-rules () {
 
 [ ${Q=0} -eq 0 ] && echo "  - rpc-image-check() - Shows all running instances and the state of their base images (active/deleted)"
 function rpc-image-check () {
-  for i in `nova list --all- | awk '/[0-9]/ {print $2}'`; do echo -n "$i :: "; IMG=`nova show $i | awk -F\| '$2 ~ /image/ {print $0}' | egrep -o '\([0-9a-z-]+\)'`; echo -n "$IMG :: "; glance image-show ` echo $IMG | tr -d '()'` | awk '$2 ~ /status/ {print $4}'; done
+  printf "%-37s:: %-39s:: Img State\n" "Instance ID" "Image ID"
+  for i in `nova list --all- | awk '/[0-9]/ {print $2}'`; do echo -n "$i :: "; IMG=`nova show $i | awk -F\| '$2 ~ /image/ {print $3}' | egrep -o '\([0-9a-z-]+\)\s*$' | tr -d ' '`; echo -n "$IMG :: "; glance image-show ` echo $IMG | tr -d '()'` | awk '$2 ~ /status/ {print $4}'; done
 }
 
 ################
