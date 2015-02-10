@@ -472,6 +472,10 @@ function rpc-sg-rules () {
   unset RULES RULE RGID DIR ETHER PROT PMIN PMAX RIP
 }
 
+[ ${Q=0} -eq 0 ] && echo "  - rpc-image-check() - Shows all running instances and the state of their base images (active/deleted)"
+function rpc-image-check () {
+  for i in `nova list --all- | awk '/[0-9]/ {print $2}'`; do echo -n "$i :: "; IMG=`nova show $i | awk '$2 ~ /image/ { print $5}'`; echo -n "$IMG :: "; glance image-show ` echo $IMG | tr -d '()'` | awk '$2 ~ /status/ {print $4}'; done
+}
 
 ################
 # Unlisted helper functions
