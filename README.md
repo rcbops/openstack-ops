@@ -32,6 +32,8 @@ Provides the following functions for private cloud admins:
      - rpc-hypervisor-vms() - Display all hypervisors and associated instances
      - rpc-hypervisor-free() - Display free resources on each Hypervisor, as reported by MySQL
      - rpc-filter() - Replace stinky UUIDs with refreshing descriptive names inline
+     - rpc-instance-per-network() - Spin up an instance per network, let the scheduler pick the hypervisor.
+     - rpc-instance-per-network-per-hypervisor() - Spin up an instance for each network on each hypervisor.
      - rpc-iscsi-generate-sessions() - Generate list of commands to re-initiate currently open iscsi sessions
      - rpc-common-errors-scan() - Pretty much what it sounds like
      - rpc-bondflip() - Change given bondX to backup NIC
@@ -39,6 +41,7 @@ Provides the following functions for private cloud admins:
      - rpc-environment-scan() - Update list of internal filters
      - rpc-os-version-check() - Are we running latest available openstack versions?
      - rpc-sg-rules() - Makes security groups easier to read.  Pass it a Security Group ID (not name)"
+     - rpc-image-check() - Display all instances and the state of their base image"
 
 
 On load, this script will scan the environment for various openstack things in order to pre-populate the rpc 
