@@ -491,12 +491,24 @@ function rpc-update-pccommon () {
 
   [ !"$1" ] && PCCOMMON="./pccommon.sh" || PCCOMMON=$1
   if [ -s "$PCCOMMON" ]; then
+
+    TMPFILE="/tmp/$$.pccommon.upgrade"
+    curl -s $GITHUB > $TMPFILE 2>&1
+    if [ $? -ne 0 ]; then
+      echo "Error connecting to github - not attempting pccommon upgrade."
+      rm -f $TMPFILE 
+      return 1
+    fi
+
     EXISTING_SUM=`md5sum  $PCCOMMON | cut -d\  -f1`
-    GITHUB_SUM=`curl -s $GITHUB | md5sum | cut -d\  -f1`
+    GITHUB_SUM=`md5sum $TMPFILE | cut -d\  -f1`
 
     if [ "$EXISTING_SUM" != "$GITHUB_SUM" ]; then
-      echo "New Version available, upgrading and executing..."
-      curl -s $GITHUB > $PCCOMMON
+      echo
+      echo "**********************************************"
+      echo "New Version available, upgrading and executing"
+      echo "**********************************************"
+      mv $TMPFILE $PCCOMMON
       . $PCCOMMON
     else
       echo "Already running latest available version"
@@ -536,7 +548,6 @@ ip netns | grep '^vips$' > /dev/null 2>&1
 
 if [ ${S=0} -eq 0 ]; then
   rpc-environment-scan
-  #echo
-  #rpc-common-errors-scan
 fi
 
+rpc-update-pccommon
