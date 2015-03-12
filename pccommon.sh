@@ -491,13 +491,15 @@ function rpc-update-pccommon () {
 
   [ !"$1" ] && PCCOMMON="./pccommon.sh" || PCCOMMON=$1
   if [ -s "$PCCOMMON" ]; then
-    EXISTING_SUM=`md5sum  $PCCOMMON`
-    GITHUB_SUM=`curl -s $GITHUB | md5sum`
+    EXISTING_SUM=`md5sum  $PCCOMMON | cut -d\  -f1`
+    GITHUB_SUM=`curl -s $GITHUB | md5sum | cut -d\  -f1`
 
     if [ "$EXISTING_SUM" != "$GITHUB_SUM" ]; then
       echo "New Version available, upgrading and executing..."
       curl -s $GITHUB > $PCCOMMON
       . $PCCOMMON
+    else
+      echo "Already running latest available version"
     fi
   fi
 }
