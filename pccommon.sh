@@ -195,8 +195,15 @@ function rpc-port-stats() {
   done
 
   rm $tmpfile
-  unset CTR tmpfile port br_int_port
+  unset CTR tmpfile port br_int_port 
   # Come back some day and clean up all the TX_ RX_ vars :/
+  for x in RX TX; do
+    for v in pkts bytes drop errs frame over crc coll; do
+      for t in OLD DELTA; do
+        echo unset ${x}_${v} ${x}_${v}_${t}
+      done
+    done
+  done
 }
 
 ################
@@ -476,6 +483,23 @@ function rpc-sg-rules () {
 function rpc-image-check () {
   printf "%-37s:: %-39s:: Img State\n" "Instance ID" "Image ID"
   for i in `nova list --all- | awk '/[0-9]/ {print $2}'`; do echo -n "$i :: "; IMG=`nova show $i | awk -F\| '$2 ~ /image/ {print $3}' | egrep -o '\([0-9a-z-]+\)\s*$' | tr -d ' '`; echo -n "$IMG :: "; glance image-show ` echo $IMG | tr -d '()'` | awk '$2 ~ /status/ {print $4}'; done
+}
+
+[ ${Q=0} -eq 0 ] && echo "  - rpc-update-pccommon() - Grabs the latest version of pccommon.sh if there is one"
+function rpc-update-pccommon () {
+  GITHUB="https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh"
+
+  [ !"$1" ] && PCCOMMON="./pccommon.sh" || PCCOMMON=$1
+  if [ -s "$PCCOMMON" ]; then
+    EXISTING_SUM=`md5sum  $PCCOMMON`
+    GITHUB_SUM=`curl -s $GITHUB | md5sum`
+
+    if [ "$EXISTING_SUM" != "$GITHUB_SUM" ]; then
+      echo "New Version available, upgrading and executing..."
+      curl -s $GITHUB > $PCCOMMON
+      . $PCCOMMON
+    fi
+  fi
 }
 
 ################
