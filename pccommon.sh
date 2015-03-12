@@ -512,6 +512,7 @@ function rpc-update-pccommon () {
       . $PCCOMMON
     else
       echo "Running latest available version of pccommon"
+      rm -f $TMPFILE
     fi
   fi
 }
