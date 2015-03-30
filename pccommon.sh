@@ -415,7 +415,7 @@ function rpc-instance-per-network-per-hypervisor() {
         echo -n "[SSH: SUCCESS] "
 
         # If we can SSH, let's ping out...
-        [ -s ~/.ssh/rpc_support ] && export KEY="-i ~/.ssh/rpc_support"
+        [ -s ~/.ssh/rpc_support ] && export KEY="-i $HOME/.ssh/rpc_support"
         CMD="ping -c1 -w5 8.8.8.8"
         ip netns exec qdhcp-$NET ssh -q -o StrictHostKeyChecking=no $KEY ubuntu@$IP "$CMD > /dev/null 2>&1"
 
