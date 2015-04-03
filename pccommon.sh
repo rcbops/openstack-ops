@@ -6,6 +6,11 @@
 # Executing over ssh, don't be so noisy or needy
 [ $TERM == "dumb" ] && S=1 Q=1
 
+if [  ! "$OS_USERNAME" ]; then
+  echo "Source your credentials first."
+  return
+fi
+
 [ ${Q=0} -eq 0 ] && echo
 [ ${Q=0} -eq 0 ] && echo "Importing Private Cloud Common Functions..."
 
@@ -252,24 +257,48 @@ function rpc-os-version-check() {
 }
 
 ################
-[ ${Q=0} -eq 0 ] && echo "  - rpc-instance-per-network() - Per network, spin up an instance on each hypervisor, ping, and tear down"
+[ ${Q=0} -eq 0 ] && echo "  - rpc-instance-per-network() - Per network, spin up an instance on given hypervisor, ping, and tear down"
 function rpc-instance-per-network() {
   UUID_LIST=""
-  for NET in `$OS_NETCMD net-list | awk -F\| '$4 ~ /[0-9]+/ { print $2 }'`; do
+  if [ ! "$1" ]; then
+    echo "Must pass a compute or AZ:Compute combo."
+    return
+  fi
+
+  if [ "$( echo $1 | grep : )" ]; then
+    AZ=`echo $1 | cut -d: -f1`
+    COMPUTE=`echo $1 | cut -d: -f2`
+  else
+    AZ="nova"
+    COMPUTE=$1
+  fi
+
+  VALID_COMPUTE=`nova service-list | grep nova-compute | awk '/[0-9]/ {print $6}' | grep $COMPUTE`
+  if [ ! "$VALID_COMPUTE" ]; then
+    echo "Compute node $COMPUTE doesn't exist."
+    unset VALID_COMPUTE AZ COMPUTE
+    return
+  else
+    unset VALID_COMPUTE
+  fi
+
+  IMAGE=`glance image-list | awk 'tolower($4) ~ /ubuntu/ {print $2}' | tail -1`
+  for NET in `$OS_NETCMD net-list | awk -F\| '$2 ~ /[0-9]+/ { print $2 }'`; do
     echo "Spinning up instance on network $NET"
     INSTANCE_NAME="rpctest-$$-NET-${NET}"
-    IMAGE=`nova image-list | awk '/Ubuntu/ {print $2}' | tail -1`
 
     NEWID=`nova boot --image $IMAGE \
       --flavor 2 \
       --security-group rpc-support \
       --key-name rpc_support \
       --nic net-id=$NET \
-      --availability-zone nova:$COMPUTE \
+      --availability-zone $AZ:$COMPUTE \
       $INSTANCE_NAME | awk '/ id / { print $4 }'`
 
     UUID_LIST="${NEWID} ${UUID_LIST}"
-  done;
+    unset INSTANCE_NAME
+  done
+  unset IMAGE
 
   BOOT_TIMEOUT=60
   SPAWN_TIMEOUT=30
@@ -300,6 +329,7 @@ function rpc-instance-per-network() {
     sleep 3
     echo -n "."
   done
+  unset NEWID
 
   if [ $CTR == $BOOT_TIMEOUT ]; then
     echo ""
@@ -308,11 +338,14 @@ function rpc-instance-per-network() {
     echo "Done"
   fi
 
+  unset BOOT_TIMEOUT SPAWN_TIMEOUT CTR
+
   echo "Testing Instances..."
+  [ -s $HOME/.ssh/rpc_support ] && KEY="-i $HOME/.ssh/rpc_support"
   for ID in $UUID_LIST; do 
     IP=`nova show $ID | awk -F\| '/ network / { print $3 }' | tr -d ' '`
 
-    echo -n "$IP : "
+    echo -n "$ID on net $NET: "
     CMD="nc -w0 $IP 22"
     ip netns exec qdhcp-$NET $CMD > /dev/null 2>&1 
 
@@ -321,7 +354,7 @@ function rpc-instance-per-network() {
 
       # If we can SSH, let's ping out...
       CMD="ping -c1 -w2 8.8.8.8"
-      ip netns exec qdhcp-$NET ssh -q -o StrictHostKeyChecking=no ubuntu@$IP "$CMD > /dev/null 2>&1"
+      ip netns exec qdhcp-$NET ssh -q -o StrictHostKeyChecking=no $KEY ubuntu@$IP "$CMD > /dev/null 2>&1"
 
       if [ $? -eq 0 ]; then
         echo "[PING GOOGLE: SUCCESS]"
@@ -329,9 +362,10 @@ function rpc-instance-per-network() {
         echo "[PING GOOGLE: FAILURE]"
       fi
     else
-      echo "[SSH: FAILURE] "
+      echo "[SSH: FAILURE]"
     fi
   done
+  unset KEY
 
   echo
   echo -n "Deleting instances..."
@@ -341,7 +375,7 @@ function rpc-instance-per-network() {
     sleep 1
   done
   echo
-  unset UUID_LIST NEWID INSTANCE_NAME TIMEOUT CTR DONE IMAGE
+  unset UUID_LIST
 }
 
 ################
@@ -551,4 +585,4 @@ if [ ${S=0} -eq 0 ]; then
   rpc-environment-scan
 fi
 
-rpc-update-pccommon
+#rpc-update-pccommon
