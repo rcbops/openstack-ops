@@ -218,6 +218,15 @@ function rpc-environment-scan() {
   [ $? -ne 0 ] && echo "Missing local openstack binaries.  Not scanning environment." && return
 
   echo "Scanning environment.  Please hold..."
+  echo -n "  - RPC Version "
+  if [ -s /etc/rpc-release ]; then
+    source /etc/rpc-release
+    OS_VERSION=`echo $DISTRIB_RELEASE | cut -d. -f1 `
+  else
+    OS_VERSION="4"
+  fi
+  echo $OS_VERSION
+
   echo "  - Keystone"
   tenant_repl=`keystone tenant-list | awk '/[0-9]/ {print "s/"$2"/[[Tenant: "$4"]]/g;"}'`
   user_repl=`keystone user-list | awk '/[0-9]/ {print "s/"$2"/[[User: "$4"]]/g;"}'`
@@ -260,6 +269,13 @@ function rpc-os-version-check() {
 [ ${Q=0} -eq 0 ] && echo "  - rpc-instance-per-network() - Per network, spin up an instance on given hypervisor, ping, and tear down"
 function rpc-instance-per-network() {
   UUID_LIST=""
+  if [ $OS_VERSION >= 9 ]; then 
+    if [ ! "$( hostname | grep neutron_agents)" ]; then
+      echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
+      return
+    fi
+  fi
+
   if [ ! "$1" ]; then
     echo "Must pass a compute or AZ:Compute combo."
     return
@@ -273,7 +289,13 @@ function rpc-instance-per-network() {
     COMPUTE=$1
   fi
 
-  VALID_COMPUTE=`nova service-list | grep nova-compute | awk '/[0-9]/ {print $6}' | grep $COMPUTE`
+  case $OS_VERSION in
+    4) VALID_COMPUTE=`nova service-list | grep nova-compute | awk '/[0-9]/ {print $4}' | grep $COMPUTE`
+    ;;
+    *) VALID_COMPUTE=`nova service-list | grep nova-compute | awk '/[0-9]/ {print $6}' | grep $COMPUTE`
+    ;;
+  esac
+
   if [ ! "$VALID_COMPUTE" ]; then
     echo "Compute node $COMPUTE doesn't exist."
     unset VALID_COMPUTE AZ COMPUTE
@@ -283,6 +305,13 @@ function rpc-instance-per-network() {
   fi
 
   IMAGE=`glance image-list | awk 'tolower($4) ~ /ubuntu/ {print $2}' | tail -1`
+
+  case $OS_VERSION in
+    4)  KEYNAME="controller-id_rsa"
+    ;;
+    *)  KEYNAME="rpc_support"
+  esac
+
   for NET in `$OS_NETCMD net-list | awk -F\| '$2 ~ /[0-9]+/ { print $2 }'`; do
     echo "Spinning up instance on network $NET"
     INSTANCE_NAME="rpctest-$$-NET-${NET}"
@@ -290,7 +319,7 @@ function rpc-instance-per-network() {
     NEWID=`nova boot --image $IMAGE \
       --flavor 2 \
       --security-group rpc-support \
-      --key-name rpc_support \
+      --key-name $KEYNAME \
       --nic net-id=$NET \
       --availability-zone $AZ:$COMPUTE \
       $INSTANCE_NAME | awk '/ id / { print $4 }'`
@@ -345,7 +374,7 @@ function rpc-instance-per-network() {
   for ID in $UUID_LIST; do 
     IP=`nova show $ID | awk -F\| '/ network / { print $3 }' | tr -d ' '`
 
-    echo -n "$ID on net $NET: "
+    echo -n "$IP: "
     CMD="nc -w0 $IP 22"
     ip netns exec qdhcp-$NET $CMD > /dev/null 2>&1 
 
@@ -381,20 +410,55 @@ function rpc-instance-per-network() {
 ################
 [ ${Q=0} -eq 0 ] && echo "  - rpc-instance-per-network-per-hypervisor() - Per network, spin up an instance on each hypervisor, ping, and tear down"
 function rpc-instance-per-network-per-hypervisor() {
+  if [ $OS_VERSION >= 9 ]; then 
+    if [ ! "$( hostname | grep neutron_agents)" ]; then
+      echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
+      return
+    fi
+  fi
+
+  case $OS_VERSION in
+    4) VALID_COMPUTE=`nova service-list | grep nova-compute | awk '/[0-9]/ {print $4}' | grep $COMPUTE`
+    ;;
+    *) VALID_COMPUTE=`nova service-list | grep nova-compute | awk '/[0-9]/ {print $6}' | grep $COMPUTE`
+    ;;
+  esac
+
+  if [ ! "$VALID_COMPUTE" ]; then
+    echo "Compute node $COMPUTE doesn't exist."
+    unset VALID_COMPUTE AZ COMPUTE
+    return
+  else
+    unset VALID_COMPUTE
+  fi
+
+  IMAGE=`glance image-list | awk 'tolower($4) ~ /ubuntu/ {print $2}' | tail -1`
+
+  case $OS_VERSION in
+    4)  KEYNAME="controller-id_rsa"
+    ;;
+    *)  KEYNAME="rpc_support"
+  esac
+
   for NET in `$OS_NETCMD net-list | awk -F\| '$4 ~ /[0-9]+/ { print $2 }' | sort -R`; do
     echo -n "Spinning up instance per hypervisor on network $NET..."
     UUID_LIST=""
     for COMPUTE in `nova hypervisor-list | awk '/[0-9]/ {print $4}'`; do 
+      case $OS_VERSION in
+        4) AZ=`nova service-list --binary nova-compute --host 647089-compute006 | awk '/[0-9]/ {print $6}'`
+        ;;
+        *) AZ=`nova service-list --binary nova-compute --host 647089-compute006 | awk '/[0-9]/ {print $8}'`
+      esac 
+
       echo -n "."
       INSTANCE_NAME="rpctest-$$-${COMPUTE}-${NET}"
-      IMAGE=`nova image-list | awk '/Ubuntu/ {print $2}' | tail -1`
 
       NEWID=`nova boot --image $IMAGE \
       --flavor 2 \
       --security-group rpc-support \
-      --key-name rpc_support \
+      --key-name $KEYNAME \
       --nic net-id=$NET \
-      --availability-zone nova:$COMPUTE \
+      --availability-zone ${AZ}:${COMPUTE} \
       $INSTANCE_NAME | awk '/ id / { print $4 }'`
 
       UUID_LIST="${NEWID} ${UUID_LIST}"
