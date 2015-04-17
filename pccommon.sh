@@ -14,6 +14,8 @@ fi
 [ ${Q=0} -eq 0 ] && echo
 [ ${Q=0} -eq 0 ] && echo "Importing Private Cloud Common Functions..."
 
+HZ=`getconf CLK_TCK`
+
 ################
 [ ${Q=0} -eq 0 ] && echo "  - ix() - Quickly post things to ix.io"
 function ix() { curl -F 'f:1=<-' http://ix.io < "${1:-/dev/stdin}"; }
@@ -600,8 +602,63 @@ function rpc-update-pccommon () {
   fi
 }
 
+# Shows swap usage per process
+[ ${Q=0} -eq 0 ] && echo "  - swap-usage() - Shows current usage of swap memory, by process"
+function swap-usage
+{
+	for PID in `ps -A -o \%p --no-headers | egrep -o '[0-9]+'` ; do
+        	if [ -d /proc/$PID ]; then
+                	PROGNAME=`cat /proc/$PID/cmdline | tr '\000' '\t'  | cut -f1`
+                	for SWAP in `grep Swap /proc/$PID/smaps 2>/dev/null| awk '{ print $2 }'`; do
+                        	SUM=$(( $SUM+$SWAP ))
+                	done
+                	[ $SUM -ne 0 ] && echo "PID=$PID - Swap used: ${SUM}kb - ( $PROGNAME )"
+                	OVERALL=$(( $OVERALL+$SUM ))
+                	SUM=0
+        	fi
+	done
+	
+	if [ $OVERALL -gt $(( 1024 * 1024 )) ]; then
+        	HUMAN="$( echo 2 k $OVERALL 1024 /  1024 / p | dc )GB"
+	else
+        	if [ $OVERALL -gt 1024 ]; then
+                	HUMAN="$( echo 2 k $OVERALL 1024 / p | dc )MB"
+        	else
+                	HUMAN="${OVERALL}KB"
+        	fi
+	fi
+	
+	echo "Overall swap used: ${HUMAN}"
+	
+	unset HUMAN OVERALL SUM PID
+}
+
 ################
 # Unlisted helper functions
+
+function pid_start {
+	SYS_START=`cat /proc/uptime | cut -d\  -f1 | cut -d. -f1`
+	PROC_START=`cat /proc/$1/stat | cut -d\  -f22`
+	PROC_START=$(( $PROC_START / $HZ ))
+	PROC_UPTIME=$(( $SYS_START - $PROC_START ))
+	PROC_START=`date -d "-${PROC_UPTIME} seconds"`
+	echo "$PROC_START"
+}
+
+function pid_age {
+	SYS_START=`cat /proc/uptime | cut -d\  -f1 | cut -d. -f1`
+	PROC_START=`cat /proc/$1/stat | cut -d\  -f22`
+	PROC_START=$(( $PROC_START / $HZ ))
+	UPSEC=$(( $SYS_START - $PROC_START ))
+	UPMIN=$(( $UPSEC / 60 ))
+	UPHR=$(( $UPSEC / 60 / 60 ))
+	UPDAY=$(( $UPSEC / 60 / 60 / 24 ))
+	DAYHR=$(( $UPDAY * 24 )); UPHR=$(( $UPHR - $DAYHR ))
+	HRMIN=$(( $UPHR * 60 )); UPMIN=$(( $UPMIN - $HRMIN ))
+	MINSEC=$(( $UPDAY * 24 * 60 * 60 + $UPHR * 60 * 60 + $UPMIN * 60 )); UPSEC=$(( $UPSEC - $MINSEC ))
+	echo "${UPDAY}d, ${UPHR}h, ${UPMIN}m, ${UPSEC}s"
+}
+
 function humanize_kb () {
 
   scale=( K M G T P E )
