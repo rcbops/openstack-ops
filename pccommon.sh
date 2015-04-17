@@ -269,7 +269,7 @@ function rpc-os-version-check() {
 [ ${Q=0} -eq 0 ] && echo "  - rpc-instance-per-network() - Per network, spin up an instance on given hypervisor, ping, and tear down"
 function rpc-instance-per-network() {
   UUID_LIST=""
-  if [ $OS_VERSION >= 9 ]; then 
+  if [ $OS_VERSION -ge 9 ]; then 
     if [ ! "$( hostname | grep neutron_agents)" ]; then
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
       return
@@ -410,26 +410,11 @@ function rpc-instance-per-network() {
 ################
 [ ${Q=0} -eq 0 ] && echo "  - rpc-instance-per-network-per-hypervisor() - Per network, spin up an instance on each hypervisor, ping, and tear down"
 function rpc-instance-per-network-per-hypervisor() {
-  if [ $OS_VERSION >= 9 ]; then 
+  if [ $OS_VERSION -ge 9 ]; then 
     if [ ! "$( hostname | grep neutron_agents)" ]; then
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
       return
     fi
-  fi
-
-  case $OS_VERSION in
-    4) VALID_COMPUTE=`nova service-list | grep nova-compute | awk '/[0-9]/ {print $4}' | grep $COMPUTE`
-    ;;
-    *) VALID_COMPUTE=`nova service-list | grep nova-compute | awk '/[0-9]/ {print $6}' | grep $COMPUTE`
-    ;;
-  esac
-
-  if [ ! "$VALID_COMPUTE" ]; then
-    echo "Compute node $COMPUTE doesn't exist."
-    unset VALID_COMPUTE AZ COMPUTE
-    return
-  else
-    unset VALID_COMPUTE
   fi
 
   IMAGE=`glance image-list | awk 'tolower($4) ~ /ubuntu/ {print $2}' | tail -1`
