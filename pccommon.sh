@@ -606,31 +606,36 @@ function rpc-update-pccommon () {
 [ ${Q=0} -eq 0 ] && echo "  - swap-usage() - Shows current usage of swap memory, by process"
 function swap-usage
 {
-	for PID in `ps -A -o \%p --no-headers | egrep -o '[0-9]+'` ; do
-        	if [ -d /proc/$PID ]; then
-                	PROGNAME=`cat /proc/$PID/cmdline | tr '\000' '\t'  | cut -f1`
-                	for SWAP in `grep Swap /proc/$PID/smaps 2>/dev/null| awk '{ print $2 }'`; do
-                        	SUM=$(( $SUM+$SWAP ))
-                	done
-                	[ $SUM -ne 0 ] && echo "PID=$PID - Swap used: ${SUM}kb - ( $PROGNAME )"
-                	OVERALL=$(( $OVERALL+$SUM ))
-                	SUM=0
-        	fi
-	done
-	
-	if [ $OVERALL -gt $(( 1024 * 1024 )) ]; then
-        	HUMAN="$( echo 2 k $OVERALL 1024 /  1024 / p | dc )GB"
-	else
-        	if [ $OVERALL -gt 1024 ]; then
-                	HUMAN="$( echo 2 k $OVERALL 1024 / p | dc )MB"
-        	else
-                	HUMAN="${OVERALL}KB"
-        	fi
-	fi
-	
-	echo "Overall swap used: ${HUMAN}"
-	
-	unset HUMAN OVERALL SUM PID
+  if [ $UID -ne 0 ]; then
+    echo "Must be run as root"
+    return
+  fi
+
+  for PID in `ps -A -o \%p --no-headers | egrep -o '[0-9]+'` ; do
+    if [ -d /proc/$PID ]; then
+      PROGNAME=`cat /proc/$PID/cmdline | tr '\000' '\t'  | cut -f1`
+      for SWAP in `grep Swap /proc/$PID/smaps 2>/dev/null| awk '{ print $2 }'`; do
+        SUM=$(( $SUM+$SWAP ))
+      done
+      [ $SUM -ne 0 ] && echo "PID=$PID - Swap used: ${SUM}kb - ( $PROGNAME )"
+      OVERALL=$(( $OVERALL+$SUM ))
+      SUM=0
+    fi
+  done
+
+  if [ $OVERALL -gt $(( 1024 * 1024 )) ]; then
+    HUMAN="$( echo 2 k $OVERALL 1024 /  1024 / p | dc )GB"
+  else
+    if [ $OVERALL -gt 1024 ]; then
+      HUMAN="$( echo 2 k $OVERALL 1024 / p | dc )MB"
+    else
+      HUMAN="${OVERALL}KB"
+    fi
+  fi
+
+  echo "Overall swap used: ${HUMAN}"
+
+  unset HUMAN OVERALL SUM PID
 }
 
 ################
