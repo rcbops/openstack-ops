@@ -684,6 +684,9 @@ function rpc-instance-waitfor-boot() {
 
   echo -n "-- Waiting up to $BOOT_TIMEOUT seconds for $ID to boot..."
 
+  nova show $ID > /dev/null 2>&1&
+  [ $? -gt 0 ] && echo "$ID Broken somehow.  Giving Up." && return 3
+
   CTR=0
   nova console-log $ID 2> /dev/null | egrep -i '^cloud-init .* finished' > /dev/null 2>&1
   R=$?
