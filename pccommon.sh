@@ -658,7 +658,7 @@ function rpc-instance-waitfor-spawn() {
     echo -n "."
     sleep 2
   done
-  unset DONE ID STATE
+  unset DONE ID 
 
   if [ $CTR -ge $SPAWN_TIMEOUT ]; then
     echo "Timed out"
@@ -672,6 +672,8 @@ function rpc-instance-waitfor-spawn() {
       RET=0
     fi
   fi
+  
+  unset STATE
   return $RET
 }
 
@@ -686,7 +688,7 @@ function rpc-instance-waitfor-boot() {
 
   echo -n "-- Waiting up to $BOOT_TIMEOUT seconds for $ID to boot..."
 
-  nova show $ID > /dev/null 2>&1&
+  nova show $ID > /dev/null 2>&1
   [ $? -gt 0 ] && echo "$ID Broken somehow.  Giving Up." && return 3
 
   CTR=0
