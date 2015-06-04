@@ -422,11 +422,13 @@ function rpc-instance-per-network() {
   done
   unset IMAGE router_external
 
+  unset SPAWNED_UUID_LIST
   for UUID in $UUID_LIST; do 
     rpc-instance-waitfor-spawn $UUID 60
     SPAWNED_UUID_LIST="$UUID $SPAWNED_UUID_LIST"
   done
 
+  unset BOOTED_UUID_LIST
   for UUID in $SPAWNED_UUID_LIST; do 
     rpc-instance-waitfor-boot $UUID 180
     BOOTED_UUID_LIST="$UUID $BOOTED_UUID_LIST"
