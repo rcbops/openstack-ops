@@ -402,7 +402,7 @@ function rpc-instance-per-network() {
     unset router_external
     eval `neutron net-show -Frouter:external -f shell $NET | tr : _`
     if [ "$router_external" == "True" ]; then
-      echo "*** Skipping $NET due to router:external tag"
+      echo "Skipping $NET due to router:external tag"
       continue
     fi
 
