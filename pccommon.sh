@@ -325,6 +325,13 @@ function rpc-instance-per-network() {
   esac
 
   for NET in `$OS_NETCMD net-list | awk -F\| '$2 ~ /[0-9]+/ { print $2 }'`; do
+    unset router_external
+    eval `neutron net-show -Frouter:external -f shell $NET | tr : _`
+    if [ "$router_external" == "True" ]; then
+      echo "Skipping $NET due to router:external tag"
+      continue
+    fi
+
     echo "Spinning up instance on network $NET"
     INSTANCE_NAME="rpctest-$$-NET-${NET}"
 
@@ -339,19 +346,21 @@ function rpc-instance-per-network() {
     UUID_LIST="${NEWID} ${UUID_LIST}"
     unset INSTANCE_NAME
   done
-  unset IMAGE
+  unset IMAGE router_external
 
-  BOOT_TIMEOUT=60
-  SPAWN_TIMEOUT=30
+  BOOT_TIMEOUT=180
+  SPAWN_TIMEOUT=60
 
   echo -n "-- Waiting up to $SPAWN_TIMEOUT seconds for last instance to spawn..."
+  LAST=`echo $UUID_LIST | cut -d\  -f1`
   CTR=0
-  while [ "${STATE="spawning"}" == "spawning" -a $CTR -lt $SPAWN_TIMEOUT ]; do
-    STATE=`nova show $NEWID | awk '/status/ { print $4 }'`
+  while [ "${STATE="BUILD"}" == "BUILD" -a $CTR -lt $SPAWN_TIMEOUT ]; do
+    STATE=`nova show $LAST| awk '/status/ { print $4 }'`
     CTR=$(( $CTR + 1 ))
+    echo -n "."
     sleep 1
   done
-  unset DONE
+  unset DONE LAST STATE
 
   if [ $CTR -ge $SPAWN_TIMEOUT ]; then
     echo ""
@@ -359,7 +368,7 @@ function rpc-instance-per-network() {
   else
     echo "Done"
   fi
-
+  
   echo -n "-- Waiting up to $BOOT_TIMEOUT seconds for last instance to boot..."
   CTR=0
   R=1
@@ -385,17 +394,25 @@ function rpc-instance-per-network() {
   [ -s $HOME/.ssh/rpc_support ] && KEY="-i $HOME/.ssh/rpc_support"
   for ID in $UUID_LIST; do 
     IP=`nova show $ID | awk -F\| '/ network / { print $3 }' | tr -d ' '`
+    NETNAME=`nova show $ID | awk '/ network / { print $2 }'`
 
-    echo -n "$IP: "
-    CMD="nc -w0 $IP 22"
-    ip netns exec qdhcp-$NET $CMD > /dev/null 2>&1 
+    eval `neutron net-show -Fid -f shell $NETNAME`
+    NETID=$id
+    unset id
+
+    echo -n "$NETNAME/$IP: "
+    CMD="nc -w1 $IP 22 | grep SSH"
+    NSWRAP="ip netns exec qdhcp-$NETID"
+    echo $NSWRAP $CMD
+    $NSWRAP $CMD > /dev/null 2>&1 
 
     if [ $? -eq 0 ]; then
-      echo -n "[SSH: SUCCESS] "
+      echo -n "[SSH PORT: SUCCESS] "
 
       # If we can SSH, let's ping out...
       CMD="ping -c1 -w2 8.8.8.8"
-      ip netns exec qdhcp-$NET ssh -q -o StrictHostKeyChecking=no $KEY ubuntu@$IP "$CMD > /dev/null 2>&1"
+      NSWRAP="ip netns exec qdhcp-$NETID ssh -q -o StrictHostKeyChecking=no $KEY ubuntu@$IP"
+      $NSWRAP $CMD > /dev/null 2>&1
 
       if [ $? -eq 0 ]; then
         echo "[PING GOOGLE: SUCCESS]"
@@ -403,10 +420,10 @@ function rpc-instance-per-network() {
         echo "[PING GOOGLE: FAILURE]"
       fi
     else
-      echo "[SSH: FAILURE]"
+      echo "[SSH PORT: FAILURE]"
     fi
   done
-  unset KEY
+  unset KEY IP NETNAME NETID CMD NSWRAP
 
   echo
   echo -n "Deleting instances..."
