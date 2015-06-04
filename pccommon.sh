@@ -158,8 +158,11 @@ function rpc-bondflip() {
 }
 
 ################
-[ ${Q=0} -eq 0 ] && echo "  - rpc-port-stats() - Show live interface usage by port"
+#[ ${Q=0} -eq 0 ] && echo "  - rpc-port-stats() - Show live interface usage by port"
 function rpc-port-stats() {
+  echo "Don't use this yet.  Fixing it to be awesome"
+  return
+
   if [ $# -ne 1 ]; then
     echo "Usage: rpc-port-stats <port-id>"
     return
