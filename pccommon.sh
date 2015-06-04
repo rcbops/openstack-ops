@@ -61,7 +61,7 @@ which mysql > /dev/null 2>&1
 if [ $? -eq 0 ]; then
   mysql -te "select hypervisor_hostname as Hypervisor,((memory_mb*${RAM_RATIO})-memory_mb_used)/1024 as FreeMemGB,(vcpus*${CPU_RATIO})-vcpus_used as FreeVCPUs, (free_disk_gb*${DISK_RATIO}) as FreeDiskGB,running_vms ActiveVMs from compute_nodes where deleted = 0;" nova
 else
-  echo ";mysql' not found.  Go to there."
+  echo "'mysql' not found.  Go to there."
 fi
 
 unset CPU_RATIO RAM_RATIO
@@ -165,15 +165,13 @@ function rpc-port-stats() {
     return
   fi
 
-  port=${1:0:11}
+  port=tap${1:0:11}
 
   if [ ! "$( echo $port | egrep '^[0-9a-z]{8}-[0-9a-z]{2}$' )" ]; then
     echo "Inavlid port: $1"
     echo "Usage: rpc-port-stats <port-id>"
     return
   fi
-
-  tmpfile="/tmp/.$$.port-status.$port"
 
   echo "Using $1($port)"
 
@@ -378,9 +376,9 @@ function rpc-instance-per-network() {
   fi
 
   case $OS_VERSION in
-    4) VALID_COMPUTE=`nova service-list | grep nova-compute | awk '/[0-9]/ {print $4}' | grep $COMPUTE`
+    4) VALID_COMPUTE=`nova service-list --binary nova-compute | awk '/[0-9]/ {print $4}' | grep $COMPUTE`
     ;;
-    *) VALID_COMPUTE=`nova service-list | grep nova-compute | awk '/[0-9]/ {print $6}' | grep $COMPUTE`
+    *) VALID_COMPUTE=`nova service-list --binary nova-compute | awk '/[0-9]/ {print $6}' | grep $COMPUTE`
     ;;
   esac
 
@@ -404,7 +402,7 @@ function rpc-instance-per-network() {
     unset router_external
     eval `neutron net-show -Frouter:external -f shell $NET | tr : _`
     if [ "$router_external" == "True" ]; then
-      echo -e "*** Skipping $NET due to router:external tag\n"
+      echo "*** Skipping $NET due to router:external tag"
       continue
     fi
 
@@ -426,16 +424,20 @@ function rpc-instance-per-network() {
 
   for UUID in $UUID_LIST; do 
     rpc-instance-waitfor-spawn $UUID 60
+    SPAWNED_UUID_LIST="$UUID $SPAWNED_UUID_LIST"
   done
 
-  for UUID in $UUID_LIST; do 
+  for UUID in $SPAWNED_UUID_LIST; do 
     rpc-instance-waitfor-boot $UUID 180
+    BOOTED_UUID_LIST="$UUID $BOOTED_UUID_LIST"
   done
+  unset SPAWNED_UUID_LIST
 
   echo "Testing Instances..."
-  for ID in $UUID_LIST; do 
+  for ID in $BOOTED_UUID_LIST; do 
     rpc-instance-test-networking $ID
   done
+  unset BOOTED_UUID_LIST
 
   echo -n "Deleting instances..."
   for ID in $UUID_LIST; do 
@@ -452,7 +454,7 @@ function rpc-instance-per-network() {
 function rpc-instance-per-network-per-hypervisor() {
   if [ $OS_VERSION -ge 9 ]; then 
     if [ ! "$( hostname | grep neutron_agents)" ]; then
-      echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
+      echo "Must be run from Neutron Agents container in order to access network namespaces"
       return
     fi
   fi
@@ -475,7 +477,7 @@ function rpc-instance-per-network-per-hypervisor() {
 
     echo -n "Spinning up instance per hypervisor on network $NET..."
     UUID_LIST=""
-    for COMPUTE in `nova hypervisor-list | awk '/[0-9]/ {print $4}'`; do 
+    for COMPUTE in `nova service-list --binary nova-compute | awk '/[0-9]/ {print $4}'`; do 
       case $OS_VERSION in
         4) AZ=`nova service-list --binary nova-compute --host $COMPUTE | awk '/[0-9]/ {print $6}'`
         ;;
@@ -660,8 +662,13 @@ function rpc-instance-waitfor-spawn() {
     echo "Timed out"
     RET=1
   else
-    echo "Done"
-    RET=0
+    if [ "$STATE" != "ACTIVE" ]; then
+      echo "*ERROR*"
+      RET=2
+    else
+      echo "Done"
+      RET=0
+    fi
   fi
   return $RET
 }
