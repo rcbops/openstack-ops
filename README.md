@@ -28,20 +28,22 @@ $ source ./pccommon.sh
 
 Provides the following functions for private cloud admins:
 
-     - ix() - Quickly post things to ix.io
-     - rpc-hypervisor-vms() - Display all hypervisors and associated instances
-     - rpc-hypervisor-free() - Display free resources on each Hypervisor, as reported by MySQL
-     - rpc-filter() - Replace stinky UUIDs with refreshing descriptive names inline
-     - rpc-instance-per-network() - Spin up an instance per network, let the scheduler pick the hypervisor.
-     - rpc-instance-per-network-per-hypervisor() - Spin up an instance for each network on each hypervisor.
-     - rpc-iscsi-generate-sessions() - Generate list of commands to re-initiate currently open iscsi sessions
-     - rpc-common-errors-scan() - Pretty much what it sounds like
-     - rpc-bondflip() - Change given bondX to backup NIC
-     - rpc-port-stats() - Show live interface usage by port
-     - rpc-environment-scan() - Update list of internal filters
-     - rpc-os-version-check() - Are we running latest available openstack versions?
-     - rpc-sg-rules() - Makes security groups easier to read.  Pass it a Security Group ID (not name)"
-     - rpc-image-check() - Display all instances and the state of their base image"
+  - ix() - Quickly post things to ix.io
+  - rpc-hypervisor-vms() - Display all hypervisors and associated instances
+  - rpc-hypervisor-free() - Display free resources on each Hypervisor, as reported by MySQL
+  - rpc-filter() - Replace stinky UUIDs with refreshing descriptive names inline
+  - rpc-iscsi-generate-sessions() - Generate list of commands to re-initiate currently open iscsi sessions
+  - rpc-common-errors-scan() - Pretty much what it sounds like
+  - rpc-bondflip() - Change given bondX to backup NIC
+  - rpc-environment-scan() - Update list of internal filters
+  - rpc-os-version-check() - Are we running latest availble version?
+  - rpc-instance-test-networking() - Test instance networking.
+  - rpc-instance-per-network() - Per network, spin up an instance on given hypervisor, ping, and tear down
+  - rpc-instance-per-network-per-hypervisor() - Per network, spin up an instance on each hypervisor, ping, and tear down
+  - rpc-sg-rules() - Makes security groups easier to read.  Pass it a Security Group ID (not name)
+  - rpc-image-check() - Shows all running instances and the state of their base images (active/deleted)
+  - rpc-update-pccommon() - Grabs the latest version of pccommon.sh if there is one
+  - swap-usage() - Shows current usage of swap memory, by process
 
 
 On load, this script will scan the environment for various openstack things in order to pre-populate the rpc 
