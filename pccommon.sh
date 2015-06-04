@@ -23,7 +23,15 @@ function ix() { curl -F 'f:1=<-' http://ix.io < "${1:-/dev/stdin}"; }
 ################
 [ ${Q=0} -eq 0 ] && echo "  - rpc-hypervisor-vms() - Display all hypervisors and associated instances"
 function rpc-hypervisor-vms {
-mysql -te 'select host as "Hypervisor", instances.display_name as "Instance Name",image_ref as "Image", vm_state as State, vcpus as "VCPUs", memory_mb as "RAM", root_gb as "Root", ephemeral_gb as "Ephem" from instance_system_metadata left join instances on instance_system_metadata.instance_uuid=instances.uuid where instance_uuid in (select uuid from instances where deleted = 0) and `key` = "instance_type_name" order by host,display_name' nova 
+
+which mysql > /dev/null 2>&1
+
+if [ $? -eq 0 ]; then
+  mysql -te 'select host as "Hypervisor", instances.display_name as "Instance Name",image_ref as "Image", vm_state as State, vcpus as "VCPUs", memory_mb as "RAM", root_gb as "Root", ephemeral_gb as "Ephem" from instance_system_metadata left join instances on instance_system_metadata.instance_uuid=instances.uuid where instance_uuid in (select uuid from instances where deleted = 0) and `key` = "instance_type_name" order by host,display_name' nova 
+else
+  echo "'mysql' not found.  Go to there."
+fi
+
 }
 
 ################
@@ -31,19 +39,31 @@ mysql -te 'select host as "Hypervisor", instances.display_name as "Instance Name
 function rpc-hypervisor-free {
 
 if [ ! -s /etc/nova/nova.conf ]; then
-  echo "Unable to find nova.conf."
-  return
+  NOVACONTAINER=`lxc-ls | grep nova | tail -1`
+
+  if [ "$NOVACONTAINER" ]; then
+    LXC="lxc-attach -n $NOVACONTAINER -- "
+  else
+    LXC=
+  fi
 fi
 
-CPU_RATIO=`awk -F= '/^cpu_allocation_ratio/ {print $2}' /etc/nova/nova.conf`
-RAM_RATIO=`awk -F= '/^ram_allocation_ratio/ {print $2}' /etc/nova/nova.conf`
-DISK_RATIO=`awk -F= '/^disk_allocation_ratio/ {print $2}' /etc/nova/nova.conf`
+CPU_RATIO=`$LXC awk -F= '/^cpu_allocation_ratio/ {print $2}' /etc/nova/nova.conf`
+RAM_RATIO=`$LXC awk -F= '/^ram_allocation_ratio/ {print $2}' /etc/nova/nova.conf`
+DISK_RATIO=`$LXC awk -F= '/^disk_allocation_ratio/ {print $2}' /etc/nova/nova.conf`
 
 [ ! "$CPU_RATIO" ] && CPU_RATIO=1 && echo "Unable to find cpu_allocation_ratio in nova.conf.  Using 1.0"
 [ ! "$RAM_RATIO" ] && RAM_RATIO=1 && echo "Unable to find ram_allocation_ratio in nova.conf.  Using 1.0"
 [ ! "$DISK_RATIO" ] && DISK_RATIO=1 && echo "Unable to find disk_allocation_ratio in nova.conf.  Using 1.0"
 
-mysql -te "select hypervisor_hostname as Hypervisor,((memory_mb*${RAM_RATIO})-memory_mb_used)/1024 as FreeMemGB,(vcpus*${CPU_RATIO})-vcpus_used as FreeVCPUs, (free_disk_gb*${DISK_RATIO}) as FreeDiskGB,running_vms ActiveVMs from compute_nodes where deleted = 0;" nova
+which mysql > /dev/null 2>&1
+
+if [ $? -eq 0 ]; then
+  mysql -te "select hypervisor_hostname as Hypervisor,((memory_mb*${RAM_RATIO})-memory_mb_used)/1024 as FreeMemGB,(vcpus*${CPU_RATIO})-vcpus_used as FreeVCPUs, (free_disk_gb*${DISK_RATIO}) as FreeDiskGB,running_vms ActiveVMs from compute_nodes where deleted = 0;" nova
+else
+  echo ";mysql' not found.  Go to there."
+fi
+
 unset CPU_RATIO RAM_RATIO
 }
 
@@ -71,7 +91,7 @@ function rpc-iscsi-generate-sessions() {
 
 ################
 [ ${Q=0} -eq 0 ] && echo "  - rpc-common-errors-scan() - Pretty much what it sounds like"
-function rpc-common-errors-scan() {
+function rpc-v4-common-errors-scan() {
   echo "Checking for common issues..."
 
   echo -n "  - MySQL Replication "
@@ -278,6 +298,62 @@ function rpc-os-version-check() {
 }
 
 ################
+[ ${Q=0} -eq 0 ] && echo "  - rpc-instance-test-networking() - Test instance networking."
+function rpc-instance-test-networking() {
+  if [ ! "$1" ]; then
+    echo "Must pass instance UUID or Name"
+    return
+  fi
+
+  ID=$1
+
+  [ -s $HOME/.ssh/rpc_support ] && KEY="-i $HOME/.ssh/rpc_support"
+
+  IP=`nova show $ID | awk -F\| '/ network / { print $3 }' | tr -d ' '`
+  NETNAME=`nova show $ID | awk '/ network / { print $2 }'`
+
+  eval `neutron net-show -Fid -f shell $NETNAME`
+  NETID=$id
+  unset id
+
+  echo -ne "$NETNAME\t$IP\t"
+  CMD="nc -w1 $IP 22 | grep SSH"
+  NSWRAP="ip netns exec qdhcp-$NETID"
+  #echo $NSWRAP $CMD
+  $NSWRAP $CMD > /dev/null 2>&1 
+
+  if [ $? -eq 0 ]; then
+    echo -n "[SSH PORT: SUCCESS] "
+
+    eval `neutron net-show -Fsubnets -f shell $NETID`
+    eval `neutron subnet-show -Fgateway_ip -f shell $( echo $subnets | cut -d\  -f1)`
+
+    if [ "$gateway_ip" ]; then
+      # If we can SSH, let's ping out...
+      CMD="ping -c1 -w2 8.8.8.8"
+      NSWRAP="ip netns exec qdhcp-$NETID ssh -q -o StrictHostKeyChecking=no $KEY ubuntu@$IP"
+      $NSWRAP $CMD > /dev/null 2>&1
+
+      if [ $? -eq 0 ]; then
+        echo "[PING GOOGLE: SUCCESS]"
+        RET=0
+      else
+        echo "[PING GOOGLE: FAILURE]"
+        RET=1
+      fi
+    else
+      echo "[PING GOOGLE: No Gateway - SKIPPING]"
+      RET=1
+    fi
+  else
+    echo "[SSH PORT: FAILED]"
+    RET=1
+  fi
+  unset KEY IP NETNAME NETID CMD NSWRAP
+  return $RET
+}
+
+################
 [ ${Q=0} -eq 0 ] && echo "  - rpc-instance-per-network() - Per network, spin up an instance on given hypervisor, ping, and tear down"
 function rpc-instance-per-network() {
   UUID_LIST=""
@@ -328,7 +404,7 @@ function rpc-instance-per-network() {
     unset router_external
     eval `neutron net-show -Frouter:external -f shell $NET | tr : _`
     if [ "$router_external" == "True" ]; then
-      echo "Skipping $NET due to router:external tag"
+      echo -e "*** Skipping $NET due to router:external tag\n"
       continue
     fi
 
@@ -348,84 +424,19 @@ function rpc-instance-per-network() {
   done
   unset IMAGE router_external
 
-  BOOT_TIMEOUT=180
-  SPAWN_TIMEOUT=60
-
-  echo -n "-- Waiting up to $SPAWN_TIMEOUT seconds for last instance to spawn..."
-  LAST=`echo $UUID_LIST | cut -d\  -f1`
-  CTR=0
-  while [ "${STATE="BUILD"}" == "BUILD" -a $CTR -lt $SPAWN_TIMEOUT ]; do
-    STATE=`nova show $LAST| awk '/status/ { print $4 }'`
-    CTR=$(( $CTR + 1 ))
-    echo -n "."
-    sleep 1
+  for UUID in $UUID_LIST; do 
+    rpc-instance-waitfor-spawn $UUID 60
   done
-  unset DONE LAST STATE
 
-  if [ $CTR -ge $SPAWN_TIMEOUT ]; then
-    echo ""
-    echo "*!* Took too long for last instance to spawn.  Proceeding anyway.  Hold on to your butts."
-  else
-    echo "Done"
-  fi
-  
-  echo -n "-- Waiting up to $BOOT_TIMEOUT seconds for last instance to boot..."
-  CTR=0
-  R=1
-  while [ ${R} -gt 0 -a $CTR -lt $BOOT_TIMEOUT ]; do
-    nova console-log $NEWID 2> /dev/null | egrep -i '^cloud-init .* finished' > /dev/null 2>&1
-    R=$?
-    CTR=$(( $CTR + 3 ))
-    sleep 3
-    echo -n "."
+  for UUID in $UUID_LIST; do 
+    rpc-instance-waitfor-boot $UUID 180
   done
-  unset NEWID
-
-  if [ $CTR == $BOOT_TIMEOUT ]; then
-    echo ""
-    echo "*!* Took too long for last instance to boot up.  Proceeding anyway.  Hold on to your butts."
-  else
-    echo "Done"
-  fi
-
-  unset BOOT_TIMEOUT SPAWN_TIMEOUT CTR
 
   echo "Testing Instances..."
-  [ -s $HOME/.ssh/rpc_support ] && KEY="-i $HOME/.ssh/rpc_support"
   for ID in $UUID_LIST; do 
-    IP=`nova show $ID | awk -F\| '/ network / { print $3 }' | tr -d ' '`
-    NETNAME=`nova show $ID | awk '/ network / { print $2 }'`
-
-    eval `neutron net-show -Fid -f shell $NETNAME`
-    NETID=$id
-    unset id
-
-    echo -n "$NETNAME/$IP: "
-    CMD="nc -w1 $IP 22 | grep SSH"
-    NSWRAP="ip netns exec qdhcp-$NETID"
-    echo $NSWRAP $CMD
-    $NSWRAP $CMD > /dev/null 2>&1 
-
-    if [ $? -eq 0 ]; then
-      echo -n "[SSH PORT: SUCCESS] "
-
-      # If we can SSH, let's ping out...
-      CMD="ping -c1 -w2 8.8.8.8"
-      NSWRAP="ip netns exec qdhcp-$NETID ssh -q -o StrictHostKeyChecking=no $KEY ubuntu@$IP"
-      $NSWRAP $CMD > /dev/null 2>&1
-
-      if [ $? -eq 0 ]; then
-        echo "[PING GOOGLE: SUCCESS]"
-      else
-        echo "[PING GOOGLE: FAILURE]"
-      fi
-    else
-      echo "[SSH PORT: FAILURE]"
-    fi
+    rpc-instance-test-networking $ID
   done
-  unset KEY IP NETNAME NETID CMD NSWRAP
 
-  echo
   echo -n "Deleting instances..."
   for ID in $UUID_LIST; do 
     echo -n "."
@@ -455,13 +466,20 @@ function rpc-instance-per-network-per-hypervisor() {
   esac
 
   for NET in `$OS_NETCMD net-list | awk -F\| '$4 ~ /[0-9]+/ { print $2 }' | sort -R`; do
+    unset router_external
+    eval `neutron net-show -Frouter:external -f shell $NET | tr : _`
+    if [ "$router_external" == "True" ]; then
+      echo "Skipping $NET due to router:external tag"
+      continue
+    fi
+
     echo -n "Spinning up instance per hypervisor on network $NET..."
     UUID_LIST=""
     for COMPUTE in `nova hypervisor-list | awk '/[0-9]/ {print $4}'`; do 
       case $OS_VERSION in
-        4) AZ=`nova service-list --binary nova-compute --host 647089-compute006 | awk '/[0-9]/ {print $6}'`
+        4) AZ=`nova service-list --binary nova-compute --host $COMPUTE | awk '/[0-9]/ {print $6}'`
         ;;
-        *) AZ=`nova service-list --binary nova-compute --host 647089-compute006 | awk '/[0-9]/ {print $8}'`
+        *) AZ=`nova service-list --binary nova-compute --host $COMPUTE | awk '/[0-9]/ {print $8}'`
       esac 
 
       echo -n "."
@@ -479,66 +497,16 @@ function rpc-instance-per-network-per-hypervisor() {
     done;
     echo
 
-    BOOT_TIMEOUT=60
-    SPAWN_TIMEOUT=30
+    for UUID in $UUID_LIST; do
+      rpc-instance-waitfor-spawn $UUID 30
+    done;
 
-    echo -n "-- Waiting up to $SPAWN_TIMEOUT seconds for last instance to spawn..."
-    CTR=0
-    while [ "${STATE="spawning"}" == "spawning" -a $CTR -lt $SPAWN_TIMEOUT ]; do
-      STATE=`nova show $NEWID | awk '/status/ { print $4 }'`
-      CTR=$(( $CTR + 1 ))
-      sleep 1
-    done
-    unset DONE
-
-    if [ $CTR -ge $SPAWN_TIMEOUT ]; then
-      echo ""
-      echo "*!* Took too long for last instance to spawn.  Proceeding anyway.  Hold on to your butts."
-    else
-      echo "Done"
-    fi
-
-    echo -n "-- Waiting up to $BOOT_TIMEOUT seconds for last instance to boot..."
-    CTR=0
-    R=1
-    while [ ${R} -gt 0 -a $CTR -lt $BOOT_TIMEOUT ]; do
-      nova console-log $NEWID 2> /dev/null | egrep -i '^cloud-init .* finished' > /dev/null 2>&1
-      R=$?
-      CTR=$(( $CTR + 3 ))
-      sleep 3
-      echo -n "."
+    for UUID in $UUID_LIST; do
+      rpc-instance-waitfor-boot $UUID 120
     done
 
-    if [ $CTR == $BOOT_TIMEOUT ]; then
-      echo ""
-      echo "*!* Took too long for last instance to boot up.  Proceeding anyway.  Hold on to your butts."
-    else
-      echo "Done"
-    fi
-
-    echo "Testing Instances..."
-    for ID in $UUID_LIST; do 
-      IP=`nova show $ID | awk -F\| '/ network / { print $3 }' | tr -d ' '`
-      echo -n "$IP :"
-      CMD="nc -w0 $IP 22"
-      ip netns exec qdhcp-$NET $CMD > /dev/null 2>&1 
-
-      if [ $? -eq 0 ]; then
-        echo -n "[SSH: SUCCESS] "
-
-        # If we can SSH, let's ping out...
-        [ -s ~/.ssh/rpc_support ] && export KEY="-i $HOME/.ssh/rpc_support"
-        CMD="ping -c1 -w5 8.8.8.8"
-        ip netns exec qdhcp-$NET ssh -q -o StrictHostKeyChecking=no $KEY ubuntu@$IP "$CMD > /dev/null 2>&1"
-
-        if [ $? -eq 0 ]; then
-          echo "[PING GOOGLE: SUCCESS]"
-        else
-          echo "[PING GOOGLE: FAILURE]"
-        fi
-      else
-        echo "[SSH: FAILURE] "
-      fi
+    for UUID in $UUID_LIST; do
+      rpc-instance-test-networking $UUID
     done
 
     echo
@@ -549,9 +517,9 @@ function rpc-instance-per-network-per-hypervisor() {
       sleep 1
     done
     echo;echo
-    unset UUID_LIST NEWID INSTANCE_NAME TIMEOUT CTR DONE
+    unset UUID_LIST NEWID INSTANCE_NAME TIMEOUT CTR DONE UUID
   done
-  unset UUID_LIST NEWID IMAGE INSTANCE_NAME TIMEOUT CTR DONE KEY
+  unset UUID_LIST NEWID IMAGE INSTANCE_NAME TIMEOUT CTR DONE KEY UUID
 }
 
 
@@ -667,6 +635,71 @@ function swap-usage
 
 ################
 # Unlisted helper functions
+
+function rpc-instance-waitfor-spawn() {
+  if [ $# -ne 2 ]; then
+    echo -e "Usage: rpc-instance-waitfor-spawn <instance> <timeout>"
+    return
+  fi
+ 
+  ID=$1
+  SPAWN_TIMEOUT=$2
+ 
+  echo -n "-- Waiting up to $SPAWN_TIMEOUT seconds for $ID to spawn..."
+  CTR=0
+  STATE=`nova show $ID | awk '/status/ { print $4 }'`
+  while [ "${STATE="BUILD"}" == "BUILD" -a $CTR -lt $SPAWN_TIMEOUT ]; do
+    STATE=`nova show $ID | awk '/status/ { print $4 }'`
+    CTR=$(( $CTR + 2 ))
+    echo -n "."
+    sleep 2
+  done
+  unset DONE ID STATE
+
+  if [ $CTR -ge $SPAWN_TIMEOUT ]; then
+    echo "Timed out"
+    RET=1
+  else
+    echo "Done"
+    RET=0
+  fi
+  return $RET
+}
+
+function rpc-instance-waitfor-boot() {
+  if [ $# -ne 2 ]; then
+    echo -e "Usage: rpc-instance-waitfor-boot <instance> <timeout>"
+    return 1
+  fi
+
+  ID=$1
+  BOOT_TIMEOUT=$2
+
+  echo -n "-- Waiting up to $BOOT_TIMEOUT seconds for $ID to boot..."
+
+  CTR=0
+  nova console-log $ID 2> /dev/null | egrep -i '^cloud-init .* finished' > /dev/null 2>&1
+  R=$?
+  while [ ${R} -gt 0 -a $CTR -lt $BOOT_TIMEOUT ]; do
+    CTR=$(( $CTR + 5 ))
+    sleep 5
+    echo -n "."
+    nova console-log $ID 2> /dev/null | egrep -i '^cloud-init .* finished' > /dev/null 2>&1
+    R=$?
+  done
+  unset NEWID
+
+  if [ $CTR == $BOOT_TIMEOUT ]; then
+    echo "Timed out"
+    RET=1
+  else
+    echo "Done"
+    RET=0
+  fi
+
+  unset BOOT_TIMEOUT SPAWN_TIMEOUT CTR
+  return $RET
+}
 
 function pid_start {
 	SYS_START=`cat /proc/uptime | cut -d\  -f1 | cut -d. -f1`
