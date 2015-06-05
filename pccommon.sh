@@ -302,7 +302,7 @@ function rpc-instance-test-networking() {
       if [ "$CONTAINER" ]; then
         echo "Using $CONTAINER:"
         $LXC "curl -s https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh > /tmp/pccommon.sh"
-        $LXC "source /root/openrc; source /tmp/pccommon.sh; rpc-instance-test-networking $1"
+        $LXC bash -c "source /root/openrc; source /tmp/pccommon.sh; rpc-instance-test-networking $1"
         $LXC "rm /tmp/pccommon.sh"
         unset CONTAINER LXC
       else
