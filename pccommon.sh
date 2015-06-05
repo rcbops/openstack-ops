@@ -298,12 +298,13 @@ function rpc-instance-test-networking() {
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
       echo -n "Attempting to find one for you..."
       CONTAINER=`lxc-ls | grep neutron_agents`
+      LXC="lxc-attach -n $CONTAINER -- "
       if [ "$CONTAINER" ]; then
         echo "Using $CONTAINER:"
-        ssh $CONTAINER curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh
-        ssh $CONTAINER source /root/openrc \; source /tmp/pccommon.sh \; rpc-instance-test-networking $1
-        ssh $CONTAINER rm /tmp/pccommon.sh
-        unset CONTAINER 
+        $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh
+        $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-instance-test-networking $1"
+        $LXC rm /tmp/pccommon.sh
+        unset CONTAINER  LXC
       else
         echo "Failed.  Giving Up."
       fi
@@ -371,12 +372,13 @@ function rpc-instance-per-network() {
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
       echo -n "Attempting to find one for you..."
       CONTAINER=`lxc-ls | grep neutron_agents`
+      LXC="lxc-attach -n $CONTAINER -- "
       if [ "$CONTAINER" ]; then
         echo "Using $CONTAINER:"
-        ssh $CONTAINER curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh
-        ssh $CONTAINER source /root/openrc \; source /tmp/pccommon.sh \; rpc-instance-per-network $1
-        ssh $CONTAINER rm /tmp/pccommon.sh
-        unset CONTAINER 
+        $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh
+        $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-instance-per-network $1"
+        $LXC rm /tmp/pccommon.sh
+        unset CONTAINER  LXC
       else
         echo "Failed.  Giving Up."
       fi
@@ -451,13 +453,13 @@ function rpc-instance-per-network() {
   unset SPAWNED_UUID_LIST
   for UUID in $UUID_LIST; do 
     rpc-instance-waitfor-spawn $UUID 60
-    SPAWNED_UUID_LIST="$UUID $SPAWNED_UUID_LIST"
+    [ $? -gt 0 ] && SPAWNED_UUID_LIST="$UUID $SPAWNED_UUID_LIST" || echo "No further testing will be performed on this instance."
   done
 
   unset BOOTED_UUID_LIST
   for UUID in $SPAWNED_UUID_LIST; do 
     rpc-instance-waitfor-boot $UUID 180
-    BOOTED_UUID_LIST="$UUID $BOOTED_UUID_LIST"
+    [ $? -gt 0 ] && BOOTED_UUID_LIST="$UUID $BOOTED_UUID_LIST" || echo "No further testing will be performed on this instance."
   done
   unset SPAWNED_UUID_LIST
 
@@ -486,7 +488,19 @@ function rpc-instance-per-network-per-hypervisor() {
 
   if [ $OS_VERSION -ge 9 ]; then 
     if [ ! "$( hostname | grep neutron_agents)" ]; then
-      echo "Must be run from Neutron Agents container in order to access network namespaces"
+      echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
+      echo -n "Attempting to find one for you..."
+      CONTAINER=`lxc-ls | grep neutron_agents`
+      LXC="lxc-attach -n $CONTAINER -- "
+      if [ "$CONTAINER" ]; then
+        echo "Using $CONTAINER:"
+        $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh
+        $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-instance-per-network-per-hypervisor"
+        $LXC rm /tmp/pccommon.sh
+        unset CONTAINER  LXC
+      else
+        echo "Failed.  Giving Up."
+      fi
       return
     fi
   fi
@@ -535,17 +549,23 @@ function rpc-instance-per-network-per-hypervisor() {
     done;
     echo
 
+    unset SPAWNED_UUID_LIST
     for UUID in $UUID_LIST; do
       rpc-instance-waitfor-spawn $UUID 30
+      [ $? -gt 0 ] && SPAWNED_UUID_LIST="$UUID $SPAWNED_UUID_LIST" || echo "No further testing will be performed on this instance."
     done;
 
-    for UUID in $UUID_LIST; do
+    unset BOOTED_UUID_LIST
+    for UUID in $SPAWNED_UUID_LIST; do
       rpc-instance-waitfor-boot $UUID 120
+      [ $? -gt 0 ] && BOOTED_UUID_LIST="$UUID $BOOTED_UUID_LIST" || echo "No further testing will be performed on this instance."
     done
+    unset SPAWNED_UUID_LIST
 
-    for UUID in $UUID_LIST; do
+    for UUID in $BOOTED_UUID_LIST; do
       rpc-instance-test-networking $UUID
     done
+    unset BOOTED_UUID_LIST
 
     echo
     echo -n "Deleting instances..."
