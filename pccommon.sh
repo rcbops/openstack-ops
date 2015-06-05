@@ -106,7 +106,11 @@ function rpc-v4-common-errors-scan() {
 
   echo "  - OpenVSwitch"
   # Networks without dhcp agents
-  for net in `$OS_NETCMD net-list | awk '/[0-9]/ {print $2}'`; do $OS_NETCMD dhcp-agent-list-hosting-net $net | grep True > /dev/null 2>&1; [ $? -eq 0 ] && echo "        [OK] `echo $net | rpc-filter`"; done  
+  if [ ! "$OS_NETCMD" ]; then
+    echo "Skipping dhcp scan due to lack of networking-related openstack commands in this environment"
+  else
+    for net in `$OS_NETCMD net-list | awk '/[0-9]/ {print $2}'`; do $OS_NETCMD dhcp-agent-list-hosting-net $net | grep True > /dev/null 2>&1; [ $? -eq 0 ] && echo "        [OK] `echo $net | rpc-filter`"; done  
+  fi
 
   # Dead taps
   ovs-vsctl show | grep -A1 \"tap | egrep "tag: 4095" > /dev/null 2>&1
@@ -247,38 +251,20 @@ function rpc-port-stats() {
 ################
 [ ${Q=0} -eq 0 ] && echo "  - rpc-environment-scan() - Update list of internal filters"
 function rpc-environment-scan() {
-  `which keystone` > /dev/null 2>&1
-  [ $? -ne 0 ] && echo "Missing local openstack binaries.  Not scanning environment." && return
 
   echo "Scanning environment.  Please hold..."
-  echo -n "  - RPC Version "
-  if [ "$( egrep DISTRIB_RELEASE /etc/rpc-release 2> /dev/null)" ]; then
-    source /etc/rpc-release
-    OS_VERSION=`echo $DISTRIB_RELEASE | cut -d. -f1 `
-  else
-    OS_VERSION="4"
-  fi
-  echo $OS_VERSION
+  echo "  - RPC Version $OS_VERSION"
+
+  `which keystone` > /dev/null 2>&1
+  [ $? -ne 0 ] && echo -e "\nMissing local openstack binaries.  Not scanning environment." && return
 
   echo "  - Keystone"
   tenant_repl=`keystone tenant-list | awk '/[0-9]/ {print "s/"$2"/[[Tenant: "$4"]]/g;"}'`
   user_repl=`keystone user-list | awk '/[0-9]/ {print "s/"$2"/[[User: "$4"]]/g;"}'`
 
-  `which neutron > /dev/null`
-  if [ $? -eq 0 ]; then
-    OS_NETCMD="neutron"
-  else
-    `which quantum > /dev/null`
-    if [ $? -eq 0 ]; then
-      OS_NETCMD="quantum"
-    else
-      OS_NETCMD="nova"
-    fi
-  fi
+  echo "  - Networking (${OS_NETCMD="None"})"
 
-  echo "  - Networking ($OS_NETCMD)"
-
-  net_repl=`$OS_NETCMD net-list | awk '/[0-9]/ {print "s/"$2"/[[Network: "$4"]]/g;"}'`
+  [ "$OS_NETCMD" ] && net_repl=`$OS_NETCMD net-list | awk '/[0-9]/ {print "s/"$2"/[[Network: "$4"]]/g;"}'`
 
   echo "  - Nova"
   host_repl=`nova list | awk '/[0-9]/ {print "s/"$2"/[[Instance: "$4"]]/g;"}' 2> /dev/null`
@@ -357,10 +343,24 @@ function rpc-instance-test-networking() {
 ################
 [ ${Q=0} -eq 0 ] && echo "  - rpc-instance-per-network() - Per network, spin up an instance on given hypervisor, ping, and tear down"
 function rpc-instance-per-network() {
+
+  [ ! "$OS_NETCMD" ] && echo "Unable to find networking subsystem.  Giving up." && return
+
   UUID_LIST=""
   if [ $OS_VERSION -ge 9 ]; then 
     if [ ! "$( hostname | grep neutron_agents)" ]; then
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
+      echo -n "Attempting to find one for you..."
+      CONTAINER=`egrep '_neutron_agents_' /etc/hosts | tail -1 | cut -d\  -f1`
+      if [ "$CONTAINER" ]; then
+        echo "Using $CONTAINER:"
+        ssh $CONTAINER curl -s https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh \> /tmp/pccommon.sh
+        ssh $CONTAINER source /root/openrc \; source /tmp/pccommon.sh \; rpc-instance-per-network $1
+        ssh $CONTAINER rm /tmp/pccommon.sh
+        unset CONTAINER
+      else
+        echo "Failed.  Giving Up."
+      fi
       return
     fi
   fi
@@ -401,7 +401,7 @@ function rpc-instance-per-network() {
     *)  KEYNAME="rpc_support"
   esac
 
-  nova flavor-create --is-public 0 rpctest-$$-flavor rpctest-$$-flavor 512 10 1 > /dev/null 2>&1
+  nova flavor-create rpctest-$$-flavor rpctest-$$-flavor 512 10 1 > /dev/null 2>&1
 
   for NET in `$OS_NETCMD net-list | awk -F\| '$2 ~ /[0-9]+/ { print $2 }'`; do
     unset router_external
@@ -415,7 +415,7 @@ function rpc-instance-per-network() {
     INSTANCE_NAME="rpctest-$$-NET-${NET}"
 
     NEWID=`nova boot --image $IMAGE \
-      --flavor ${FLAVOR=rpctest-$$-flavor} \
+      --flavor 2 \
       --security-group rpc-support \
       --key-name $KEYNAME \
       --nic net-id=$NET \
@@ -426,8 +426,6 @@ function rpc-instance-per-network() {
     unset INSTANCE_NAME
   done
   unset IMAGE router_external
-
-  nova flavor-delete rpctest-$$-flavor > /dev/null 2>&1
 
   unset SPAWNED_UUID_LIST
   for UUID in $UUID_LIST; do 
@@ -454,6 +452,9 @@ function rpc-instance-per-network() {
     nova delete $ID > /dev/null
     sleep 1
   done
+
+  nova flavor-delete rpctest-$$-flavor > /dev/null 2>&1
+
   echo
   unset UUID_LIST
 }
@@ -461,6 +462,9 @@ function rpc-instance-per-network() {
 ################
 [ ${Q=0} -eq 0 ] && echo "  - rpc-instance-per-network-per-hypervisor() - Per network, spin up an instance on each hypervisor, ping, and tear down"
 function rpc-instance-per-network-per-hypervisor() {
+
+  [ ! "$OS_NETCMD" ] && echo "Unable to find networking subsystem.  Giving up." && return
+
   if [ $OS_VERSION -ge 9 ]; then 
     if [ ! "$( hostname | grep neutron_agents)" ]; then
       echo "Must be run from Neutron Agents container in order to access network namespaces"
@@ -476,7 +480,7 @@ function rpc-instance-per-network-per-hypervisor() {
     *)  KEYNAME="rpc_support"
   esac
 
-  nova flavor-create --is-public 0 rpctest-$$-flavor rpctest-$$-flavor 512 10 1 > /dev/null 2>&1
+  nova flavor-create rpctest-$$-flavor rpctest-$$-flavor 512 10 1 > /dev/null 2>&1
 
   for NET in `$OS_NETCMD net-list | awk -F\| '$4 ~ /[0-9]+/ { print $2 }' | sort -R`; do
     unset router_external
@@ -499,7 +503,7 @@ function rpc-instance-per-network-per-hypervisor() {
       INSTANCE_NAME="rpctest-$$-${COMPUTE}-${NET}"
 
       NEWID=`nova boot --image $IMAGE \
-      --flavor ${FLAVOR=rpctest-$$-flavor} \
+      --flavor 2 \
       --security-group rpc-support \
       --key-name $KEYNAME \
       --nic net-id=$NET \
@@ -509,8 +513,6 @@ function rpc-instance-per-network-per-hypervisor() {
       UUID_LIST="${NEWID} ${UUID_LIST}"
     done;
     echo
-
-    nova flavor-delete rpctest-$$-flavor > /dev/null 2>&1
 
     for UUID in $UUID_LIST; do
       rpc-instance-waitfor-spawn $UUID 30
@@ -534,6 +536,8 @@ function rpc-instance-per-network-per-hypervisor() {
     echo;echo
     unset UUID_LIST NEWID INSTANCE_NAME TIMEOUT CTR DONE UUID
   done
+  nova flavor-delete rpctest-$$-flavor > /dev/null 2>&1
+
   unset UUID_LIST NEWID IMAGE INSTANCE_NAME TIMEOUT CTR DONE KEY UUID
 }
 
@@ -549,7 +553,7 @@ function rpc-sg-rules () {
   if [ "$( echo $OS_NETCMD | egrep '(neutron|quantum)')" ]; then
     RULES=`mysql -BN -e "select remote_group_id,direction,ethertype,protocol,port_range_min,port_range_max,remote_ip_prefix from securitygrouprules where security_group_id = '$1' order by direction desc,port_range_min asc" $OS_NETCMD | tr '\t' ,`
   else
-    echo crap
+    echo Broked
   fi
 
   echo
@@ -780,5 +784,30 @@ ip netns | grep '^vips$' > /dev/null 2>&1
 if [ ${S=0} -eq 0 ]; then
   rpc-environment-scan
 fi
+
+if [ "$( grep DISTRIB_RELEASE /etc/rpc-release 2> /dev/null)" ]; then
+  source /etc/rpc-release
+  OS_VERSION=`echo $DISTRIB_RELEASE | cut -d. -f1 `
+else
+  OS_VERSION="4"
+fi
+
+`which neutron > /dev/null`
+if [ $? -eq 0 ]; then
+  OS_NETCMD="neutron"
+else
+  `which quantum > /dev/null`
+  if [ $? -eq 0 ]; then
+    OS_NETCMD="quantum"
+  else
+    `which nova > /dev/null`
+    if [ $? -eq 0 ]; then
+      OS_NETCMD="nova"
+    else
+      OS_NETCMD=""
+    fi
+  fi
+fi
+
 
 #rpc-update-pccommon
