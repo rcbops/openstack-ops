@@ -297,13 +297,14 @@ function rpc-instance-test-networking() {
     if [ ! "$( hostname | grep neutron_agents)" ]; then
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
       echo -n "Attempting to find one for you..."
-      CONTAINER=`egrep '_neutron_agents_' /etc/hosts | tail -1 | cut -d\  -f1`
+      CONTAINER=`lxc-ls | grep neutron_agents`
+      LXC="lxc-attach -n $CONTAINER -- "
       if [ "$CONTAINER" ]; then
         echo "Using $CONTAINER:"
-        ssh $CONTAINER curl -s https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh \> /tmp/pccommon.sh
-        ssh $CONTAINER source /root/openrc \; source /tmp/pccommon.sh \; rpc-instance-test-networking $1
-        ssh $CONTAINER rm /tmp/pccommon.sh
-        unset CONTAINER
+        $LXC curl -s https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh \> /tmp/pccommon.sh
+        $LXC source /root/openrc \; source /tmp/pccommon.sh \; rpc-instance-test-networking $1
+        $LXC rm /tmp/pccommon.sh
+        unset CONTAINER LXC
       else
         echo "Failed.  Giving Up."
       fi
@@ -370,13 +371,14 @@ function rpc-instance-per-network() {
     if [ ! "$( hostname | grep neutron_agents)" ]; then
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
       echo -n "Attempting to find one for you..."
-      CONTAINER=`egrep '_neutron_agents_' /etc/hosts | tail -1 | cut -d\  -f1`
+      CONTAINER=`lxc-ls | grep neutron_agents`
+      LXC="lxc-attach -n $CONTAINER -- "
       if [ "$CONTAINER" ]; then
         echo "Using $CONTAINER:"
-        ssh $CONTAINER curl -s https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh \> /tmp/pccommon.sh
-        ssh $CONTAINER source /root/openrc \; source /tmp/pccommon.sh \; rpc-instance-per-network $1
-        ssh $CONTAINER rm /tmp/pccommon.sh
-        unset CONTAINER
+        $LXC curl -s https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh \> /tmp/pccommon.sh
+        $LXC ssh $CONTAINER source /root/openrc \; source /tmp/pccommon.sh \; rpc-instance-per-network $1
+        $LXC rm /tmp/pccommon.sh
+        unset CONTAINER LXC
       else
         echo "Failed.  Giving Up."
       fi
