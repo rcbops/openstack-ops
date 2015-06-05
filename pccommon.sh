@@ -298,13 +298,14 @@ function rpc-instance-test-networking() {
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
       echo -n "Attempting to find one for you..."
       CONTAINER=`lxc-ls | grep neutron_agents`
-      LXC="lxc-attach -n $CONTAINER -- "
       if [ "$CONTAINER" ]; then
         echo "Using $CONTAINER:"
-        $LXC "curl -s https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh -o /tmp/pccommon.sh"
-        $LXC bash -c "source /root/openrc; source /tmp/pccommon.sh; rpc-instance-test-networking $1"
-        $LXC "rm /tmp/pccommon.sh"
-        unset CONTAINER LXC
+        set -x
+        ssh $CONTAINER curl -s https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh -o /tmp/pccommon.sh
+        ssh $CONTAINER source /root/openrc \; source /tmp/pccommon.sh \; rpc-instance-test-networking $1
+        ssh $CONTAINER rm /tmp/pccommon.sh
+        unset CONTAINER 
+        set +x
       else
         echo "Failed.  Giving Up."
       fi
