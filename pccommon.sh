@@ -301,7 +301,7 @@ function rpc-instance-test-networking() {
       if [ "$CONTAINER" ]; then
         echo "Using $CONTAINER:"
         set -x
-        ssh $CONTAINER curl -s https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh -o /tmp/pccommon.sh
+        ssh $CONTAINER curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh
         ssh $CONTAINER source /root/openrc \; source /tmp/pccommon.sh \; rpc-instance-test-networking $1
         ssh $CONTAINER rm /tmp/pccommon.sh
         unset CONTAINER 
