@@ -296,11 +296,11 @@ function rpc-instance-test-networking() {
   if [ $OS_VERSION -ge 9 ]; then
     if [ ! "$( hostname | grep neutron_agents)" ]; then
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
-      echo -n "Attempting to find one for you..."
+      echo "Attempting to find one for you..."
       CONTAINER=`lxc-ls | grep neutron_agents`
       LXC="lxc-attach -n $CONTAINER -- "
       if [ "$CONTAINER" ]; then
-        echo "Using $CONTAINER:"
+        echo -e "\nUsing [$CONTAINER:]\n"
         $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh
         $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-instance-test-networking $1"
         $LXC rm /tmp/pccommon.sh
@@ -370,11 +370,11 @@ function rpc-instance-per-network() {
   if [ $OS_VERSION -ge 9 ]; then 
     if [ ! "$( hostname | grep neutron_agents)" ]; then
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
-      echo -n "Attempting to find one for you..."
+      echo "Attempting to find one for you..."
       CONTAINER=`lxc-ls | grep neutron_agents`
       LXC="lxc-attach -n $CONTAINER -- "
       if [ "$CONTAINER" ]; then
-        echo "Using $CONTAINER:"
+        echo "\nUsing [$CONTAINER]:\n"
         $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh
         $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-instance-per-network $1"
         $LXC rm /tmp/pccommon.sh
@@ -528,7 +528,7 @@ function rpc-instance-per-network-per-hypervisor() {
     echo -n "Spinning up instance per hypervisor on network $NET..."
     UUID_LIST=""
 
-    case OS_VERSION in 
+    case $OS_VERSION in 
       4) COMPUTES=`nova service-list --binary nova-compute | awk '/[0-9]/ {print $4}'`
          ;;
       *) COMPUTES=`nova service-list --binary nova-compute | awk '/[0-9]/ {print $6}'`
