@@ -527,7 +527,14 @@ function rpc-instance-per-network-per-hypervisor() {
 
     echo -n "Spinning up instance per hypervisor on network $NET..."
     UUID_LIST=""
-    for COMPUTE in `nova service-list --binary nova-compute | awk '/[0-9]/ {print $4}'`; do 
+
+    case OS_VERSION in 
+      4) COMPUTES=`nova service-list --binary nova-compute | awk '/[0-9]/ {print $4}'`
+         ;;
+      *) COMPUTES=`nova service-list --binary nova-compute | awk '/[0-9]/ {print $6}'`
+    esac 
+
+    for COMPUTE in $COMPUTES; do
       case $OS_VERSION in
         4) AZ=`nova service-list --binary nova-compute --host $COMPUTE | awk '/[0-9]/ {print $6}'`
         ;;
@@ -537,13 +544,14 @@ function rpc-instance-per-network-per-hypervisor() {
       echo -n "."
       INSTANCE_NAME="rpctest-$$-${COMPUTE}-${NET}"
 
-      NEWID=`nova boot --image $IMAGE \
+      CMD="nova boot --image $IMAGE \
       --flavor 2 \
       --security-group rpc-support \
       --key-name $KEYNAME \
       --nic net-id=$NET \
       --availability-zone ${AZ}:${COMPUTE} \
-      $INSTANCE_NAME | awk '/ id / { print $4 }'`
+      $INSTANCE_NAME"
+      NEWID=`$CMD | awk '/ id / { print $4 }'`
 
       UUID_LIST="${NEWID} ${UUID_LIST}"
     done;
