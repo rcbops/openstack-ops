@@ -287,11 +287,32 @@ function rpc-os-version-check() {
 ################
 [ ${Q=0} -eq 0 ] && echo "  - rpc-instance-test-networking() - Test instance networking."
 function rpc-instance-test-networking() {
+
   if [ ! "$1" ]; then
     echo "Must pass instance UUID or Name"
     return
   fi
+  
+  if [ $OS_VERSION -ge 9 ]; then
+    if [ ! "$( hostname | grep neutron_agents)" ]; then
+      echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
+      echo -n "Attempting to find one for you..."
+      CONTAINER=`egrep '_neutron_agents_' /etc/hosts | tail -1 | cut -d\  -f1`
+      if [ "$CONTAINER" ]; then
+        echo "Using $CONTAINER:"
+        ssh $CONTAINER curl -s https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh \> /tmp/pccommon.sh
+        ssh $CONTAINER source /root/openrc \; source /tmp/pccommon.sh \; rpc-instance-test-networking $1
+        ssh $CONTAINER rm /tmp/pccommon.sh
+        unset CONTAINER
+      else
+        echo "Failed.  Giving Up."
+      fi
+      return
+    fi
+  fi
 
+  [ ! "$OS_NETCMD" ] && echo "Unable to find networking subsystem.  Giving up." && return
+        
   ID=$1
 
   [ -s $HOME/.ssh/rpc_support ] && KEY="-i $HOME/.ssh/rpc_support"
@@ -344,8 +365,6 @@ function rpc-instance-test-networking() {
 [ ${Q=0} -eq 0 ] && echo "  - rpc-instance-per-network() - Per network, spin up an instance on given hypervisor, ping, and tear down"
 function rpc-instance-per-network() {
 
-  [ ! "$OS_NETCMD" ] && echo "Unable to find networking subsystem.  Giving up." && return
-
   UUID_LIST=""
   if [ $OS_VERSION -ge 9 ]; then 
     if [ ! "$( hostname | grep neutron_agents)" ]; then
@@ -364,6 +383,8 @@ function rpc-instance-per-network() {
       return
     fi
   fi
+
+  [ ! "$OS_NETCMD" ] && echo "Unable to find networking subsystem.  Giving up." && return
 
   if [ ! "$1" ]; then
     echo "Must pass a compute or AZ:Compute combo."
@@ -463,14 +484,14 @@ function rpc-instance-per-network() {
 [ ${Q=0} -eq 0 ] && echo "  - rpc-instance-per-network-per-hypervisor() - Per network, spin up an instance on each hypervisor, ping, and tear down"
 function rpc-instance-per-network-per-hypervisor() {
 
-  [ ! "$OS_NETCMD" ] && echo "Unable to find networking subsystem.  Giving up." && return
-
   if [ $OS_VERSION -ge 9 ]; then 
     if [ ! "$( hostname | grep neutron_agents)" ]; then
       echo "Must be run from Neutron Agents container in order to access network namespaces"
       return
     fi
   fi
+
+  [ ! "$OS_NETCMD" ] && echo "Unable to find networking subsystem.  Giving up." && return
 
   IMAGE=`glance image-list | awk 'tolower($4) ~ /ubuntu/ {print $2}' | tail -1`
 
