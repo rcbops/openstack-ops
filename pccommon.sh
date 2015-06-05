@@ -300,12 +300,10 @@ function rpc-instance-test-networking() {
       CONTAINER=`lxc-ls | grep neutron_agents`
       if [ "$CONTAINER" ]; then
         echo "Using $CONTAINER:"
-        set -x
         ssh $CONTAINER curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh
         ssh $CONTAINER source /root/openrc \; source /tmp/pccommon.sh \; rpc-instance-test-networking $1
         ssh $CONTAINER rm /tmp/pccommon.sh
         unset CONTAINER 
-        set +x
       else
         echo "Failed.  Giving Up."
       fi
@@ -373,13 +371,12 @@ function rpc-instance-per-network() {
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
       echo -n "Attempting to find one for you..."
       CONTAINER=`lxc-ls | grep neutron_agents`
-      LXC="lxc-attach -n $CONTAINER -- "
       if [ "$CONTAINER" ]; then
         echo "Using $CONTAINER:"
-        $LXC curl -s https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh \> /tmp/pccommon.sh
-        $LXC ssh $CONTAINER source /root/openrc \; source /tmp/pccommon.sh \; rpc-instance-per-network $1
-        $LXC rm /tmp/pccommon.sh
-        unset CONTAINER LXC
+        ssh $CONTAINER curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh
+        ssh $CONTAINER source /root/openrc \; source /tmp/pccommon.sh \; rpc-instance-per-network $1
+        ssh $CONTAINER rm /tmp/pccommon.sh
+        unset CONTAINER 
       else
         echo "Failed.  Giving Up."
       fi
