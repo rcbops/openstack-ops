@@ -453,13 +453,13 @@ function rpc-instance-per-network() {
   unset SPAWNED_UUID_LIST
   for UUID in $UUID_LIST; do 
     rpc-instance-waitfor-spawn $UUID 60
-    [ $? -gt 0 ] && SPAWNED_UUID_LIST="$UUID $SPAWNED_UUID_LIST" || echo "No further testing will be performed on this instance."
+    [ $? -eq 0 ] && SPAWNED_UUID_LIST="$UUID $SPAWNED_UUID_LIST" || echo "No further testing will be performed on this instance."
   done
 
   unset BOOTED_UUID_LIST
   for UUID in $SPAWNED_UUID_LIST; do 
     rpc-instance-waitfor-boot $UUID 180
-    [ $? -gt 0 ] && BOOTED_UUID_LIST="$UUID $BOOTED_UUID_LIST" || echo "No further testing will be performed on this instance."
+    [ $? -eq 0 ] && BOOTED_UUID_LIST="$UUID $BOOTED_UUID_LIST" || echo "No further testing will be performed on this instance."
   done
   unset SPAWNED_UUID_LIST
 
@@ -552,13 +552,13 @@ function rpc-instance-per-network-per-hypervisor() {
     unset SPAWNED_UUID_LIST
     for UUID in $UUID_LIST; do
       rpc-instance-waitfor-spawn $UUID 30
-      [ $? -gt 0 ] && SPAWNED_UUID_LIST="$UUID $SPAWNED_UUID_LIST" || echo "No further testing will be performed on this instance."
+      [ $? -eq 0 ] && SPAWNED_UUID_LIST="$UUID $SPAWNED_UUID_LIST" || echo "^^^ No further testing will be performed on this instance ^^^"
     done;
 
     unset BOOTED_UUID_LIST
     for UUID in $SPAWNED_UUID_LIST; do
       rpc-instance-waitfor-boot $UUID 120
-      [ $? -gt 0 ] && BOOTED_UUID_LIST="$UUID $BOOTED_UUID_LIST" || echo "No further testing will be performed on this instance."
+      [ $? -eq 0 ] && BOOTED_UUID_LIST="$UUID $BOOTED_UUID_LIST" || echo "^^^ No further testing will be performed on this instance ^^^"
     done
     unset SPAWNED_UUID_LIST
 
