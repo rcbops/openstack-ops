@@ -822,10 +822,6 @@ function humanize_kb () {
 ip netns | grep '^vips$' > /dev/null 2>&1
 [ $? -eq 0 ] && HA=1
 
-if [ ${S=0} -eq 0 ]; then
-  rpc-environment-scan
-fi
-
 if [ "$( grep DISTRIB_RELEASE /etc/rpc-release 2> /dev/null)" ]; then
   source /etc/rpc-release
   OS_VERSION=`echo $DISTRIB_RELEASE | cut -d. -f1 `
@@ -850,5 +846,8 @@ else
   fi
 fi
 
+if [ ${S=0} -eq 0 ]; then
+  rpc-environment-scan
+fi
 
 #rpc-update-pccommon
