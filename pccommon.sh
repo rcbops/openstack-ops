@@ -325,7 +325,7 @@ function rpc-instance-test-networking() {
   NETID=$id
   unset id
 
-  echo -ne "$NETNAME\t$IP\t"
+  echo -ne "[$NETNAME]\t: "
   CMD="nc -w1 $IP 22 | grep SSH"
   NSWRAP="ip netns exec qdhcp-$NETID"
   #echo $NSWRAP $CMD
@@ -374,7 +374,7 @@ function rpc-instance-per-network() {
       CONTAINER=`lxc-ls | grep neutron_agents`
       LXC="lxc-attach -n $CONTAINER -- "
       if [ "$CONTAINER" ]; then
-        echo "\nUsing [$CONTAINER]:\n"
+        echo -e "\nUsing [$CONTAINER]:\n"
         $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh
         $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-instance-per-network $1"
         $LXC rm /tmp/pccommon.sh
@@ -493,7 +493,7 @@ function rpc-instance-per-network-per-hypervisor() {
       CONTAINER=`lxc-ls | grep neutron_agents`
       LXC="lxc-attach -n $CONTAINER -- "
       if [ "$CONTAINER" ]; then
-        echo "Using $CONTAINER:"
+        echo -e "\nUsing [$CONTAINER]:\n"
         $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh
         $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-instance-per-network-per-hypervisor"
         $LXC rm /tmp/pccommon.sh
@@ -756,25 +756,47 @@ function rpc-instance-waitfor-boot() {
   [ $? -gt 0 ] && echo "$ID Broken somehow.  Giving Up." && return 3
 
   CTR=0
-  nova console-log $ID 2> /dev/null | egrep -i '(^cloud-init .* finished|starting.*ssh)' > /dev/null 2>&1
-  R=$?
-  while [ ${R} -gt 0 -a $CTR -lt $BOOT_TIMEOUT ]; do
+  TMPFILE=/tmp/.nova-console-$$-$ID
+
+  FAILED=0
+  SUCCESS=0
+  while [ $FAILED -eq 0 -a $SUCCESS -eq 0 -a $CTR -lt $BOOT_TIMEOUT ]; do
+    nova console-log $ID 2> /dev/null > $TMPFILE
+    # Test for success
+    egrep -i '(^cloud-init .* finished|starting.*ssh)' $TMPFILE > /dev/null 2>&1 
+    if [ $? -eq 0 ]; then
+      SUCCESS=1
+      RET=0
+    fi
+
+    # Test(s) For failure
+    egrep -i '(waiting 120 seconds for network device|Route info failed)' $TMPFILE > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+      FAILED=1
+      MSG="Networking not functional"
+      RET=254
+    fi
+
     CTR=$(( $CTR + 5 ))
     sleep 5
     echo -n "."
-    nova console-log $ID 2> /dev/null | egrep -i '(^cloud-init .* finished|starting.*ssh)' > /dev/null 2>&1
-    R=$?
   done
+  rm -f $TMPFILE
+  unset TMPFILE
 
   if [ $CTR -ge $BOOT_TIMEOUT ]; then
     echo "Timed out"
     RET=1
   else
-    echo "Done"
-    RET=0
+    if [ $FAILED -gt 0 ]; then
+      echo "Failed: $MSG"
+    else
+      echo "Done"
+      RET=0
+    fi
   fi
 
-  unset BOOT_TIMEOUT CTR R ID
+  unset BOOT_TIMEOUT CTR R ID FAILED SUCCESS
   return $RET
 }
 
