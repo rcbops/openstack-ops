@@ -776,7 +776,7 @@ function rpc-instance-waitfor-boot() {
     fi
 
     # Test(s) For failure
-    egrep -i '(waiting 120 seconds for network device|Route info failed)' $TMPFILE > /dev/null 2>&1
+    egrep -i '(Route info failed)' $TMPFILE > /dev/null 2>&1
     if [ $? -eq 0 ]; then
       FAILED=1
       MSG="Networking not functional"
