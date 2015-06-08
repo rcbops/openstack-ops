@@ -318,14 +318,20 @@ function rpc-instance-test-networking() {
 
   [ -s $HOME/.ssh/rpc_support ] && KEY="-i $HOME/.ssh/rpc_support"
 
-  IP=`nova show $ID | awk -F\| '/ network / { print $3 }' | tr -d ' '`
-  NETNAME=`nova show $ID | awk '/ network / { print $2 }'`
+  TMPFILE=/tmp/.nova-test-networking-$$-$ID
+  nova show $ID 2> /dev/null > $TMPFILE
+
+  IP=`awk -F\| '/ network / { print $3 }' $TMPFILE | tr -d ' '`
+  NETNAME=`awk '/ network / { print $2 }' $TMPFILE`
+  HYP=`awk '/OS-EXT-SRV-ATTR:host/ { print $4 }' $TMPFILE`
+
+  rm -f $TMPFILE
 
   eval `neutron net-show -Fid -f shell $NETNAME`
   NETID=$id
   unset id
 
-  echo -ne "[$NETNAME]\t: "
+  echo -ne "[$HYP:$NETNAME]\t: "
   CMD="nc -w1 $IP 22 | grep SSH"
   NSWRAP="ip netns exec qdhcp-$NETID"
   #echo $NSWRAP $CMD
