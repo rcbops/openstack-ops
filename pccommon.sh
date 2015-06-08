@@ -779,12 +779,19 @@ function rpc-instance-waitfor-boot() {
     egrep -i '(Route info failed)' $TMPFILE > /dev/null 2>&1
     if [ $? -eq 0 ]; then
       FAILED=1
-      MSG="Networking not functional"
+      MSG="Networking not functional, no routes"
       RET=254
     fi
 
+    grep -Pzo 'waiting 10 seconds for network device\ncloud-init-nonet' $TMPFILE > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+      FAILED=1
+      MSG="Networking not functional, timed out"
+      RET=253
+    fi
+
     CTR=$(( $CTR + 5 ))
-    sleep 5
+    [ $FAILED -eq 0 -a $SUCCESS -eq 0 ] && sleep 5
     echo -n "."
   done
   rm -f $TMPFILE
