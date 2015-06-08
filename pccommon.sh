@@ -479,7 +479,7 @@ function rpc-instance-per-network() {
   nova flavor-delete rpctest-$$-flavor > /dev/null 2>&1
 
   echo
-  unset UUID_LIST
+  unset UUID_LIST ID
 }
 
 ################
@@ -737,7 +737,7 @@ function rpc-instance-waitfor-spawn() {
     fi
   fi
   
-  unset STATE
+  unset STATE SPAWN_TIMEOUT CTR ID
   return $RET
 }
 
@@ -756,18 +756,17 @@ function rpc-instance-waitfor-boot() {
   [ $? -gt 0 ] && echo "$ID Broken somehow.  Giving Up." && return 3
 
   CTR=0
-  nova console-log $ID 2> /dev/null | egrep -i '^cloud-init .* finished' > /dev/null 2>&1
+  nova console-log $ID 2> /dev/null | egrep -i '(^cloud-init .* finished|starting.*ssh)' > /dev/null 2>&1
   R=$?
   while [ ${R} -gt 0 -a $CTR -lt $BOOT_TIMEOUT ]; do
     CTR=$(( $CTR + 5 ))
     sleep 5
     echo -n "."
-    nova console-log $ID 2> /dev/null | egrep -i '^cloud-init .* finished' > /dev/null 2>&1
+    nova console-log $ID 2> /dev/null | egrep -i '(^cloud-init .* finished|starting.*ssh)' > /dev/null 2>&1
     R=$?
   done
-  unset NEWID
 
-  if [ $CTR == $BOOT_TIMEOUT ]; then
+  if [ $CTR -ge $BOOT_TIMEOUT ]; then
     echo "Timed out"
     RET=1
   else
@@ -775,7 +774,7 @@ function rpc-instance-waitfor-boot() {
     RET=0
   fi
 
-  unset BOOT_TIMEOUT SPAWN_TIMEOUT CTR
+  unset BOOT_TIMEOUT CTR R ID
   return $RET
 }
 
@@ -786,6 +785,8 @@ function pid_start {
 	PROC_UPTIME=$(( $SYS_START - $PROC_START ))
 	PROC_START=`date -d "-${PROC_UPTIME} seconds"`
 	echo "$PROC_START"
+  
+  unset SYS_START PROC_START PROC_UPTIME
 }
 
 function pid_age {
@@ -800,6 +801,8 @@ function pid_age {
 	HRMIN=$(( $UPHR * 60 )); UPMIN=$(( $UPMIN - $HRMIN ))
 	MINSEC=$(( $UPDAY * 24 * 60 * 60 + $UPHR * 60 * 60 + $UPMIN * 60 )); UPSEC=$(( $UPSEC - $MINSEC ))
 	echo "${UPDAY}d, ${UPHR}h, ${UPMIN}m, ${UPSEC}s"
+
+  unset SYS_START PROC_START UPSEC UPMIN UPHR UPDAY DAYHR HRMIN MINSEC
 }
 
 function humanize_kb () {
@@ -822,13 +825,9 @@ function humanize_kb () {
 
   echo "$final${scale[${power=0}]}"
 
-  unset power final val
+  unset power final val scale
 }
 
-[ ${Q=0} -eq 0 ] && echo "Done!"
-
-ip netns | grep '^vips$' > /dev/null 2>&1
-[ $? -eq 0 ] && HA=1
 
 if [ "$( grep DISTRIB_RELEASE /etc/rpc-release 2> /dev/null)" ]; then
   source /etc/rpc-release
@@ -836,6 +835,9 @@ if [ "$( grep DISTRIB_RELEASE /etc/rpc-release 2> /dev/null)" ]; then
 else
   OS_VERSION="4"
 fi
+
+ip netns | grep '^vips$' > /dev/null 2>&1
+[ $? -eq 0 ] && V4_HA=1
 
 `which neutron > /dev/null`
 if [ $? -eq 0 ]; then
@@ -853,6 +855,8 @@ else
     fi
   fi
 fi
+
+[ ${Q=0} -eq 0 ] && echo "Done!"
 
 if [ ${S=0} -eq 0 ]; then
   rpc-environment-scan
