@@ -332,10 +332,10 @@ function rpc-instance-test-networking() {
   unset id
 
   echo -ne "[$HYP:$NETNAME]\t: "
-  CMD="nc -w1 $IP 22 | grep SSH"
+  CMD="nc -w1 $IP 22 "
   NSWRAP="ip netns exec qdhcp-$NETID"
   #echo $NSWRAP $CMD
-  $NSWRAP $CMD > /dev/null 2>&1 
+  $NSWRAP $CMD | grep SSH > /dev/null 2>&1 
 
   if [ $? -eq 0 ]; then
     echo -n "[SSH PORT: SUCCESS] "
