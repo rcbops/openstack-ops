@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# Purpose: This script performs a quick check to determine if udev and devicemapper devices are misaligned as a result of LP bug 1436999
+# Purpose: This script performs a quick check to determine if udev and devicemapper devices are misaligned as a result of LP bug 1436999.  This script should be run from the cinder-volume container. E.g:
+#   ansible cinder_volumes_container -m shell -a 'curl -s https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/lvm_check_1436999.sh | bash -'
 #   [1] https://bugs.launchpad.net/openstack-ansible/+bug/1436999
 
 cd /dev/mapper || exit 1
