@@ -444,7 +444,7 @@ function rpc-instance-per-network() {
     INSTANCE_NAME="rpctest-$$-NET-${NET}"
 
     NEWID=`nova boot --image $IMAGE \
-      --flavor 2 \
+      --flavor rpctest-$$-flavor \
       --security-group rpc-support \
       --key-name $KEYNAME \
       --nic net-id=$NET \
@@ -551,7 +551,7 @@ function rpc-instance-per-network-per-hypervisor() {
       INSTANCE_NAME="rpctest-$$-${COMPUTE}-${NET}"
 
       CMD="nova boot --image $IMAGE \
-      --flavor 2 \
+      --flavor rpctest-$$-flavor \
       --security-group rpc-support \
       --key-name $KEYNAME \
       --nic net-id=$NET \
