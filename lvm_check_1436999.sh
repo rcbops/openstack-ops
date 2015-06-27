@@ -8,13 +8,13 @@ cd /dev/mapper || exit 1
 
 # Find the volume group where cinder volumes are stored
 if [ -e /etc/cinder/cinder.conf ]; then
-    vg=$(grep '^volume_group' /etc/cinder/cinder.conf | sed 's/volume_group=//')
+    vg=$(grep '^volume_group' /etc/cinder/cinder.conf | sed -e 's/volume_group=//' -e 's/-/--/')
 else
     echo "Error: unable to open /etc/cinder/cinder.conf"
     exit 1
 fi
 
-for c in $( ls ${vg}-* ); do
+for c in $( ls ${vg}--* ); do
   file=$( ls -l /dev/mapper/$c |awk '{print $6}' |egrep '[0-9]+' )
   test -z "$file" && file=$( ls -l /dev/mapper/$c |awk -F 'dm-' '{print $2}' |egrep '[0-9]+' )
   dm=$( dmsetup ls |egrep "$c\s+" |cut -d ':' -f2 |egrep -o '[0-9]+' )
