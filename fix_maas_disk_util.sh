@@ -39,7 +39,7 @@ do
 	                then
                 		alarm_id=$(echo $alarm | awk '{gsub(/id=/,""); gsub(/,/,""); print $2}')
                         	echo "Deleting $alarm"
-                	        #raxmon-alarms-delete --auth-token=$AUTH_TOKEN --id=$alarm_id --entity-id=$entity
+                	        raxmon-alarms-delete --auth-token=$AUTH_TOKEN --id=$alarm_id --entity-id=$entity
         	        fi
         	done < <(raxmon-alarms-list --auth-token=$AUTH_TOKEN --entity-id=$entity)
 	done < <( echo $list | awk '$2 ~ /id/ {gsub(/id=/,""); print $2}' )
