@@ -640,6 +640,24 @@ function rpc-image-check () {
   for i in `nova list --all- | awk '/[0-9]/ {print $2}'`; do echo -n "$i :: "; IMG=`nova show $i | awk -F\| '$2 ~ /image/ {print $3}' | egrep -o '\([0-9a-z-]+\)\s*$' | tr -d ' '`; echo -n "$IMG :: "; glance image-show ` echo $IMG | tr -d '()'` | awk '$2 ~ /status/ {print $4}'; done
 }
 
+
+[ ${Q=0} -eq 0 ] && echo "  - rpc-user-roles() - List all users and their roles across all tenants"
+function rpc-user-roles () {
+  for U in `keystone user-list | awk '/[0-9]/ { print $4 }'`; do 
+    echo "User [$U] ::" 
+    for T in `keystone tenant-list | awk '/[0-9]/ {print $4}'`; do 
+      for R in `keystone user-role-list --user $U --tenant $T | awk '/[0-9]/ {print $4}'`; do 
+        [ ${HDR=0} == 0 ] && echo -n "  Tenant [$T]: "
+        HDR=1
+        echo -n "$R "
+      done
+    [ ${HDR=0} == 1 ] && echo
+    unset HDR
+    done
+  echo
+  done
+}
+
 [ ${Q=0} -eq 0 ] && echo "  - rpc-update-pccommon() - Grabs the latest version of pccommon.sh if there is one"
 function rpc-update-pccommon () {
   GITHUB="https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh"
