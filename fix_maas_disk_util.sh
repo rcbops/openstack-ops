@@ -4,7 +4,7 @@
 #
 #05/05/2015 07:09 PM, James Dewey wrote:
 #So due to the sweet bug Bjoern found with the playbooks picking up iscsi drives, you might end up with alarms that have been created for disk utilization for them.  
-#Here’s the script I used to fix up ViaSat’s monitoring. Hopefully you don’t need it, but here’s saving you some time if you do.
+#Here’s the script I used to fix up RPC monitoring. Hopefully you don’t need it, but here’s saving you some time if you do.
 
 #ignore case
 shopt -s nocasematch
