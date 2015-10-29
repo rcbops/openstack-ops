@@ -255,12 +255,17 @@ function rpc-environment-scan() {
   echo "Scanning environment.  Please hold..."
   echo "  - RPC Version $OS_VERSION"
 
-  `which keystone` > /dev/null 2>&1
-  [ $? -ne 0 ] && echo -e "\nMissing local openstack binaries.  Not scanning environment." && return
+  test -x `which keystone` -a `which openstack`> /dev/null 2>&1
+  [ $? -ne 0 ] && echo -e "\nMissing local openstack binaries. Not scanning environment." && return
 
   echo "  - Keystone"
-  tenant_repl=`keystone tenant-list | awk '/[0-9]/ {print "s/"$2"/[[Tenant: "$4"]]/g;"}'`
-  user_repl=`keystone user-list | awk '/[0-9]/ {print "s/"$2"/[[User: "$4"]]/g;"}'`
+  if [ "$OS_IDENTITY_API_VERSION" = "3" ]; then
+    tenant_repl=`openstack project list | awk '/[0-9]/ {print "s/"$2"/[[Tenant: "$4"]]/g;"}'`
+    user_repl=`openstack user list --domain=default | awk '/[0-9]/ {print "s/"$2"/[[User: "$4"]]/g;"}'`
+  else
+    tenant_repl=`keystone tenant-list | awk '/[0-9]/ {print "s/"$2"/[[Tenant: "$4"]]/g;"}'`
+    user_repl=`keystone user-list | awk '/[0-9]/ {print "s/"$2"/[[User: "$4"]]/g;"}'`
+  fi
 
   echo "  - Networking (${OS_NETCMD="None"})"
 
@@ -884,7 +889,7 @@ function humanize_kb () {
 
 if [ "$( grep DISTRIB_RELEASE /etc/rpc-release 2> /dev/null)" ]; then
   source /etc/rpc-release
-  OS_VERSION=`echo $DISTRIB_RELEASE | cut -d. -f1 `
+  OS_VERSION=`echo $DISTRIB_RELEASE | cut -d. -f1 | tr -d '[:alpha:]'`
 else
   OS_VERSION="4"
 fi
