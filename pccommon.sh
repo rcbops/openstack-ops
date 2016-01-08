@@ -836,6 +836,57 @@ function rpc-instance-waitfor-boot() {
   return $RET
 }
 
+function raid_layout
+{
+  OMLOCATIONS="/opt/dell/srvadmin/bin/omreport /usr/bin/omreport"
+  OM=
+
+  for location in $OMLOCATIONS; do
+          [ -x $location ] && OM=$location
+  done
+
+  if [ ! "$OM" ]; then
+          echo "Couldn't find OMREPORT $OM"
+          return
+  fi
+
+  TMPFILE=/tmp/.raid_layout.$$
+
+  CONTROLLERS=`$OM storage controller | awk '/^ID/ { print $3 }'`
+
+  for ctrl in $CONTROLLERS; do
+          echo "* Controller $ctrl"
+          # dump all pdisks on controller to TMPFILE
+          $OM storage pdisk controller=$ctrl > ${TMPFILE}.pdisks
+
+          # dump info for all vdisks on controller
+          $OM storage vdisk controller=$ctrl > ${TMPFILE}.vdisks
+
+          VDISKS=`awk '/^ID/ { print $3 }' ${TMPFILE}.vdisks`
+          for vdisk in $VDISKS; do
+                  VDISKS=`awk '/^ID/ { print $3 }' ${TMPFILE}.vdisks`
+                  SEDFILTER="/ID\s*:\s+$vdisk/,/^\s*$/"
+                  RAIDSIZE=`sed -rn "$SEDFILTER { /^Size/p}" ${TMPFILE}.vdisks | awk '{ print $3 " " $4}'`
+                  RAIDSTATE=`sed -rn "$SEDFILTER { /^Status/p}" ${TMPFILE}.vdisks | awk '{ print $3}'`
+                  RAIDTYPE=`sed -rn "$SEDFILTER { /^Layout/p}" ${TMPFILE}.vdisks | awk '{ print $3}'`
+
+                  echo "|-Virtual Disk $vdisk [$RAIDSTATE] ($RAIDTYPE @ $RAIDSIZE)"
+
+                  # Get IDs for pdisks involved
+                  PDISKS=`$OM storage pdisk vdisk=$vdisk controller=$ctrl | awk '/^ID/ { print $3}'`
+                  for pdisk in $PDISKS; do
+                          SEDFILTER="/^ID\s*:\s*$pdisk/,/^\s*$/"
+                          DISKSTATE=`sed -rn "$SEDFILTER { /^Status/p}" ${TMPFILE}.pdisks | awk '{print $3}'`
+                          DISKSIZE=`sed -rn "$SEDFILTER { /^Used/p}"   ${TMPFILE}.pdisks | awk '{print $6 " " $7}'`
+
+                          echo "| |-- Disk $pdisk [$DISKSTATE] $DISKSIZE"
+                  done
+          done
+          rm -f ${TMPFILE}.pdisks
+          rm -f ${TMPFILE}.vdisks
+  done
+}                                                                                     
+
 function pid_start {
 	SYS_START=`cat /proc/uptime | cut -d\  -f1 | cut -d. -f1`
 	PROC_START=`cat /proc/$1/stat | cut -d\  -f22`
