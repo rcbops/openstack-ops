@@ -21,13 +21,57 @@ HZ=`getconf CLK_TCK`
 function ix() { curl -F 'f:1=<-' http://ix.io < "${1:-/dev/stdin}"; }
 
 ################
+if [ "$( grep DISTRIB_RELEASE /etc/rpc-release 2> /dev/null)" ]; then
+  source /etc/rpc-release
+  RPC_RELEASE=`echo $DISTRIB_RELEASE | cut -d. -f1 | tr -d '[:alpha:]'`
+else
+  RPC_RELEASE="4"
+fi
+
+if [ "$( grep DISTRIB_RELEASE /etc/openstack-release 2> /dev/null)" ]; then
+  OSA_VERSION=$(awk -F= '/DISTRIB_RELEASE/ { x=gsub(/"/,"",$2); print $x }' /etc/openstack-release )
+else
+  OSA_VERSION=""
+fi
+
+###############
+# These functions are intented to run inside containers only to determine the
+# current virtual environment for all OS services after kilo
+function rpc-get-neutron-venv {
+    VENV_ACTIVATE=$( awk '/\..*\/bin\/activate/ {print $2}' /etc/init/neutron-*.conf |tail -1 )
+    if [ -n "$VENV_ACTIVATE" ]; then
+        VENV_PATH=$( dirname $VENV_ACTIVATE )
+        if [ -d "$VENV_PATH" ]; then
+            VENV_ENABLED=1
+            source ${VENV_ACTIVATE}
+        else
+            VENV_ENABLED=0
+        fi
+    fi
+}
+
+function rpc-get-nova-venv {
+    VENV_ACTIVATE=$( awk '/\..*\/bin\/activate/ {print $2}' /etc/init/nova-*.conf |tail -1 )
+    if [ -n "$VENV_ACTIVATE" ]; then
+        VENV_PATH=$( dirname $VENV_ACTIVATE )
+        if [ -d "$VENV_PATH" ]; then
+            VENV_ENABLED=1
+            source ${VENV_ACTIVATE}
+        else
+            VENV_ENABLED=0
+        fi
+    fi
+}
+
+
+################
 [ ${Q=0} -eq 0 ] && echo "  - rpc-hypervisor-vms() - Display all hypervisors and associated instances"
 function rpc-hypervisor-vms {
 
 which mysql > /dev/null 2>&1
 
 if [ $? -eq 0 ]; then
-  mysql -te 'select host as "Hypervisor", instances.display_name as "Instance Name",image_ref as "Image", vm_state as State, vcpus as "VCPUs", memory_mb as "RAM", root_gb as "Root", ephemeral_gb as "Ephem" from instance_system_metadata left join instances on instance_system_metadata.instance_uuid=instances.uuid where instance_uuid in (select uuid from instances where deleted = 0) and `key` = "instance_type_name" order by host,display_name' nova 
+  mysql -te 'select host as "Hypervisor", instances.display_name as "Instance Name",image_ref as "Image", vm_state as State, vcpus as "VCPUs", memory_mb as "RAM", root_gb as "Root", ephemeral_gb as "Ephem" from instance_system_metadata left join instances on instance_system_metadata.instance_uuid=instances.uuid where instance_uuid in (select uuid from instances where deleted = 0) and `key` = "instance_type_name" order by host,display_name' nova
 else
   echo "'mysql' not found.  Go to there."
 fi
@@ -109,7 +153,7 @@ function rpc-v4-common-errors-scan() {
   if [ ! "$OS_NETCMD" ]; then
     echo "Skipping dhcp scan due to lack of networking-related openstack commands in this environment"
   else
-    for net in `$OS_NETCMD net-list | awk '/[0-9]/ {print $2}'`; do $OS_NETCMD dhcp-agent-list-hosting-net $net | grep True > /dev/null 2>&1; [ $? -eq 0 ] && echo "        [OK] `echo $net | rpc-filter`"; done  
+    for net in `$OS_NETCMD net-list | awk '/[0-9]/ {print $2}'`; do $OS_NETCMD dhcp-agent-list-hosting-net $net | grep True > /dev/null 2>&1; [ $? -eq 0 ] && echo "        [OK] `echo $net | rpc-filter`"; done
   fi
 
   # Dead taps
@@ -120,7 +164,7 @@ function rpc-v4-common-errors-scan() {
   # fill me in laterz
 
   # bridges with less than 2 ports
-  for bridge in `ovs-vsctl list-br | egrep 'eth|bond'`; do 
+  for bridge in `ovs-vsctl list-br | egrep 'eth|bond'`; do
     PORTS=`ovs-vsctl list-ports $bridge | wc -l`
     if [ $PORTS -lt 2 ]; then
       echo "  $bridge has less than two ports attached:"
@@ -237,7 +281,7 @@ function rpc-port-stats() {
   done
 
   rm $tmpfile
-  unset CTR tmpfile port br_int_port 
+  unset CTR tmpfile port br_int_port
   # Come back some day and clean up all the TX_ RX_ vars :/
   for x in RX TX; do
     for v in pkts bytes drop errs frame over crc coll; do
@@ -253,7 +297,8 @@ function rpc-port-stats() {
 function rpc-environment-scan() {
 
   echo "Scanning environment.  Please hold..."
-  echo "  - RPC Version $OS_VERSION"
+  echo "  - RPC Version $RPC_RELEASE"
+  echo "  - OSA Version $OSA_VERSION"
 
   test -x `which keystone` -a `which openstack`> /dev/null 2>&1
   [ $? -ne 0 ] && echo -e "\nMissing local openstack binaries. Not scanning environment." && return
@@ -297,17 +342,18 @@ function rpc-instance-test-networking() {
     echo "Must pass instance UUID or Name"
     return
   fi
-  
-  if [ $OS_VERSION -ge 9 ]; then
+
+  if [ $RPC_RELEASE -ge 9 ]; then
     if [ ! "$( hostname | grep neutron_agents)" ]; then
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
       echo "Attempting to find one for you..."
-      CONTAINER=`lxc-ls | grep neutron_agents`
+      CONTAINER=`lxc-ls | grep neutron_agents |tail -1`
       LXC="lxc-attach -n $CONTAINER -- "
+
       if [ "$CONTAINER" ]; then
         echo -e "\nUsing [$CONTAINER:]\n"
         $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh
-        $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-instance-test-networking $1"
+        $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-get-neutron-venv ; rpc-instance-test-networking $1"
         $LXC rm /tmp/pccommon.sh
         unset CONTAINER  LXC
       else
@@ -318,7 +364,7 @@ function rpc-instance-test-networking() {
   fi
 
   [ ! "$OS_NETCMD" ] && echo "Unable to find networking subsystem.  Giving up." && return
-        
+
   ID=$1
 
   [ -s $HOME/.ssh/rpc_support ] && KEY="-i $HOME/.ssh/rpc_support"
@@ -340,7 +386,7 @@ function rpc-instance-test-networking() {
   CMD="nc -w1 $IP 22 "
   NSWRAP="ip netns exec qdhcp-$NETID"
   #echo $NSWRAP $CMD
-  $NSWRAP $CMD | grep SSH > /dev/null 2>&1 
+  $NSWRAP $CMD | grep SSH > /dev/null 2>&1
 
   if [ $? -eq 0 ]; then
     echo -n "[SSH PORT: SUCCESS] "
@@ -378,7 +424,7 @@ function rpc-instance-test-networking() {
 function rpc-instance-per-network() {
 
   UUID_LIST=""
-  if [ $OS_VERSION -ge 9 ]; then 
+  if [ $RPC_RELEASE -ge 9 ]; then
     if [ ! "$( hostname | grep neutron_agents)" ]; then
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
       echo "Attempting to find one for you..."
@@ -387,7 +433,7 @@ function rpc-instance-per-network() {
       if [ "$CONTAINER" ]; then
         echo -e "\nUsing [$CONTAINER]:\n"
         $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh
-        $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-instance-per-network $1"
+        $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-get-neutron-venv; rpc-instance-per-network $1"
         $LXC rm /tmp/pccommon.sh
         unset CONTAINER  LXC
       else
@@ -412,7 +458,7 @@ function rpc-instance-per-network() {
     COMPUTE=$1
   fi
 
-  case $OS_VERSION in
+  case $RPC_RELEASE in
     4) VALID_COMPUTE=`nova service-list --binary nova-compute | awk '/[0-9]/ {print $4}' | grep $COMPUTE`
     ;;
     *) VALID_COMPUTE=`nova service-list --binary nova-compute | awk '/[0-9]/ {print $6}' | grep $COMPUTE`
@@ -429,7 +475,7 @@ function rpc-instance-per-network() {
 
   IMAGE=`glance image-list | awk 'tolower($4) ~ /ubuntu/ {print $2}' | tail -1`
 
-  case $OS_VERSION in
+  case $RPC_RELEASE in
     4)  KEYNAME="controller-id_rsa"
     ;;
     *)  KEYNAME="rpc_support"
@@ -462,26 +508,26 @@ function rpc-instance-per-network() {
   unset IMAGE router_external
 
   unset SPAWNED_UUID_LIST
-  for UUID in $UUID_LIST; do 
+  for UUID in $UUID_LIST; do
     rpc-instance-waitfor-spawn $UUID 60
     [ $? -eq 0 ] && SPAWNED_UUID_LIST="$UUID $SPAWNED_UUID_LIST" || echo "No further testing will be performed on this instance."
   done
 
   unset BOOTED_UUID_LIST
-  for UUID in $SPAWNED_UUID_LIST; do 
+  for UUID in $SPAWNED_UUID_LIST; do
     rpc-instance-waitfor-boot $UUID 180
     [ $? -eq 0 ] && BOOTED_UUID_LIST="$UUID $BOOTED_UUID_LIST" || echo "No further testing will be performed on this instance."
   done
   unset SPAWNED_UUID_LIST
 
   echo "Testing Instances..."
-  for ID in $BOOTED_UUID_LIST; do 
+  for ID in $BOOTED_UUID_LIST; do
     rpc-instance-test-networking $ID
   done
   unset BOOTED_UUID_LIST
 
   echo -n "Deleting instances..."
-  for ID in $UUID_LIST; do 
+  for ID in $UUID_LIST; do
     echo -n "."
     nova delete $ID > /dev/null
     sleep 1
@@ -497,7 +543,7 @@ function rpc-instance-per-network() {
 [ ${Q=0} -eq 0 ] && echo "  - rpc-instance-per-network-per-hypervisor() - Per network, spin up an instance on each hypervisor, ping, and tear down"
 function rpc-instance-per-network-per-hypervisor() {
 
-  if [ $OS_VERSION -ge 9 ]; then 
+  if [ $RPC_RELEASE -ge 9 ]; then
     if [ ! "$( hostname | grep neutron_agents)" ]; then
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
       echo -n "Attempting to find one for you..."
@@ -506,7 +552,7 @@ function rpc-instance-per-network-per-hypervisor() {
       if [ "$CONTAINER" ]; then
         echo -e "\nUsing [$CONTAINER]:\n"
         $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh
-        $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-instance-per-network-per-hypervisor"
+        $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-get-neutron-venv; rpc-instance-per-network-per-hypervisor"
         $LXC rm /tmp/pccommon.sh
         unset CONTAINER  LXC
       else
@@ -520,7 +566,7 @@ function rpc-instance-per-network-per-hypervisor() {
 
   IMAGE=`glance image-list | awk 'tolower($4) ~ /ubuntu/ {print $2}' | tail -1`
 
-  case $OS_VERSION in
+  case $RPC_RELEASE in
     4)  KEYNAME="controller-id_rsa"
     ;;
     *)  KEYNAME="rpc_support"
@@ -539,18 +585,18 @@ function rpc-instance-per-network-per-hypervisor() {
     echo -n "Spinning up instance per hypervisor on network $NET..."
     UUID_LIST=""
 
-    case $OS_VERSION in 
+    case $RPC_RELEASE in
       4) COMPUTES=`nova service-list --binary nova-compute | awk '/[0-9]/ {print $4}'`
          ;;
       *) COMPUTES=`nova service-list --binary nova-compute | awk '/[0-9]/ {print $6}'`
-    esac 
+    esac
 
     for COMPUTE in $COMPUTES; do
-      case $OS_VERSION in
+      case $RPC_RELEASE in
         4) AZ=`nova service-list --binary nova-compute --host $COMPUTE | awk '/[0-9]/ {print $6}'`
         ;;
         *) AZ=`nova service-list --binary nova-compute --host $COMPUTE | awk '/[0-9]/ {print $8}'`
-      esac 
+      esac
 
       echo -n "."
       INSTANCE_NAME="rpctest-$$-${COMPUTE}-${NET}"
@@ -588,7 +634,7 @@ function rpc-instance-per-network-per-hypervisor() {
 
     echo
     echo -n "Deleting instances..."
-    for ID in $UUID_LIST; do 
+    for ID in $UUID_LIST; do
       echo -n "."
       nova delete $ID > /dev/null
       sleep 1
@@ -629,7 +675,7 @@ function rpc-sg-rules () {
     PMAX=`echo $RULE | cut -d, -f6 | sed 's/NULL/_______/g'`
     RIP=`echo $RULE | cut -d, -f7 | sed 's/NULL/_______/g'`
 
-    if [ "$RIP" == "_______" ]; then 
+    if [ "$RIP" == "_______" ]; then
       RIP="$RIP\t\t"
     fi
 
@@ -648,10 +694,10 @@ function rpc-image-check () {
 
 [ ${Q=0} -eq 0 ] && echo "  - rpc-user-roles() - List all users and their roles across all tenants"
 function rpc-user-roles () {
-  for U in `keystone user-list | awk '/[0-9]/ { print $4 }'`; do 
-    echo "User [$U] ::" 
-    for T in `keystone tenant-list | awk '/[0-9]/ {print $4}'`; do 
-      for R in `keystone user-role-list --user $U --tenant $T | awk '/[0-9]/ {print $4}'`; do 
+  for U in `keystone user-list | awk '/[0-9]/ { print $4 }'`; do
+    echo "User [$U] ::"
+    for T in `keystone tenant-list | awk '/[0-9]/ {print $4}'`; do
+      for R in `keystone user-role-list --user $U --tenant $T | awk '/[0-9]/ {print $4}'`; do
         [ ${HDR=0} == 0 ] && echo -n "  Tenant [$T]: "
         HDR=1
         echo -n "$R "
@@ -674,7 +720,7 @@ function rpc-update-pccommon () {
     curl -s $GITHUB > $TMPFILE 2>&1
     if [ $? -ne 0 ]; then
       echo "Error connecting to github - not attempting pccommon upgrade."
-      rm -f $TMPFILE 
+      rm -f $TMPFILE
       return 1
     fi
 
@@ -738,10 +784,10 @@ function rpc-instance-waitfor-spawn() {
     echo -e "Usage: rpc-instance-waitfor-spawn <instance> <timeout>"
     return
   fi
- 
+
   ID=$1
   SPAWN_TIMEOUT=$2
- 
+
   echo -n "-- Waiting up to $SPAWN_TIMEOUT seconds for $ID to spawn..."
   CTR=0
   STATE=`nova show $ID | awk '/status/ { print $4 }'`
@@ -751,7 +797,7 @@ function rpc-instance-waitfor-spawn() {
     echo -n "."
     sleep 2
   done
-  unset DONE ID 
+  unset DONE ID
 
   if [ $CTR -ge $SPAWN_TIMEOUT ]; then
     echo "Timed out"
@@ -765,7 +811,7 @@ function rpc-instance-waitfor-spawn() {
       RET=0
     fi
   fi
-  
+
   unset STATE SPAWN_TIMEOUT CTR ID
   return $RET
 }
@@ -792,7 +838,7 @@ function rpc-instance-waitfor-boot() {
   while [ $FAILED -eq 0 -a $SUCCESS -eq 0 -a $CTR -lt $BOOT_TIMEOUT ]; do
     nova console-log $ID 2> /dev/null > $TMPFILE
     # Test for success
-    egrep -i '(^cloud-init .* finished|starting.*ssh)' $TMPFILE > /dev/null 2>&1 
+    egrep -i '(^cloud-init .* finished|starting.*ssh)' $TMPFILE > /dev/null 2>&1
     if [ $? -eq 0 ]; then
       SUCCESS=1
       RET=0
@@ -885,7 +931,7 @@ function raid_layout
           rm -f ${TMPFILE}.pdisks
           rm -f ${TMPFILE}.vdisks
   done
-}                                                                                     
+}
 
 function pid_start {
 	SYS_START=`cat /proc/uptime | cut -d\  -f1 | cut -d. -f1`
@@ -894,7 +940,7 @@ function pid_start {
 	PROC_UPTIME=$(( $SYS_START - $PROC_START ))
 	PROC_START=`date -d "-${PROC_UPTIME} seconds"`
 	echo "$PROC_START"
-  
+
   unset SYS_START PROC_START PROC_UPTIME
 }
 
@@ -937,13 +983,6 @@ function humanize_kb () {
   unset power final val scale
 }
 
-
-if [ "$( grep DISTRIB_RELEASE /etc/rpc-release 2> /dev/null)" ]; then
-  source /etc/rpc-release
-  OS_VERSION=`echo $DISTRIB_RELEASE | cut -d. -f1 | tr -d '[:alpha:]'`
-else
-  OS_VERSION="4"
-fi
 
 ip netns | grep '^vips$' > /dev/null 2>&1
 [ $? -eq 0 ] && V4_HA=1
