@@ -38,7 +38,7 @@ fi
 # These functions are intented to run inside containers only to determine the
 # current virtual environment for all OS services after kilo
 function rpc-get-neutron-venv {
-    VENV_ACTIVATE=$( awk '/\..*\/bin\/activate/ {print $2}' /etc/init/neutron-*.conf |tail -1 )
+    VENV_ACTIVATE=$( awk '/\..*\/bin\/activate/ {print $2}' /etc/init/neutron-*.conf 2> /dev/null |tail -1 )
     if [ -n "$VENV_ACTIVATE" ]; then
         VENV_PATH=$( dirname $VENV_ACTIVATE )
         if [ -d "$VENV_PATH" ]; then
@@ -47,11 +47,13 @@ function rpc-get-neutron-venv {
         else
             VENV_ENABLED=0
         fi
+    else
+        VENV_ENABLED=0
     fi
 }
 
 function rpc-get-nova-venv {
-    VENV_ACTIVATE=$( awk '/\..*\/bin\/activate/ {print $2}' /etc/init/nova-*.conf |tail -1 )
+    VENV_ACTIVATE=$( awk '/\..*\/bin\/activate/ {print $2}' /etc/init/nova-*.conf 2> /dev/null |tail -1 )
     if [ -n "$VENV_ACTIVATE" ]; then
         VENV_PATH=$( dirname $VENV_ACTIVATE )
         if [ -d "$VENV_PATH" ]; then
@@ -60,6 +62,8 @@ function rpc-get-nova-venv {
         else
             VENV_ENABLED=0
         fi
+    else
+        VENV_ENABLED=0
     fi
 }
 
@@ -298,7 +302,7 @@ function rpc-environment-scan() {
 
   echo "Scanning environment.  Please hold..."
   echo "  - RPC Version $RPC_RELEASE"
-  echo "  - OSA Version $OSA_VERSION"
+  test -n "$OSA_VERSION" && echo "  - OSA Version $OSA_VERSION"
 
   test -x `which keystone` -a `which openstack`> /dev/null 2>&1
   [ $? -ne 0 ] && echo -e "\nMissing local openstack binaries. Not scanning environment." && return
