@@ -25,8 +25,10 @@
 - name: Register mountpoints
   hosts: swift_obj
   tasks:
+    #For active XFS mounts: awk '/\/srv\/node/ { split($2,i,"/"); print $1 "," i[4] }' /proc/mounts
+    #For any XFS mount: blkid |grep xfs |awk  '/LABEL="disk/ { split($2,i,"="); print $1 "," i[2] }' | tr -d ':|"'
     - shell: |
-        awk '/\/srv\/node/ { split($2,i,"/"); print $1 "," i[4] }' /proc/mounts
+        blkid |grep xfs |awk  '/LABEL="disk/ { split($2,i,"="); print $1 "," i[2] }' | tr -d ':|"'
       register: swift_drives
 
 - name: Stop Swift Services
@@ -36,11 +38,23 @@
         name: "{{ item }}"
         state: stopped
       with_items:
-        - "swift-account-server"
-        - "swift-container-server"
         - "swift-object-server"
+        - "swift-object-replicator"
+        - "swift-object-updater"
+        - "swift-object-auditor"
+        - "swift-container-server"
+        - "swift-container-replicator"
+        - "swift-container-updater"
+        - "swift-container-auditor"
+        - "swift-account-server"
+        - "swift-account-replicator"
+        - "swift-account-reaper"
+        - "swift-account-auditor"
         - "rsync"
-      when: "'disk1' in swift_drives.stdout"
+      tags:
+        - "service-stop"
+        - "service-restart"
+        - "remount"
 
 - name: Unmount Swift disks
   hosts: swift_obj
@@ -49,6 +63,9 @@
         umount -f /srv/node/{{ item.split(',')[1] }}
       with_items: swift_drives.stdout_lines
       when: swift_drives.stdout_lines|length > 0
+      tags:
+        - "remount"
+        - "umount"
 
 - name: Format Swift disk
   hosts: swift_obj
@@ -57,6 +74,7 @@
         mkfs.xfs -L {{ item.split(',')[1] }} -f -i size={{ xfs_inode_size |default('1024') | int }} {{ xfs_format_options |default('') }} {{ item.split(',')[0] }}
       with_items: swift_drives.stdout_lines
       when: swift_drives.stdout_lines|length > 0
+      tags: format-xfs
 
 - name: Mount Swift disks
   hosts: swift_obj
@@ -69,6 +87,9 @@
         state: mounted
       with_items: swift_drives.stdout_lines
       when: swift_drives.stdout_lines|length > 0
+      tags:
+        - "remount"
+        - "mount"
 
 - name: Fix Swift Mountpoint permissions
   hosts: swift_obj
@@ -76,9 +97,11 @@
     - file:
         name: "/srv/node/{{ item.split(',')[1] }}"
         mode: "0755"
-        owner: "swift:swift"
+        owner: "swift"
+        group: "swift"
       with_items: swift_drives.stdout_lines
       when: swift_drives.stdout_lines|length > 0
+      tags: fix-permissions
 
 - name: Start Swift Services
   hosts: swift_obj
@@ -87,9 +110,20 @@
         name: "{{ item }}"
         state: started
       with_items:
-        - "swift-account-server"
-        - "swift-container-server"
         - "swift-object-server"
+        - "swift-object-replicator"
+        - "swift-object-updater"
+        - "swift-object-auditor"
+        - "swift-container-server"
+        - "swift-container-replicator"
+        - "swift-container-updater"
+        - "swift-container-auditor"
+        - "swift-account-server"
+        - "swift-account-replicator"
+        - "swift-account-reaper"
+        - "swift-account-auditor"
         - "rsync"
-      register: swift_object_server
-      when: "'disk1' in swift_drives.stdout"
+      tags:
+        - "service-start"
+        - "service-restart"
+        - "remount"
