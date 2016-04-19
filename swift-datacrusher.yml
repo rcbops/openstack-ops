@@ -39,6 +39,7 @@
         - "swift-account-server"
         - "swift-container-server"
         - "swift-object-server"
+        - "rsync"
       when: "'disk1' in swift_drives.stdout"
 
 - name: Unmount Swift disks
@@ -69,6 +70,16 @@
       with_items: swift_drives.stdout_lines
       when: swift_drives.stdout_lines|length > 0
 
+- name: Fix Swift Mountpoint permissions
+  hosts: swift_obj
+  tasks:
+    - file:
+        name: "/srv/node/{{ item.split(',')[1] }}"
+        mode: "0755"
+        owner: "swift:swift"
+      with_items: swift_drives.stdout_lines
+      when: swift_drives.stdout_lines|length > 0
+
 - name: Start Swift Services
   hosts: swift_obj
   tasks:
@@ -79,5 +90,6 @@
         - "swift-account-server"
         - "swift-container-server"
         - "swift-object-server"
+        - "rsync"
       register: swift_object_server
       when: "'disk1' in swift_drives.stdout"
