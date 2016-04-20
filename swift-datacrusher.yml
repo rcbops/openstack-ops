@@ -10,7 +10,7 @@
 #
 # Overrides:
 # - xfs_inode_size defaults to 1024 and is used for the -i parameter with mkfs.xfs
-# - xfs_mount_options default to rw,noatime,nobarrier,logbufs=8,noquota
+# - xfs_mount_options default to rw,noatime,nodiratime,nobarrier,logbufs=8,noquota
 # - xfs_format_options defaults to ""
 #
 # Run it:
@@ -30,6 +30,12 @@
     - shell: |
         blkid |grep xfs |awk  '/LABEL="disk/ { split($2,i,"="); print $1 "," i[2] }' | tr -d ':|"'
       register: swift_drives
+      tags:
+        - "remount"
+        - "mount"
+        - "umount"
+        - "fix-permission"
+        - "format-xfs"
 
 - name: Stop Swift Services
   hosts: swift_obj
@@ -83,7 +89,7 @@
         name: "/srv/node/{{ item.split(',')[1] }}"
         src: "LABEL={{ item.split(',')[1] }}"
         fstype: xfs
-        opts: "{{ xfs_mount_options |default('rw,noatime,nobarrier,logbufs=8,noquota') }}"
+        opts: "{{ xfs_mount_options |default('rw,noatime,nodiratime,nobarrier,logbufs=8,noquota') }}"
         state: mounted
       with_items: swift_drives.stdout_lines
       when: swift_drives.stdout_lines|length > 0
