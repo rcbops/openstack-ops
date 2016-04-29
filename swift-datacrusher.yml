@@ -31,11 +31,7 @@
         blkid |grep xfs |awk  '/LABEL="disk/ { split($2,i,"="); print $1 "," i[2] }' | tr -d ':|"'
       register: swift_drives
       tags:
-        - "remount"
-        - "mount"
-        - "umount"
-        - "fix-permission"
-        - "format-xfs"
+        - "always"
 
 - name: Stop Swift Services
   hosts: swift_obj
