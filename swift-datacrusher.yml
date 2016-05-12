@@ -12,12 +12,13 @@
 # - xfs_inode_size defaults to 1024 and is used for the -i parameter with mkfs.xfs
 # - xfs_mount_options default to rw,noatime,nodiratime,nobarrier,logbufs=8,noquota
 # - xfs_format_options defaults to ""
+# - exclude_drive_labels defaults to ""
 #
 # Run it:
 # openstack-ansible swift-datacrusher.yml
 #
 # Options can be overridden with passing these arguments to openstack-ansible:
-# openstack-ansible swift-datacrusher.yml -exfs_inode_size=256 -exfs_format_options='-linternal'
+# openstack-ansible swift-datacrusher.yml -e xfs_inode_size=256 -e xfs_format_options='-linternal' -e excludes_drive_labels="disk1,disk2"
 
 - name: Please remove me, I'm just a fail safe
   please-remove-me-before-crushing-swift-and-you-know-what-you-are-doing:
@@ -32,6 +33,7 @@
       register: swift_drives
       tags:
         - "always"
+        - "register_drives"
 
 - name: Stop Swift Services
   hosts: swift_obj
@@ -64,7 +66,9 @@
     - shell: |
         umount -f /srv/node/{{ item.split(',')[1] }}
       with_items: swift_drives.stdout_lines
-      when: swift_drives.stdout_lines|length > 0
+      when:
+        - swift_drives.stdout_lines | length > 0
+        - item.split(',')[1] not in ( excludes_drive_labels | default ({}) )
       tags:
         - "remount"
         - "umount"
@@ -75,7 +79,9 @@
     - shell: |
         mkfs.xfs -L {{ item.split(',')[1] }} -f -i size={{ xfs_inode_size |default('1024') | int }} {{ xfs_format_options |default('') }} {{ item.split(',')[0] }}
       with_items: swift_drives.stdout_lines
-      when: swift_drives.stdout_lines|length > 0
+      when:
+        - swift_drives.stdout_lines | length > 0
+        - item.split(',')[1] not in ( excludes_drive_labels | default ({}) )
       tags: format-xfs
 
 - name: Mount Swift disks
@@ -88,7 +94,9 @@
         opts: "{{ xfs_mount_options |default('rw,noatime,nodiratime,nobarrier,logbufs=8,noquota') }}"
         state: mounted
       with_items: swift_drives.stdout_lines
-      when: swift_drives.stdout_lines|length > 0
+      when:
+        - swift_drives.stdout_lines | length > 0
+        - item.split(',')[1] not in ( excludes_drive_labels | default ({}) )
       tags:
         - "remount"
         - "mount"
@@ -102,7 +110,9 @@
         owner: "swift"
         group: "swift"
       with_items: swift_drives.stdout_lines
-      when: swift_drives.stdout_lines|length > 0
+      when:
+        - swift_drives.stdout_lines | length > 0
+        - item.split(',')[1] not in ( excludes_drive_labels | default ({}) )
       tags: fix-permissions
 
 - name: Start Swift Services
