@@ -45,6 +45,8 @@
       with_items:
         - "swift-object-server"
         - "swift-object-replicator"
+        - "swift-container-reconciler"
+        - "swift-object-expirer"
         - "swift-object-updater"
         - "swift-object-auditor"
         - "swift-container-server"
@@ -55,6 +57,7 @@
         - "swift-account-replicator"
         - "swift-account-reaper"
         - "swift-account-auditor"
+        - "swift-container-sync"
         - "rsync"
       tags:
         - "service-stop"
@@ -138,6 +141,8 @@
       with_items:
         - "swift-object-server"
         - "swift-object-replicator"
+        - "swift-container-reconciler"
+        - "swift-object-expirer"
         - "swift-object-updater"
         - "swift-object-auditor"
         - "swift-container-server"
@@ -148,6 +153,7 @@
         - "swift-account-replicator"
         - "swift-account-reaper"
         - "swift-account-auditor"
+        - "swift-container-sync"
         - "rsync"
       tags:
         - "service-start"
