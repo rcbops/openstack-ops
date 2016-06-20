@@ -34,7 +34,6 @@
       register: swift_drives
       tags:
         - "always"
-        - "register_drives"
 
 - name: Stop Swift Services
   hosts: swift_obj
