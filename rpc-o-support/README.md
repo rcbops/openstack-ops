@@ -8,6 +8,7 @@ This is a command-line wrapper for Elasticsearch's RESTful API.
 This is super-beta, version .000001-alpha. Questions/comments/hatemail to Kale Stedman,
 I'm so sorry. You should probably pipe the output to less.
 
+```
     usage: ./es-cli.sh -u $USER -p $PASS -h es-hostname -q "$query" -t $time -n 500
     ex: ./es-cli.sh -u kstedman -p hunter2 -h es.hostname.com -q "program:crond" -t 5 -n 50
     
@@ -17,14 +18,13 @@ I'm so sorry. You should probably pipe the output to less.
     -q query     Optional: Query to pass to ES. If not given, "*" will be used.
     -t timeframe Optional: How far back to search. Value is in mimutes. If not given, defaults to 5.
     -n results   Optional: Number of results to return. If not given, defaults to 500.
-
+```
 [Shamelessly stolen from http://tech.superhappykittymeow.com/?p=356]
 
 
 pccommon.sh
 -----------
-
-$ source ./pccommon.sh 
+`$ source ./pccommon.sh`
 
 Provides the following functions for private cloud admins:
 
@@ -91,9 +91,9 @@ filters.  This process takes a few seconds to complete, and can be skipped by se
 ** the rpc-sg-rules() function will not work if you skip the scan **
 
 You can also suppress all messages entirely by adding Q=1
-
+```
     $ Q=1 source ./pccommon.sh
-
+```
 They can be used in combination.  Both of these values are automatically assumed if the script detects that 
 you are running via remote execution (eg, $ ssh 10.240.0.200 '. ./pccommon.sh; rpc-bondflip bond1')
 
@@ -121,3 +121,20 @@ Run it:
 Options can be overridden with passing these arguments to openstack-ansible:
 `openstack-ansible swift-datacrusher.yml -e xfs_inode_size=256 -e xfs_format_options='-linternal' -e exclude_drive_labels="disk1,disk2" -e exclude_drive_labels_format_option="disk3,disk4"`
 
+
+rebuild-rabbitmq-container.sh
+-----------------------------
+
+This script will rebuilt RabbitMQ and its containers from scratch.
+All current RabbitMQ messages will be lost executing this script.
+Hence it should only be used in sitations where a complete rebuild
+is indented, e.g (QC, complete site failures) etc.
+
+WARNING: THIS SCRIPT WILL DESTROY AND REBUILD THE RABBITMQ CONTAINERS.
+         IT SHOULD ONLY BE USED IN DEV/TEST ENVIRONMENTS OR EXTREME PRODUCTION
+         OUTAGES WHERE NO OTHER RECOVERY IS POSSIBLE AND THE CUSTOMER ACKNOWLEDGED
+         THAT HE IS OK WITH LOOSING POSSIBLE RABBITMQ MESSAGES!
+
+```
+$ ./rebuild-rabbitmq-container.sh iknowwhatido=1
+```
