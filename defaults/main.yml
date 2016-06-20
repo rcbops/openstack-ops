@@ -1,2 +1,4 @@
 ---
-# defaults file for pubscripts
+
+rsoprivatecloud-pubscripts_pip_dependencies:
+  - "python-openstackclient"

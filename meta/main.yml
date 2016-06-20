@@ -5,7 +5,7 @@ galaxy_info:
     This repository/role is intended to collect all scripts around OpenStack administration with RPC.
     Currently it is structured in a Ansible galaxy style role but does not support Ansible yet.
   company: Rackspace
-  license: Proprietary
+  license: Apache
   min_ansible_version: 1.9
   platforms:
   - name: EL
@@ -19,4 +19,3 @@ galaxy_info:
   categories:
   - cloud
 dependencies: []
-  

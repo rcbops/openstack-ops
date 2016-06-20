@@ -13,17 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- include: install_dependencies.yml
+- name: Install role PIP dependencies
+  pip:
+    name: "{{ item.name }}"
+    extra_args: "{{ pip_install_options|default('') }}"
+  with_items: rsoprivatecloud-pubscripts_pip_dependencies
+  when: rsoprivatecloud-pubscripts_pip_dependencies is defined
+  register: pip_install
+  until: pip_install|success
+  retries: 3
   tags:
-    - "rsoprivatecloud-pubscripts_dependencies"
-  when: >
-    rsoprivatecloud-pubscripts_pip_dependencies is defined and
-    ( inventory_hostname in groups[ 'neutron_agents_container' ] or inventory_hostname in groups[ 'infra_hosts' ] or inventory_hostname in groups[ 'utility_container' ] )
-
-
-
-- include: deploy_pccommon.yml
-  when:  >
-    inventory_hostname in groups[ 'neutron_agents_container' ] or inventory_hostname in groups[ 'infra_hosts' ] or inventory_hostname in groups[ 'utility_container' ]
-  tags:
-    - "rsoprivatecloud-pubscripts_pccommon"
+    - always
