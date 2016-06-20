@@ -1,1 +1,1 @@
-archive/shelob.sh
+files/archive/shelob.sh
