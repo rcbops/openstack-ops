@@ -2,8 +2,8 @@
 galaxy_info:
   author: Rackspace Private Cloud OpenStack
   description: |
-    This repository/role is intended to collect all scripts around OpenStack administration with RPC.
-    Currently it is structured in a Ansible galaxy style role but does not support Ansible yet.
+    This repository/role is intended to collect all scripts around OpenStack administration
+    for RPC-O products
   company: Rackspace
   license: Apache
   min_ansible_version: 1.9

@@ -4,16 +4,16 @@ rsoprivatecloud/pubscripts
 Intent
 ------
 
-This repository/role is intended to collect all scripts around
-OpenStack administration with RPC
-Currently it is structured in a Ansible galaxy style role but does not support Ansible yet.
+This repository is intended to collect all scripts around OpenStack administration with RPC.
+The repository is currently being converted into a Ansible Galaxy compatible role in order to
+support intregration into post deployment processes of RPC-O and others.
 
 Operational scripts
 -------------------
 
-All RPC OpenStack supports scripts are currently running outside of ansible and are stored 
+Most RPC OpenStack supports scripts are currently running outside of ansible and are stored 
 inside the files folder.
-Those scripts will be converted over time into individual Ansible tasks.
+Those scripts will be converted into individual Ansible tasks over time.
 
 ### rpc-o-support
 
@@ -37,7 +37,7 @@ Requirements
 ------------
 
 This role expect to be installed/applied on a working RPC OpenStack environment which does run a
-supported product lifecycle.
+supported product lifecycle (RPC-O currently)
 
 
 Role Variables
