@@ -28,9 +28,9 @@
   hosts: swift_obj
   tasks:
     #For active XFS mounts: awk '/\/srv\/node/ { split($2,i,"/"); print $1 "," i[4] }' /proc/mounts
-    #For any XFS mount: blkid -n xfs /dev/sd* |awk '{ split($0,blkid,"\n"); for (n in blkid) { if (substr(blkid[n],0,5) == "/dev/") { device=$1; pos=match(blkid[n],"LABEL="); if (pos > 0) { str=device","substr(blkid[n],pos+7,6); gsub(":|\"","",str); print str } } } }'
+    #For any XFS mount: blkid -n xfs /dev/sd* |awk '/LABEL=\"disk/ { split($0,blkid,"\n"); for (n in blkid) { if (substr(blkid[n],0,5) == "/dev/") { device=$1; pos=match(blkid[n],"LABEL="); if (pos > 0) { str=device","substr(blkid[n],pos+7,6); gsub(":|\"","",str); print str } } } }'
     - shell: |
-        blkid -n xfs /dev/sd* |awk '{ split($0,blkid,"\n"); for (n in blkid) { if (substr(blkid[n],0,5) == "/dev/") { device=$1; pos=match(blkid[n],"LABEL="); if (pos > 0) { str=device","substr(blkid[n],pos+7,6); gsub(":|\"","",str); print str } } } }'
+        blkid -n xfs /dev/sd* |awk '/LABEL=\"disk/ { split($0,blkid,"\n"); for (n in blkid) { if (substr(blkid[n],0,5) == "/dev/") { device=$1; pos=match(blkid[n],"LABEL="); if (pos > 0) { str=device","substr(blkid[n],pos+7,6); gsub(":|\"","",str); print str } } } }'
       register: swift_drives
       tags:
         - "always"
