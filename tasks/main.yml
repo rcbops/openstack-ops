@@ -15,7 +15,7 @@
 
 - include: install_dependencies.yml
   tags:
-    - "rsoprivatecloud-pubscripts_dependencies"
+    - "rpc_dependencies"
   when: >
     rsoprivatecloud-pubscripts_pip_dependencies is defined and
     ( inventory_hostname in groups[ 'neutron_agents_container' ] or inventory_hostname in groups[ 'infra_hosts' ] or inventory_hostname in groups[ 'utility_container' ] )
@@ -26,4 +26,4 @@
   when:  >
     inventory_hostname in groups[ 'neutron_agents_container' ] or inventory_hostname in groups[ 'infra_hosts' ] or inventory_hostname in groups[ 'utility_container' ]
   tags:
-    - "rsoprivatecloud-pubscripts_pccommon"
+    - "rpc_pccommon"

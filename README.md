@@ -53,9 +53,14 @@ None
 Playbook integration
 ----------------
 
-    - hosts: all
+# git clone https://github.com/rsoprivatecloud/pubscripts.git rcbops
+
+Add role to your playbook:
+
+    - name: Install pccommon
+      hosts: all
       roles:
-         - { role: rsoprivatecloud.pubscripts }
+         - { role: rcbops, tags: rpc_dependencies,rpc_pccommon }
 
 License
 -------
