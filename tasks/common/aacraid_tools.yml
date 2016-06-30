@@ -3,6 +3,7 @@
 # Based on https://tipstricks.itmatrix.eu/install-adaptec-acc-raid-utility-arcconf-in-ubuntu-14-04/
 
 - hosts: swift_obj
+  gather_facts: no
   tasks:
   - name: Add arcconf apt-keys
     apt_key:
