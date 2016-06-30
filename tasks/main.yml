@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- include: install_dependencies.yml
+- include: common/install_dependencies.yml
   tags:
     - "rpc_dependencies"
   when: >
@@ -22,8 +22,12 @@
 
 
 
-- include: deploy_pccommon.yml
+- include: common/deploy_pccommon.yml
   when:  >
     inventory_hostname in groups[ 'neutron_agents_container' ] or inventory_hostname in groups[ 'infra_hosts' ] or inventory_hostname in groups[ 'utility_container' ]
   tags:
     - "rpc_pccommon"
+
+
+- include: common/aacraid_tools.yml
+  when: install_aacraid_conf | default(false) | bool
