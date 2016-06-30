@@ -17,7 +17,7 @@
 
   - name: Add arcconf repos
     apt_repository:
-      repo: "deb http://archive.thomas-krenn.com/packages precise main optional"
+      repo: "deb http://archive.thomas-krenn.com/packages trusty main optional"
       state: "present"
     register: add_repos
     until: add_repos|success
