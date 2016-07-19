@@ -21,7 +21,6 @@
     ( inventory_hostname in groups[ 'neutron_agents_container' ] or inventory_hostname in groups[ 'infra_hosts' ] or inventory_hostname in groups[ 'utility_container' ] )
 
 
-
 - include: common/deploy_pccommon.yml
   when:  >
     inventory_hostname in groups[ 'neutron_agents_container' ] or inventory_hostname in groups[ 'infra_hosts' ] or inventory_hostname in groups[ 'utility_container' ]
@@ -30,4 +29,8 @@
 
 
 - include: common/aacraid_tools.yml
-  when: install_aacraid_conf | default(false) | bool
+  when: >
+    install_aacraid_conf | default(false) | bool and
+    inventory_hostname in groups[ 'swift_obj' ]
+  tags:
+    - "rpc_aacraid_conf"

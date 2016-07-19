@@ -2,37 +2,35 @@
 # Install the Adaptec AAC-RAID utility arcconf
 # Based on https://tipstricks.itmatrix.eu/install-adaptec-acc-raid-utility-arcconf-in-ubuntu-14-04/
 
-- hosts: swift_obj
-  tasks:
-  - name: Add arcconf apt-keys
-    apt_key:
-      url: "https://archive.thomas-krenn.com/tk-archive.gpg.pub"
-      state: "present"
-    register: add_keys
-    until: add_keys|success
-    ignore_errors: True
-    retries: 5
-    delay: 2
+- name: Add arcconf apt-keys
+  apt_key:
+    url: "https://archive.thomas-krenn.com/tk-archive.gpg.pub"
+    state: "present"
+  register: add_keys
+  until: add_keys|success
+  ignore_errors: True
+  retries: 5
+  delay: 2
 
-  - name: Add arcconf repos
-    apt_repository:
-      repo: "deb http://archive.thomas-krenn.com/packages trusty main optional"
-      state: "present"
-    register: add_repos
-    until: add_repos|success
-    retries: 5
-    delay: 2
+- name: Add arcconf repos
+  apt_repository:
+    repo: "deb http://archive.thomas-krenn.com/packages trusty main optional"
+    state: "present"
+  register: add_repos
+  until: add_repos|success
+  retries: 5
+  delay: 2
 
-  - name: Update apt if necessary
-    apt:
-      update_cache: yes
-    when: add_repos|changed
+- name: Update apt if necessary
+  apt:
+    update_cache: yes
+  when: add_repos|changed
 
-  - name: Install arcconf packages
-    apt:
-      pkg: "arcconf"
-      state: latest
-    register: install_packages
-    until: install_packages|success
-    retries: 5
-    delay: 2
+- name: Install arcconf packages
+  apt:
+    pkg: "arcconf"
+    state: latest
+  register: install_packages
+  until: install_packages|success
+  retries: 5
+  delay: 2
