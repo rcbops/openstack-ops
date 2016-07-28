@@ -1,4 +1,6 @@
 ---
 
-rsoprivatecloud-pubscripts_pip_dependencies:
+rcbops_support_pip_dependencies:
   - "python-openstackclient"
+
+rcbops_support_install_aacraid: False

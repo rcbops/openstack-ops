@@ -15,10 +15,10 @@
 
 - name: Install role PIP dependencies
   pip:
-    name: "{{ item.name }}"
+    name: "{{ item }}"
     extra_args: "{{ pip_install_options|default('') }}"
-  with_items: rsoprivatecloud-pubscripts_pip_dependencies
-  when: rsoprivatecloud-pubscripts_pip_dependencies is defined
+  with_items: rpc_pip_dependencies
+  when: rpc_pip_dependencies is defined
   register: pip_install
   until: pip_install|success
   retries: 3

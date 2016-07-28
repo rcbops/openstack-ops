@@ -13,24 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- include: common/install_dependencies.yml
+- include: install_dependencies.yml
   tags:
     - "rpc_dependencies"
   when: >
-    rsoprivatecloud-pubscripts_pip_dependencies is defined and
+    rcbops_support_pip_dependencies is defined and
     ( inventory_hostname in groups[ 'neutron_agents_container' ] or inventory_hostname in groups[ 'infra_hosts' ] or inventory_hostname in groups[ 'utility_container' ] )
 
 
-- include: common/deploy_pccommon.yml
+- include: deploy_pccommon.yml
   when:  >
     inventory_hostname in groups[ 'neutron_agents_container' ] or inventory_hostname in groups[ 'infra_hosts' ] or inventory_hostname in groups[ 'utility_container' ]
   tags:
     - "rpc_pccommon"
 
 
-- include: common/aacraid_tools.yml
+- include: aacraid_tools.yml
   when: >
-    install_aacraid_conf | default(false) | bool and
+    rcbops_support_install_aacraid | default(false) and
     inventory_hostname in groups[ 'swift_obj' ]
   tags:
     - "rpc_aacraid_conf"
