@@ -1,12 +1,12 @@
 rsoprivatecloud/openstack-ops
-==========================
+=============================
 
 Build status
 ------------
 
 Travis is now used to lint various scripts in order to guarantee minimal coding standards.
 
-Master Branch [![Build Status: Master Branch](https://travis-ci.org/rsoprivatecloud/pubscripts.svg?branch=master)](https://travis-ci.org/rsoprivatecloud/pubscripts)
+Master Branch [![Build Status: Master Branch](https://travis-ci.org/rsoprivatecloud/openstack-ops.svg?branch=master)](https://travis-ci.org/rsoprivatecloud/openstack-ops)
 
 
 Intent
@@ -15,6 +15,7 @@ Intent
 This repository is intended to collect all scripts around OpenStack administration with RPC.
 The repository is currently being converted into a Ansible Galaxy compatible role in order to
 support intregration into post deployment processes of RPC-O and others.
+
 
 Operational scripts
 -------------------
