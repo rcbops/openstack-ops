@@ -1,6 +1,14 @@
 rsoprivatecloud/pubscripts
 ==========================
 
+Build status
+------------
+
+Travis is now used to lint various scripts in order to guarantee minimal coding standards.
+
+Master Branch [![Build Status: Master Branch](https://travis-ci.org/rsoprivatecloud/pubscripts.svg?branch=master)](https://travis-ci.org/rsoprivatecloud/pubscripts)
+
+
 Intent
 ------
 
