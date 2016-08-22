@@ -1,4 +1,4 @@
-rsoprivatecloud/pubscripts
+rsoprivatecloud/openstack-ops
 ==========================
 
 Build status
@@ -61,7 +61,7 @@ None
 Playbook integration
 ----------------
 
-# git clone https://github.com/rsoprivatecloud/pubscripts.git rcbops
+# git clone https://github.com/rsoprivatecloud/openstack-ops.git rcbops
 
 Add role to your playbook:
 

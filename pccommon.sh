@@ -356,7 +356,7 @@ function rpc-instance-test-networking() {
 
       if [ "$CONTAINER" ]; then
         echo -e "\nUsing [$CONTAINER:]\n"
-        $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh
+        $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/openstack-ops/master/pccommon.sh
         $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-get-neutron-venv ; rpc-instance-test-networking $1"
         $LXC rm /tmp/pccommon.sh
         unset CONTAINER  LXC
@@ -436,7 +436,7 @@ function rpc-instance-per-network() {
       LXC="lxc-attach -n $CONTAINER -- "
       if [ "$CONTAINER" ]; then
         echo -e "\nUsing [$CONTAINER]:\n"
-        $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh
+        $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/openstack-ops/master/pccommon.sh
         $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-get-neutron-venv; rpc-instance-per-network $1"
         $LXC rm /tmp/pccommon.sh
         unset CONTAINER  LXC
@@ -555,7 +555,7 @@ function rpc-instance-per-network-per-hypervisor() {
       LXC="lxc-attach -n $CONTAINER -- "
       if [ "$CONTAINER" ]; then
         echo -e "\nUsing [$CONTAINER]:\n"
-        $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh
+        $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/openstack-ops/master/pccommon.sh
         $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-get-neutron-venv; rpc-instance-per-network-per-hypervisor"
         $LXC rm /tmp/pccommon.sh
         unset CONTAINER  LXC
@@ -715,7 +715,7 @@ function rpc-user-roles () {
 
 [ ${Q=0} -eq 0 ] && echo "  - rpc-update-pccommon() - Grabs the latest version of pccommon.sh if there is one"
 function rpc-update-pccommon () {
-  GITHUB="https://raw.githubusercontent.com/rsoprivatecloud/pubscripts/master/pccommon.sh"
+  GITHUB="https://raw.githubusercontent.com/rsoprivatecloud/openstack-ops/master/pccommon.sh"
 
   [ !"$1" ] && PCCOMMON="./pccommon.sh" || PCCOMMON=$1
   if [ -s "$PCCOMMON" ]; then
