@@ -139,6 +139,10 @@ def main():
     startTimeStr = re.findall("[0-9]+", args.startTime)
     startTimeVals = ( int(x) for x in startTimeStr )
     startTimeDT = dt.datetime(*startTimeVals)
+
+    if args.debug:
+      print "StartTime: %s " % startTimeDT
+
   else:
     startTimeDT = dt.datetime.now()-dt.timedelta(days=args.daysAgo)
 
@@ -189,23 +193,17 @@ def main():
         "query": {
           "bool":{
             "must" : [
-              {"query_string":{"query":" AND ".join(args.optArgs)}}
+              {"query_string":{"query":" AND ".join(args.optArgs)}},
+              {"range":{ "@timestamp":{"gte":startTimeDT.strftime("%s000")}}}
             ],
           }
         },
       }
     },
-    "filter" : {
-      "bool": {
-        "must": [
-          {"range":{ "@timestamp":{"gte":startTimeDT.strftime("%s")}}}
-        ]
-      }
-    },
     "sort": [
       {"@timestamp":{"order":"asc"}}
     ],
-    "size" : 5000
+    "size" : 2500
   }
 
   # Build extra conditions and append them to the ^query
@@ -239,30 +237,36 @@ def main():
   hits = searchReply['hits']['hits']
   numHits = searchReply['hits']['total']
 
-  scrollURL = "http://"+esIP+":"+str(esPort)+"/_search/scroll?scroll=5s"
-  logs = sorted(hits, key=lambda x: x['_source']['@timestamp'])
+  if args.numLogs:
+    q['from'] = numHits - args.numLogs 
 
-  displayLogs = deque(maxlen=args.numLogs)
-
-  while len(hits):
-    if args.numLogs:
-      if random.randrange(0,100) > 75:
-        sys.stdout.write(".")
-        sys.stdout.flush()
-      for i in hits:
-        displayLogs.append(i)
-    else:
-      writeLogs(logs,args.extendedOutput)
-
-    searchReply = mkRequest(scrollURL, searchReply['_scroll_id'], args.debug)
+    try:
+      searchReply = mkRequest(esURL, q, args.debug)
+    except:
+      raise
 
     hits = searchReply['hits']['hits']
-    logs = sorted(hits, key=lambda x: x['_source']['@timestamp']) 
+    logs = sorted(hits, key=lambda x: x['_source']['@timestamp'])
+    writeLogs(logs,args.extendedOutput)
+  else:
+    scrollURL = "http://"+esIP+":"+str(esPort)+"/_search/scroll?scroll=5s"
+    logs = sorted(hits, key=lambda x: x['_source']['@timestamp'])
 
-  if args.numLogs:
-    print ""
-    writeLogs(displayLogs,args.extendedOutput)
-
+    while len(hits):
+      if args.numLogs:
+        if random.randrange(0,100) > 75:
+          sys.stdout.write(".")
+          sys.stdout.flush()
+        for i in hits:
+          displayLogs.append(i)
+      else:
+        writeLogs(logs,args.extendedOutput)
+  
+      searchReply = mkRequest(scrollURL, searchReply['_scroll_id'], args.debug)
+  
+      hits = searchReply['hits']['hits']
+      logs = sorted(hits, key=lambda x: x['_source']['@timestamp']) 
+  
   q['from'] = numHits
 
   if args.follow:
