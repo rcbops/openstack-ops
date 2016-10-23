@@ -8,29 +8,82 @@ import urllib
 import urllib2
 import json
 import argparse
-import socket
 import re
 import datetime as dt
+import sys
+import random
 
 from time import sleep
+from collections import deque
+
+def mkRequest(url, query, debug=False):
+  #handler=urllib2.HTTPHandler(debuglevel=1)
+  #opener = urllib2.build_opener(handler)
+  #urllib2.install_opener(opener)
+
+  if isinstance(query, dict):
+    data = json.dumps(query)
+  else:
+    data = query
+
+  if debug:
+    print "%s\n\n%s\n\n%s\n" % (url, query, data)
+
+  req = urllib2.Request(url, data)
+
+  try:
+    r = urllib2.urlopen(req)
+  except urllib2.HTTPError:
+    raise
+
+  return json.loads(r.read())
+
+
+def writeLogs(logs, extended=False):
+  for i in logs:
+    i = i['_source']
+    print i['message']
+    if extended:
+      print "[ %s ]" % i
+      print ""
 
 def main():
+
+  nowDT = dt.datetime.now()
+  oneDay = dt.timedelta(days=1)
 
   parser = argparse.ArgumentParser(
     description="RPC Elastic Search Client.  You know, for kids.")
 
-  parser.add_argument("-u",
-                dest="url",
+  parser.add_argument("--host",
+                dest="host",
                 type=str,
-                metavar="http://<host>:<port>/_search",
+                metavar="host[:port]",
                 help="Elasticsearch URL")
 
   parser.add_argument("-n",
                 dest="numLogs",
                 type=int,
                 metavar="num",
-                help="Number of logs",
-                default=20)
+                help="Limit to X most recent logs.")
+
+  parser.add_argument("-d",
+                dest="daysAgo",
+                type=int,
+                metavar="[1]",
+                help="Number of days to search. 0 for all.",
+                default=1)
+
+  parser.add_argument("-s",
+                dest="startTime",
+                metavar="YYYY-MM-DD [HH[:MM[:SS]]]",
+                help="Start time.  Overrides -d.")
+
+  parser.add_argument("-e",
+                dest="endTime",
+                metavar="YYYY-MM-DD [HH[:MM[:SS]]]",
+                help="End time. Default now.",
+                default=dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
   parser.add_argument("-f",
                 dest="follow",
@@ -70,27 +123,55 @@ def main():
 
   args = parser.parse_args()
 
-  if not args.url:
+  # Massage the date stuff
+  if args.startTime:
+    startTimeStr = re.findall("[0-9]+", args.startTime)
+    startTimeVals = ( int(x) for x in startTimeStr )
+    startTimeDT = dt.datetime(*startTimeVals)
+  else:
+    startTimeDT = dt.datetime.now()-dt.timedelta(days=args.daysAgo)
+
+  endTimeStr = re.findall("[0-9]+", args.endTime)
+  endTimeVals = ( int(x) for x in endTimeStr )
+  endTimeDT = dt.datetime(*endTimeVals)
+
+  # Generate index list.
+  indices = []
+  indexTimeDT = endTimeDT
+  while indexTimeDT >= startTimeDT:
+    indices.extend([indexTimeDT.strftime("logstash-%Y.%m.%d")])
+    indexTimeDT -= oneDay
+
+  # Too many or to few indexes?
+  if len(indices) > 90 or len(indices) == 0:
+    indices = ["_all"]
+    print "! Date range too long for URL indexes.  Searching all documents."
+
+  # Auto-detect elasticsearch container address and build URL
+  if not args.host:
     with open("/etc/hosts","r") as fp:
       hosts = fp.read().split("\n")
 
     for host in hosts:
       if "elasticsearch" in host:
         esIP = host.split(" ")[0]
-
-    if not esIP:
-      raise KeyError("Could not find elasticsearch container IP, and you didn't supply a --url. Giving Up.")
-    else:
-      esURL = "http://%s:9200/_search" % esIP
-      print "[Found Elasticsearch at %s]" % esURL
+        esPort = 9200
   else:
-    esURL = args.url
+    if ":" in args.host:
+      (esIP, esPort) = args.host.split(":")
+    else:
+      esIP = args.host
+      esPort = 9200
 
-    # helper
-    if "_search" not in esURL:
-      esURL += "/_search"
+  if not esIP:
+    raise KeyError("Could not find elasticsearch container IP, and you didn't supply --host. Giving Up.")
 
-  
+  esURL = "http://%s:%s/" % (esIP, esPort) + ",".join(indices) +"/_search"
+  scrollURL = "http://%s:%s/" % (esIP, esPort) + ",".join(indices) +"/_search?scroll=5s"
+
+  print "Found Elasticsearch at http://%s:%s/]" % (esIP, esPort)
+
+  # Elasticsearch queries are weird.
   q={
     "query" : {
       "filtered": {
@@ -103,11 +184,20 @@ def main():
         },
       }
     },
+    "filter" : {
+      "bool": {
+        "must": [
+          {"range":{ "@timestamp":{"gte":startTimeDT.strftime("%s")}}}
+        ]
+      }
+    },
     "sort": [
-      {"@timestamp":{"order":"desc"}}
+      {"@timestamp":{"order":"asc"}}
     ],
+    "size" : 5000
   }
 
+  # Build extra conditions and append them to the ^query
   if args.extendedMatches:
     for pair in args.extendedMatches:
       try:
@@ -117,67 +207,67 @@ def main():
 
       q['query']['filtered']['query']['bool']['must'].extend(
         [ { "match" : { key : val } } ])
-
+  
+  # Specialized -t handling for tags: [x,x,x]
   if args.tags:
     for tag in args.tags:
       q['query']['filtered']['query']['bool']['must'].extend(
         [ { "term" : { "tags" : tag } } ])
 
-  if args.numLogs > 0:
-    q["size"] = args.numLogs
+  sys.stdout.write("Searching...") 
+  sys.stdout.flush()
 
-  #handler=urllib2.HTTPHandler(debuglevel=1)
-  #opener = urllib2.build_opener(handler)
-  #urllib2.install_opener(opener)
+  try:
+    searchReply = mkRequest(scrollURL, q, args.debug)
+  except:
+    raise
 
-  if args.debug:
-    print "QUERY: %s" %q 
+  if not args.numLogs:
+    print ""
 
-  data = urllib.urlencode({'q':q})
-  req = urllib2.Request(esURL, json.dumps(q))
-  r = urllib2.urlopen(req)
-
-  searchReply = json.loads(r.read())
-
-  # Update the query for recurring -f if needed
   hits = searchReply['hits']['hits']
-  lastIndex = searchReply['hits']['total']
-  q['from'] = lastIndex
-  q['sort'][0]['@timestamp']['order'] = "asc"
-  del q['size']
+  numHits = searchReply['hits']['total']
 
+  scrollURL = "http://"+esIP+":"+str(esPort)+"/_search/scroll?scroll=5s"
   logs = sorted(hits, key=lambda x: x['_source']['message'])
 
-  for i in logs:
-    i = i['_source']
-    print i['message']
-    if args.extendedOutput:
-      print "[ %s ]" % i
-      print ""
+  displayLogs = deque(maxlen=args.numLogs)
+
+  while len(hits):
+    if args.numLogs:
+      if random.randrange(0,100) > 75:
+        sys.stdout.write(".")
+        sys.stdout.flush()
+      for i in hits:
+        displayLogs.append(i)
+    else:
+      writeLogs(logs,args.extendedOutput)
+
+    searchReply = mkRequest(scrollURL, searchReply['_scroll_id'], args.debug)
+
+    hits = searchReply['hits']['hits']
+    logs = sorted(hits, key=lambda x: x['_source']['message']) 
+
+  if args.numLogs:
+    print ""
+    writeLogs(displayLogs,args.extendedOutput)
+
+  q['from'] = numHits
 
   if args.follow:
     while True:
       sleep(1)
 
-      if args.debug:
-        print "QUERY: %s" % q 
-
-      req = urllib2.Request(esURL, json.dumps(q))
-      r = urllib2.urlopen(req)
-      searchReply = json.loads(r.read())
+      try: 
+        searchReply = mkRequest(esURL, q, args.debug)
+      except:
+        raise
 
       hits = searchReply['hits']['hits']
-      lastIndex = searchReply['hits']['total']
-      q['from'] = lastIndex
+      q['from'] = searchReply['hits']['total']
 
       logs = sorted(hits, key=lambda x: x['_source']['message'])
-
-      for i in logs:
-        i = i['_source']
-        print i['message']
-        if args.extendedOutput:
-          print "[ %s ]" % i
-          print ""
+      writeLogs(logs,args.extendedOutput)
 
 if __name__ == '__main__':
   try:
@@ -186,6 +276,8 @@ if __name__ == '__main__':
     print "TRL-C"
   except (
     KeyError,
-    ValueError
+    ValueError,
   ), err:
     print err
+  except urllib2.HTTPError, err:
+    print "Request Error: %s" % err
