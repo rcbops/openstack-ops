@@ -27,7 +27,7 @@ def mkRequest(url, query, debug=False):
     data = query
 
   if debug:
-    print "%s\n\n%s\n\n%s\n" % (url, query, data)
+    print "%s\n\n%s\n" % (url, query)
 
   req = urllib2.Request(url, data)
 
@@ -42,7 +42,18 @@ def mkRequest(url, query, debug=False):
 def writeLogs(logs, extended=False):
   for i in logs:
     i = i['_source']
-    print i['message']
+
+    if '@message' in i:
+      timeStrings = re.findall('[0-9]+', i['@timestamp'])
+      timeNumbers = [ int(x) for x in timeStrings ]
+      timeDT = dt.datetime(*timeNumbers)
+
+      print "%s %s" % (timeDT.strftime("%Y-%m-%d %H:%M:%S"), i['@message'])
+
+    else:
+      if 'message' in i:
+        print i['message']
+
     if extended:
       print "[ %s ]" % i
       print ""
@@ -229,7 +240,7 @@ def main():
   numHits = searchReply['hits']['total']
 
   scrollURL = "http://"+esIP+":"+str(esPort)+"/_search/scroll?scroll=5s"
-  logs = sorted(hits, key=lambda x: x['_source']['message'])
+  logs = sorted(hits, key=lambda x: x['_source']['@timestamp'])
 
   displayLogs = deque(maxlen=args.numLogs)
 
@@ -246,7 +257,7 @@ def main():
     searchReply = mkRequest(scrollURL, searchReply['_scroll_id'], args.debug)
 
     hits = searchReply['hits']['hits']
-    logs = sorted(hits, key=lambda x: x['_source']['message']) 
+    logs = sorted(hits, key=lambda x: x['_source']['@timestamp']) 
 
   if args.numLogs:
     print ""
@@ -278,6 +289,6 @@ if __name__ == '__main__':
     KeyError,
     ValueError,
   ), err:
-    print err
+    print err.message
   except urllib2.HTTPError, err:
     print "Request Error: %s" % err
