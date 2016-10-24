@@ -3,6 +3,8 @@
 escape.py
 ---------
 
+Elasticsearch CLI client for RPC installations.
+
 See documentation @ [escape.md](https://github.com/rsoprivatecloud/openstack-ops/blob/master/files/rpc-o-support/escape.md)
 
 pccommon.sh
