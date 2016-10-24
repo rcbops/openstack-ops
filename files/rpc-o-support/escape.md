@@ -136,3 +136,43 @@ If you specify a starting time that is more than a few days back, you may also w
 consider adding an -e (endDate) to your query to limit the number of documents being
 searched.  Just saying.  Things can be slow when you don't limit the date range of your 
 searches.
+
+
+## Troubleshooting
+
+So, you've searched for something and didn't get any results, or maybe you got a 404 error.
+In that case, you can do a couple of things to make sure logstash and elasticsearch are 
+working together properly.
+
+First, try viewing the indexes in elasticsearch using curl.  You can grab the elasticsearch
+URL from the output of escape:
+
+```
+$ ./escape.py -n1
+Found Elasticsearch at http://172.19.62.217:9200/]
+Searching.....^CTRL-C
+
+$ curl http://172.19.62.217:9200/_aliases
+```
+
+The curl command should return a json list of indexes.  You should see a bunch of things
+like 'logstash-YYY.MM.DD' where YYYY.MM.DD are recent dates.  If not, then there is most
+likely an issue between logstash and elasticsearch.
+
+Next, you can verify that logs are being stored within the indexes.
+
+```
+$ curl http://172.19.62.217:9200/_search
+```
+
+This should return a json-formatting document with 10 logs in it.  You can pipe to 'jq' 
+to view the lots real pretty-like:
+
+```
+$ curl http://172.19.62.217:9200/_search | jq .hits.hits
+```
+
+If you are seeing results come back here, make sure that your original query that led you
+down this path is actually something that should return results.  If it is, and you're certain
+you're not just wasting everyone's time here, please open a bug report on escape.py and send 
+me an e-mail @ aaron.segura@rackspace.com
