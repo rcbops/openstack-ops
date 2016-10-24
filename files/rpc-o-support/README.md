@@ -1,26 +1,9 @@
 *** If you add something to this repo, document it below ***
 
-es-cli.sh
+escape.py
 ---------
-Search server logs from the comfort of your terminal!
 
-This is a command-line wrapper for Elasticsearch's RESTful API.
-This is super-beta, version .000001-alpha. Questions/comments/hatemail to Kale Stedman,
-I'm so sorry. You should probably pipe the output to less.
-
-```
-    usage: ./es-cli.sh -u $USER -p $PASS -h es-hostname -q "$query" -t $time -n 500
-    ex: ./es-cli.sh -u kstedman -p hunter2 -h es.hostname.com -q "program:crond" -t 5 -n 50
-    
-    -h host      The Elasticsearch host you're trying to connect to.
-    -u username  Optional: If your ES cluster is proxied through apache and you have http auth enabled, username goes here
-    -p password  Optional: If your ES cluster is proxied through apache and you have http auth enabled, password goes here
-    -q query     Optional: Query to pass to ES. If not given, "*" will be used.
-    -t timeframe Optional: How far back to search. Value is in mimutes. If not given, defaults to 5.
-    -n results   Optional: Number of results to return. If not given, defaults to 500.
-```
-[Shamelessly stolen from http://tech.superhappykittymeow.com/?p=356]
-
+See documentation @ [escape.md](https://github.com/rsoprivatecloud/openstack-ops/blob/master/files/rpc-o-support/escape.md)
 
 pccommon.sh
 -----------
