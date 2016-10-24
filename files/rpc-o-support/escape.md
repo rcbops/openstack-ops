@@ -174,5 +174,4 @@ $ curl http://172.19.62.217:9200/_search | jq .hits.hits
 
 If you are seeing results come back here, make sure that your original query that led you
 down this path is actually something that should return results.  If it is, and you're certain
-you're not just wasting everyone's time here, please open a bug report on escape.py and send 
-me an e-mail @ aaron.segura@rackspace.com
+you're not just wasting everyone's time here, please open a bug report.
