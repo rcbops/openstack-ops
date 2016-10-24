@@ -43,17 +43,16 @@ def writeLogs(logs, extended=False):
   for i in logs:
     i = i['_source']
 
-    if '@message' in i:
-      timeStrings = re.findall('[0-9]+', i['@timestamp'])
-      timeNumbers = [ int(x) for x in timeStrings ]
-      timeDT = dt.datetime(*timeNumbers)
-
-      print "%s %s" % (timeDT.strftime("%Y-%m-%d %H:%M:%S"), i['@message'])
-
+    if 'message' in i:
+      print i['message']
     else:
-      if 'message' in i:
-        print i['message']
+      if '@message' in i:
+        timeStrings = re.findall('[0-9]+', i['@timestamp'])
+        timeNumbers = [ int(x) for x in timeStrings ]
+        timeDT = dt.datetime(*timeNumbers)
 
+        print "%s %s" % (timeDT.strftime("%Y-%m-%d %H:%M:%S"), i['@message'])
+      
     if extended:
       print "[ %s ]" % i
       print ""
@@ -93,8 +92,7 @@ def main():
   parser.add_argument("-e",
                 dest="endTime",
                 metavar="YYYY-MM-DD [HH[:MM[:SS]]]",
-                help="End time. Default now.",
-                default=dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                help="End time. Default now.")
 
   parser.add_argument("-f",
                 dest="follow",
@@ -104,14 +102,14 @@ def main():
   parser.add_argument("-x",
                 dest="extendedOutput",
                 action="store_true",
-                help="Extended output")
+                help="Extended output showing log metadata")
 
   parser.add_argument("-X",
                 dest="extendedMatches",
                 action="append",
                 type=str,
                 metavar="key=val",
-                help="Match on arbitrary log fields, see output of -x")
+                help="Match on log metadata, see output of -x")
 
   parser.add_argument("-t",
                 dest="tags",
@@ -146,9 +144,18 @@ def main():
   else:
     startTimeDT = dt.datetime.now()-dt.timedelta(days=args.daysAgo)
 
-  endTimeStr = re.findall("[0-9]+", args.endTime)
-  endTimeVals = ( int(x) for x in endTimeStr )
-  endTimeDT = dt.datetime(*endTimeVals)
+  if args.endTime:
+    endTimeStr = re.findall("[0-9]+", args.endTime)
+    endTimeVals = ( int(x) for x in endTimeStr )
+    endTimeDT = dt.datetime(*endTimeVals)
+  
+    if len(endTimeStr) == 3: # should include the specified day
+      endTimeDT = endTimeDT.replace(hour=23,minute=59,second=59)
+
+    if args.follow:
+      raise ValueError("It is improper to use -f with -e.")
+  else:
+    endTimeDT = nowDT
 
   # Generate index list.
   indices = []
@@ -158,7 +165,7 @@ def main():
     indexTimeDT -= oneDay
 
   # Too many or to few indexes?
-  if len(indices) > 90 or len(indices) == 0:
+  if len(indices) > 50 or len(indices) == 0:
     indices = ["_all"]
     print "! Date range too long for URL indexes.  Searching all documents."
 
@@ -207,6 +214,11 @@ def main():
     "size" : 2500
   }
 
+  # Add an endtime if specified
+  if args.endTime:
+    q['query']['filtered']['query']['bool']['must'].extend(
+      [ {"range":{ "@timestamp":{"lte":endTimeDT.strftime("%s000")}}} ])
+
   # Build extra conditions and append them to the ^query
   if args.extendedMatches:
     for pair in args.extendedMatches:
@@ -239,16 +251,21 @@ def main():
   numHits = searchReply['hits']['total']
 
   if args.numLogs:
-    q['from'] = numHits - args.numLogs 
+    if len(hits) <= args.numLogs:
+      logs = sorted(hits, key=lambda x: x['_source']['@timestamp'])
+      print ""
+      writeLogs(logs, args.extendedOutput)
+    else:
+      q['from'] = numHits - args.numLogs 
+      try:
+        searchReply = mkRequest(esURL, q, args.debug)
+      except:
+        raise
 
-    try:
-      searchReply = mkRequest(esURL, q, args.debug)
-    except:
-      raise
-
-    hits = searchReply['hits']['hits']
-    logs = sorted(hits, key=lambda x: x['_source']['@timestamp'])
-    writeLogs(logs,args.extendedOutput)
+      hits = searchReply['hits']['hits']
+      logs = sorted(hits, key=lambda x: x['_source']['@timestamp'])
+      print ""
+      writeLogs(logs,args.extendedOutput)
   else:
     scrollURL = "http://"+esIP+":"+str(esPort)+"/_search/scroll?scroll=5s"
     logs = sorted(hits, key=lambda x: x['_source']['@timestamp'])
@@ -261,6 +278,7 @@ def main():
         for i in hits:
           displayLogs.append(i)
       else:
+        print ""
         writeLogs(logs,args.extendedOutput)
   
       searchReply = mkRequest(scrollURL, searchReply['_scroll_id'], args.debug)
@@ -288,12 +306,14 @@ def main():
 if __name__ == '__main__':
   try:
     main()
+    print ""
   except KeyboardInterrupt:
     print "TRL-C"
   except (
     KeyError,
     ValueError,
   ), err:
-    print err.message
+    print "Error: %s" % err.message
   except urllib2.HTTPError, err:
     print "Request Error: %s" % err
+
