@@ -163,6 +163,7 @@ def main():
     print "! Date range too long for URL indexes.  Searching all documents."
 
   # Auto-detect elasticsearch container address and build URL
+  esIP = None
   if not args.host:
     with open("/etc/hosts","r") as fp:
       hosts = fp.read().split("\n")
