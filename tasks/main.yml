@@ -18,12 +18,12 @@
     - "rpc_dependencies"
   when: >
     rcbops_support_pip_dependencies is defined and
-    ( inventory_hostname in groups[ 'neutron_agents_container' ] or inventory_hostname in groups[ 'infra_hosts' ] or inventory_hostname in groups[ 'utility_container' ] )
+    ( inventory_hostname in groups[ 'neutron_agents_container' ] or inventory_hostname in groups[ 'shared-infra_hosts' ] or inventory_hostname in groups[ 'utility_container' ] )
 
 
 - include: deploy_pccommon.yml
   when:  >
-    inventory_hostname in groups[ 'neutron_agents_container' ] or inventory_hostname in groups[ 'infra_hosts' ] or inventory_hostname in groups[ 'utility_container' ]
+    inventory_hostname in groups[ 'neutron_agents_container' ] or inventory_hostname in groups[ 'shared-infra_hosts' ] or inventory_hostname in groups[ 'utility_container' ]
   tags:
     - "rpc_pccommon"
 
