@@ -348,10 +348,10 @@ function rpc-instance-test-networking() {
   fi
 
   if [ $RPC_RELEASE -ge 9 ]; then
-    if [ ! "$( hostname | grep neutron_agents)" ]; then
+    if [ ! "$( hostname | egrep 'neutron(_|-)agents' )" ]; then
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
       echo "Attempting to find one for you..."
-      CONTAINER=`lxc-ls | grep neutron_agents |tail -1`
+      CONTAINER=`lxc-ls | egrep 'neutron(_|-)agents' |tail -1`
       LXC="lxc-attach -n $CONTAINER -- "
 
       if [ "$CONTAINER" ]; then
@@ -429,10 +429,10 @@ function rpc-instance-per-network() {
 
   UUID_LIST=""
   if [ $RPC_RELEASE -ge 9 ]; then
-    if [ ! "$( hostname | grep neutron_agents)" ]; then
+    if [ ! "$( hostname | egrep 'neutron(_|-)agents' )" ]; then
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
       echo "Attempting to find one for you..."
-      CONTAINER=`lxc-ls | grep neutron_agents`
+      CONTAINER=`lxc-ls | egrep 'neutron(_|-)agents'`
       LXC="lxc-attach -n $CONTAINER -- "
       if [ "$CONTAINER" ]; then
         echo -e "\nUsing [$CONTAINER]:\n"
@@ -548,10 +548,10 @@ function rpc-instance-per-network() {
 function rpc-instance-per-network-per-hypervisor() {
 
   if [ $RPC_RELEASE -ge 9 ]; then
-    if [ ! "$( hostname | grep neutron_agents)" ]; then
+    if [ ! "$( hostname | egrep 'neutron(_|-)agents' )" ]; then
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
       echo -n "Attempting to find one for you..."
-      CONTAINER=`lxc-ls | grep neutron_agents`
+      CONTAINER=`lxc-ls | grep 'neutron(_|-)agents'`
       LXC="lxc-attach -n $CONTAINER -- "
       if [ "$CONTAINER" ]; then
         echo -e "\nUsing [$CONTAINER]:\n"
@@ -794,9 +794,9 @@ function rpc-instance-waitfor-spawn() {
 
   echo -n "-- Waiting up to $SPAWN_TIMEOUT seconds for $ID to spawn..."
   CTR=0
-  STATE=`nova show $ID | awk '/status/ { print $4 }'`
+  STATE=`nova show $ID | awk '/ status / { print $4 }'`
   while [ "${STATE="BUILD"}" == "BUILD" -a $CTR -lt $SPAWN_TIMEOUT ]; do
-    STATE=`nova show $ID | awk '/status/ { print $4 }'`
+    STATE=`nova show $ID | awk '/ status / { print $4 }'`
     CTR=$(( $CTR + 2 ))
     echo -n "."
     sleep 2
