@@ -555,7 +555,7 @@ function rpc-instance-per-network-per-hypervisor() {
       LXC="lxc-attach -n $CONTAINER -- "
       if [ "$CONTAINER" ]; then
         echo -e "\nUsing [$CONTAINER]:\n"
-        $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/openstack-ops/master/pccommon.sh
+        $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/openstack-ops/newton-14.0/files/rpc-o-support/pccommon.sh
         $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-get-neutron-venv; rpc-instance-per-network-per-hypervisor"
         $LXC rm /tmp/pccommon.sh
         unset CONTAINER  LXC
