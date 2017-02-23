@@ -780,6 +780,69 @@ function swap-usage
   unset HUMAN OVERALL SUM PID
 }
 
+# Performs cinder volume verification on cinder servers:
+#  * For each existing volume, there must be an underlying LVM
+#  -- Pull list of volumes, SSH to cinder nodes if and check lvs
+[ ${Q=0} -eq 0 ] && echo "  - rpc-cinder-verify-lvm() - Audit cinder volumes to verify underlying LVM"
+function rpc-cinder-verify-lvm
+{
+  VOLHOST=`cinder list --fields os-vol-host-attr:host | awk '$4 ~ /@lvm/ {print $2","$4}'`
+  for volhost in $VOLHOST; do
+    VOL=`echo $volhost | cut -d, -f1`
+    HOST=`echo $volhost | cut -d, -f2 | cut -d@ -f1 | cut -d. -f1`
+
+    #This host?
+   
+    if [ "$(hostname | grep $HOST)" ]; then
+      VOLEXISTS=`lvs | grep volume-$VOL`
+    else
+      VOLEXISTS=`ssh -q $HOST lvs \| grep volume-$VOL`
+      [ $? == 255 ] && echo "$VOL [ Unable to connect ] $HOST"
+    fi
+
+    if [ "$VOLEXISTS" ]; then
+      echo "$VOL [ PASS ] @ $HOST" 
+    else
+      echo "$VOL [ FAIL ] @ $HOST"
+    fi
+    unset VOLEXISTS
+  done
+
+  unset VOLHOST VOL HOST VOLEXISTS
+}
+
+# Performs cinder volume verification on hypervisors:
+#  * For each existing volume, there 
+#  -- Pull list of volumes, SSH to cinder nodes if and check lvs
+[ ${Q=0} -eq 0 ] && echo "  - rpc-cinder-verify-attach() - Audit cinder volumes to verify instance attachments"
+function rpc-cinder-verify-attach
+{
+  VOLINST=`cinder list  | awk -F\| '$8 ~ /[0-9]/ {gsub(" ","",$2); gsub(" ","",$8); print $2","$8}'`
+  for volinst in $VOLINST; do
+    VOL=`echo $volinst | cut -d, -f1`
+    INST=`echo $volinst | cut -d, -f2 | cut -d. -f1`
+
+    HYPID=`nova show --minimal $INST | awk '/hypervisor_hostname/ {hyp = $4}; /instance_name/ {name = $4}; END {print hyp","name}'`
+    HYP=`echo $HYPID | cut -d, -f1 | cut -d. -f1`
+    ID=`echo $HYPID | cut -d, -f2`
+
+    if [ "$(hostname | grep $HYP)" ]; then
+      ATTACHED=`virsh dumpxml $ID | grep volume-$VOL`
+    else
+      ATTACHED=`ssh -q $HYP virsh dumpxml $ID \| grep volume-$VOL`
+      [ $? == 255 ] && echo "$VOL [ Unable to connect ] $HYP"
+    fi
+
+    if [ "$ATTACHED" ]; then
+      echo "$VOL [ PASS ] @ $HYP/$INST:$ID" 
+    else
+      echo "$VOL [ FAIL ] @ $HYP/$INST:$ID"
+    fi
+  done
+
+  unset VOLINST VOL INST HYPID HYP ID ATTACHED
+}
+
 ################
 # Unlisted helper functions
 
@@ -886,7 +949,7 @@ function rpc-instance-waitfor-boot() {
   return $RET
 }
 
-function raid_layout
+function dell_raid_layout
 {
   OMLOCATIONS="/opt/dell/srvadmin/bin/omreport /usr/bin/omreport"
   OM=
