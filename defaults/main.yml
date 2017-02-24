@@ -1,6 +1,18 @@
 ---
 
-rcbops_support_pip_dependencies:
+openstack_ops_pip_dependencies:
   - "python-openstackclient"
+  - "shade"
 
-rcbops_support_install_aacraid: False
+openstack_ops_install_aacraid: False
+
+openstack_ops_venv: "/openstack/venvs/rcbops-{{ rpc_release }}"
+openstack_ops_venv_bin: "{{ rcbops_openstack-ops_venv }}/bin"
+openstack_ops_pip_venv_enabled: True
+
+
+aacraid_apt_repo_url: "http://archive.thomas-krenn.com/packages"
+aacraid_apt_repo_keys:
+  - { url: "https://archive.thomas-krenn.com/tk-archive.gpg.pub", state: "present" }
+aacraid_apt_packages:
+  - arcconf
