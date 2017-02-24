@@ -1,5 +1,5 @@
 ---
-# Copyright 2014-2017 Rackspace Inc
+# Copyright 2017, Rackspace US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,15 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Install pip dependencies
-  pip:
-    name: "{{ item }}"
-    extra_args: "{{ pip_install_options|default('') }}"
-    virtualenv: "{{ openstack_ops_venv }}"
-  with_items: openstack_ops_pip_dependencies
-  when: openstack_ops_pip_dependencies is defined
-  register: pip_install
-  until: pip_install|success
-  retries: 3
-  tags:
-    - always
+aacraid_apt_repos:
+  - { repo: "deb {{ aacraid_apt_repo_url }} {{ ansible_lsb.codename }} main", state: "present" }

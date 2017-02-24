@@ -68,6 +68,7 @@ Add role to your playbook:
 
     - name: Install pccommon
       hosts: all
+      gather_facts: "{{ gather_facts | default(True) }}"
       roles:
          - { role: rcbops, tags: rpc_dependencies,rpc_pccommon }
 
