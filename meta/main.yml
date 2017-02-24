@@ -8,14 +8,10 @@ galaxy_info:
   license: Apache
   min_ansible_version: 1.9
   platforms:
-  - name: EL
     versions:
-    - 6
-    - 7
-  - name: Ubuntu
-    versions:
-    - precise
     - trusty
+    - xenial
   categories:
-  - cloud
+  - support
+  - rackspace
 dependencies: []
