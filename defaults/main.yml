@@ -1,5 +1,8 @@
 ---
 
+openstack_ops_requires_pip_packages:
+  - "virtualenv"
+
 openstack_ops_pip_dependencies:
   - "python-openstackclient"
   - "shade"
