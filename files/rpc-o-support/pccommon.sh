@@ -786,7 +786,7 @@ function swap-usage
 [ ${Q=0} -eq 0 ] && echo "  - rpc-cinder-verify-lvm() - Audit cinder volumes to verify underlying LVM"
 function rpc-cinder-verify-lvm
 {
-  VOLHOST=`cinder list --fields os-vol-host-attr:host | awk '$4 ~ /@lvm/ {print $2","$4}'`
+  VOLHOST=`cinder list --all-t --fields os-vol-host-attr:host | awk '$4 ~ /@lvm/ {print $2","$4}'`
   for volhost in $VOLHOST; do
     VOL=`echo $volhost | cut -d, -f1`
     HOST=`echo $volhost | cut -d, -f2 | cut -d@ -f1 | cut -d. -f1`
@@ -817,7 +817,7 @@ function rpc-cinder-verify-lvm
 [ ${Q=0} -eq 0 ] && echo "  - rpc-cinder-verify-attach() - Audit cinder volumes to verify instance attachments"
 function rpc-cinder-verify-attach
 {
-  VOLINST=`cinder list  | awk -F\| '$8 ~ /[0-9]/ {gsub(" ","",$2); gsub(" ","",$8); print $2","$8}'`
+  VOLINST=`cinder list  --all-t | awk -F\| '$9 ~ /[0-9]/ {gsub(" ","",$2); gsub(" ","",$9); print $2","$9}'`
   for volinst in $VOLINST; do
     VOL=`echo $volinst | cut -d, -f1`
     INST=`echo $volinst | cut -d, -f2 | cut -d. -f1`
