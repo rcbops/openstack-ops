@@ -229,61 +229,9 @@ function rpc-port-stats() {
   fi
 
   echo "Using $1($port)"
-
-  CTR=0
-  while [ 1 ]; do
-    br_int_port=`ovs-vsctl list-ports br-int | grep $port`
-    ovs-ofctl dump-ports br-int $br_int_port > $tmpfile
-    [ $? -ne 0 ] && echo "Error reading stats from OVS for $br_int_port in br-int" && return
-
-    RX_pkts=`grep rx $tmpfile | egrep -o "pkts=[0-9]+" | cut -d= -f2`
-    RX_bytes=`grep rx $tmpfile | egrep -o "bytes=[0-9]+" | cut -d= -f2`
-    RX_drop=`grep rx $tmpfile | egrep -o "drop=[0-9]+" | cut -d= -f2`
-    RX_errs=`grep rx $tmpfile | egrep -o "errs=[0-9]+" | cut -d= -f2`
-    RX_frame=`grep rx $tmpfile | egrep -o "frame=[0-9]+" | cut -d= -f2`
-    RX_over=`grep rx $tmpfile | egrep -o "over=[0-9]+" | cut -d= -f2`
-    RX_crc=`grep rx $tmpfile | egrep -o "crc=[0-9]+" | cut -d= -f2`
-
-    RX_pkts_DELTA=$(( $RX_pkts - ${RX_pkts_OLD=0} ))
-    RX_bytes_DELTA=`humanize_kb $(( $RX_bytes - ${RX_bytes_OLD=0} ))`
-    RX_drop_DELTA=$(( $RX_drop - ${RX_drop_OLD=0} ))
-    RX_errs_DELTA=$(( $RX_errs - ${RX_errs_OLD=0} ))
-    RX_frame_DELTA=$(( $RX_frame - ${RX_frame_OLD=0} ))
-    RX_over_DELTA=$(( $RX_over - ${RX_over_OLD=0} ))
-    RX_crc_DELTA=$(( $RX_crc  - ${RX_crc_OLD=0} ))
-
-    RX_pkts_OLD=$RX_pkts
-    RX_bytes_OLD=$RX_bytes
-    RX_drop_OLD=$RX_drop
-    RX_errs_OLD=$RX_errs
-    RX_frame_OLD=$RX_frame
-    RX_over_OLD=$RX_over
-    RX_crc_OLD=$RX_crc
-
-    TX_pkts=`grep tx $tmpfile | egrep -o "pkts=[0-9]+" | cut -d= -f2`
-    TX_bytes=`grep tx $tmpfile | egrep -o "bytes=[0-9]+" | cut -d= -f2`
-    TX_drop=`grep tx $tmpfile | egrep -o "drop=[0-9]+" | cut -d= -f2`
-    TX_errs=`grep tx $tmpfile | egrep -o "errs=[0-9]+" | cut -d= -f2`
-    TX_coll=`grep tx $tmpfile | egrep -o "coll=[0-9]+" | cut -d= -f2`
-
-    TX_pkts_DELTA=$(( $TX_pkts - ${TX_pkts_OLD=0} ))
-    TX_bytes_DELTA=`humanize_kb $(( $TX_bytes - ${TX_bytes_OLD=0} ))`
-    TX_drop_DELTA=$(( $TX_drop - ${TX_drop_OLD=0} ))
-    TX_errs_DELTA=$(( $TX_errs - ${TX_errs_OLD=0} ))
-    TX_coll_DELTA=$(( $TX_coll - ${TX_coll_OLD=0} ))
-
-    TX_pkts_OLD=$TX_pkts
-    TX_bytes_OLD=$TX_bytes
-    TX_drop_OLD=$TX_drop
-    TX_errs_OLD=$TX_errs
-    TX_coll_OLD=$TX_coll
-
-    [ $(( $CTR % 5 )) -eq 0 ] && printf "%12s %12s %12s %12s\n" "RXpps" "RXBps" "TXpps" "TXBps"
-    printf "%12s %12s %12s %12s\n" "$RX_pkts_DELTA" "$RX_bytes_DELTA" "$TX_pkts_DELTA" "$TX_bytes_DELTA "
-    sleep 2
-    CTR=$(( $CTR + 1 ))
-  done
-
+ 
+  # meaty stuff goes here
+ 
   rm $tmpfile
   unset CTR tmpfile port br_int_port
   # Come back some day and clean up all the TX_ RX_ vars :/
@@ -713,7 +661,7 @@ function rpc-user-roles () {
   done
 }
 
-[ ${Q=0} -eq 0 ] && echo "  - rpc-update-pccommon() - Grabs the latest version of pccommon.sh if there is one"
+#[ ${Q=0} -eq 0 ] && echo "  - rpc-update-pccommon() - Grabs the latest version of pccommon.sh if there is one"
 function rpc-update-pccommon () {
   GITHUB="https://raw.githubusercontent.com/rsoprivatecloud/openstack-ops/master/pccommon.sh"
 
@@ -787,17 +735,29 @@ function swap-usage
 function rpc-cinder-verify-lvm
 {
   VOLHOST=`cinder list --all-t --fields os-vol-host-attr:host | awk '$4 ~ /@lvm/ {print $2","$4}'`
+  SNAPVOL=`cinder snapshot-list --all- | awk '/[0-9]/ {print $2","$4}'`
+
   for volhost in $VOLHOST; do
     VOL=`echo $volhost | cut -d, -f1`
     HOST=`echo $volhost | cut -d, -f2 | cut -d@ -f1 | cut -d. -f1`
 
+    VOLSNAP=`cinder snapshot-list --all- --volume-id=$VOL | awk '/[0-9]/ {print $2}'` 
+
     #This host?
-   
     if [ "$(hostname | grep $HOST)" ]; then
       VOLEXISTS=`lvs | grep volume-$VOL`
+      if [ "$VOLSNAP" ]; then
+        SNAPEXISTS=`lvs | grep _snapshot-$VOLSNAP`
+      fi
     else
       VOLEXISTS=`ssh -q $HOST lvs \| grep volume-$VOL`
-      [ $? == 255 ] && echo "$VOL [ Unable to connect ] $HOST"
+      if [ $? == 255 ]; then
+        echo "$VOL [ Unable to connect ] $HOST"
+      else
+        if [ "$VOLSNAP" ]; then
+          SNAPEXISTS=`ssh -q $HOST lvs \| grep _snapshot-$VOLSNAP`
+        fi
+      fi
     fi
 
     if [ "$VOLEXISTS" ]; then
@@ -805,7 +765,16 @@ function rpc-cinder-verify-lvm
     else
       echo "$VOL [ FAIL ] @ $HOST"
     fi
-    unset VOLEXISTS
+
+    if [ "$VOLSNAP" ]; then
+      if [ "$SNAPEXISTS" ]; then
+        echo "$VOLSNAP [ PASS ] @ $HOST (snapshot of $VOL)"
+      else
+        echo "$VOLSNAP [ FAIL ] @ $HOST (snapshot of $VOL)"
+      fi
+    fi
+      
+    unset VOLEXISTS SNAPEXISTS
   done
 
   unset VOLHOST VOL HOST VOLEXISTS
