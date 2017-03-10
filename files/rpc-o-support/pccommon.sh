@@ -735,7 +735,6 @@ function swap-usage
 function rpc-cinder-verify-lvm
 {
   VOLHOST=`cinder list --all-t --fields os-vol-host-attr:host | awk '$4 ~ /@lvm/ {print $2","$4}'`
-  SNAPVOL=`cinder snapshot-list --all- | awk '/[0-9]/ {print $2","$4}'`
 
   for volhost in $VOLHOST; do
     VOL=`echo $volhost | cut -d, -f1`
