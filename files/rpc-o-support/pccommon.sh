@@ -735,6 +735,7 @@ function swap-usage
 function rpc-cinder-verify-lvm
 {
   VOLHOST=`cinder list --all-t --fields os-vol-host-attr:host | awk '$4 ~ /@lvm/ {print $2","$4}'`
+  SNAPVOL=`cinder snapshot-list --all- | awk '/[0-9]/ {print $2","$4}'`
 
   for volhost in $VOLHOST; do
     VOL=`echo $volhost | cut -d, -f1`
@@ -742,20 +743,12 @@ function rpc-cinder-verify-lvm
 
     VOLSNAP=`cinder snapshot-list --all- --volume-id=$VOL | awk '/[0-9]/ {print $2}'` 
 
-    #This host?
     if [ "$(hostname | grep $HOST)" ]; then
       VOLEXISTS=`lvs | grep volume-$VOL`
-      if [ "$VOLSNAP" ]; then
-        SNAPEXISTS=`lvs | grep _snapshot-$VOLSNAP`
-      fi
     else
       VOLEXISTS=`ssh -q $HOST lvs \| grep volume-$VOL`
       if [ $? == 255 ]; then
         echo "$VOL [ Unable to connect ] $HOST"
-      else
-        if [ "$VOLSNAP" ]; then
-          SNAPEXISTS=`ssh -q $HOST lvs \| grep _snapshot-$VOLSNAP`
-        fi
       fi
     fi
 
@@ -765,14 +758,23 @@ function rpc-cinder-verify-lvm
       echo "$VOL [ FAIL ] @ $HOST"
     fi
 
-    if [ "$VOLSNAP" ]; then
-      if [ "$SNAPEXISTS" ]; then
-        echo "$VOLSNAP [ PASS ] @ $HOST (snapshot of $VOL)"
+    for snap in $VOLSNAP; do
+      if [ "$(hostname | grep $HOST)" ]; then
+        SNAPEXISTS=`lvs | grep volume-$VOL`
       else
-        echo "$VOLSNAP [ FAIL ] @ $HOST (snapshot of $VOL)"
+        SNAPEXISTS=`ssh -q $HOST lvs \| grep _snapshot-$snap`
+        if [ $? == 255 ]; then
+          echo "$snap [ Unable to connect ] $HOST"
+        fi
       fi
-    fi
-      
+
+      if [ "$SNAPEXISTS" ]; then
+        echo "$snap [ PASS ] @ $HOST (snapshot of $VOL)"
+      else
+        echo "$snap[ FAIL ] @ $HOST (snapshot of $VOL)"
+      fi
+    done 
+
     unset VOLEXISTS SNAPEXISTS
   done
 
