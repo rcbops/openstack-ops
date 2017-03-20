@@ -11,7 +11,7 @@ openstack_ops_pip_dependencies:
 openstack_ops_install_aacraid: False
 
 openstack_ops_venv: "/openstack/venvs/rcbops-{{ rpc_release }}"
-openstack_ops_venv_bin: "{{ rcbops_openstack-ops_venv }}/bin"
+openstack_ops_venv_bin: "{{ openstack_ops_venv }}/bin"
 openstack_ops_pip_venv_enabled: True
 
 
