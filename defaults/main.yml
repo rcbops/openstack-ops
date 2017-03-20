@@ -6,6 +6,7 @@ openstack_ops_requires_pip_packages:
 openstack_ops_pip_dependencies:
   - "python-openstackclient"
   - "shade"
+  - "os-client-config"
 
 openstack_ops_install_aacraid: False
 
