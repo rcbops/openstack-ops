@@ -21,12 +21,3 @@
   tags:
     - magnum
     - magnum-client
-
-- name: Install Carina client
-  get_url:
-    url: '{{ magnum_carina_url }}'
-    dest: /usr/local/bin/carina
-    mode: 0755
-  tags:
-    - magnum
-    - magnum_client
