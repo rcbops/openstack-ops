@@ -1,5 +1,5 @@
 ---
-# Copyright 2017-Present, Rackspace US, Inc.
+# Copyright 2014-Present, Rackspace US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ops_aacraid_apt_repos:
-  - { repo: "deb {{ ops_aacraid_apt_repo_url }} {{ ansible_lsb.codename }} main", state: "present" }
+- name: Add ctrl_alt_del to spice_auto
+  template:
+    dest: "/usr/share/spice-html5/spice_auto.html"
+    src: "spice_auto.html.j2"
 
-ops_hwraid_apt_repos:
-  - { repo: "deb {{ ops_hwraid_apt_repo_url }} {{ ansible_lsb.codename }} main", state: "present" }
+- name: Add ctrl_alt_del to spice css
+  template:
+    dest: "/usr/share/spice-html5/spice.css"
+    src: "spice.css.j2"

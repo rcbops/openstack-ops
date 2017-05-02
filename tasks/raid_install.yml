@@ -1,5 +1,5 @@
 ---
-# Copyright 2017-Present, Rackspace US, Inc.
+# Copyright 2016, Rackspace US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ops_aacraid_apt_repos:
-  - { repo: "deb {{ ops_aacraid_apt_repo_url }} {{ ansible_lsb.codename }} main", state: "present" }
-
-ops_hwraid_apt_repos:
-  - { repo: "deb {{ ops_hwraid_apt_repo_url }} {{ ansible_lsb.codename }} main", state: "present" }
+- name: Install HWRaid packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 600
+  with_items: "{{ ops_hwraid_apt_packages }}"
+  when:
+    - ops_hwraid_apt_packages is defined
+    - ansible_os_family == 'Debian'
