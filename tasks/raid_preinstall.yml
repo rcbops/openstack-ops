@@ -1,5 +1,5 @@
 ---
-# Copyright 2016-2017 Rackspace Inc
+# Copyright 2016, Rackspace US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,42 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-# Install the Adaptec AAC-RAID utility arcconf
-- name: Add arcconf apt-keys
+- name: Add HWRaid apt keys
   apt_key:
     url: "{{ item.url }}"
     state: "{{ item.state }}"
-  with_items: "{{ ops_aacraid_apt_repo_keys }}"
-  register: add_keys
-  until: add_keys|success
-  ignore_errors: True
+  with_items: "{{ ops_hwraid_apt_keys }}"
+  when:
+    - ops_hwraid_apt_keys is defined
+    - ansible_os_family == 'Debian'
+  register: add_keys_url
+  until: add_keys_url|success
   retries: 5
   delay: 2
 
-- name: Add arcconf repos
+- name: Add HWRaid apt repositories
   apt_repository:
     repo: "{{ item.repo }}"
     state: "{{ item.state }}"
     filename: "{{ item.filename | default(omit) }}"
-  with_items: "{{ ops_aacraid_apt_repos }}"
+  with_items: "{{ ops_hwraid_apt_repos }}"
+  when:
+    - ansible_os_family == 'Debian'
   register: add_repos
   until: add_repos|success
-  retries: 5
-  delay: 2
-
-- name: Update apt if necessary
-  apt:
-    update_cache: yes
-    cache_valid_time: 600
-  when: add_repos|changed
-
-- name: Install arcconf packages
-  apt:
-    name: "{{ item }}"
-    state: latest
-  with_items: "{{ ops_aacraid_apt_packages }}"
-  register: install_packages
-  until: install_packages|success
   retries: 5
   delay: 2

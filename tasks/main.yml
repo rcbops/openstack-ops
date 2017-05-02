@@ -27,23 +27,144 @@
     - always
 
 - include: install_dependencies.yml
-  tags:
-    - "rpc_dependencies"
   when:
-    - openstack_ops_pip_dependencies is defined
+    - ops_pip_dependencies is defined
     - ( inventory_hostname in groups[ 'neutron_agents_container' ] or inventory_hostname in groups[ 'shared-infra_hosts' ] or inventory_hostname in groups[ 'utility_container' ] )
+  tags:
+    - ops_dependencies
 
+- include: rpc_release.yml
+  tags:
+    - rpc_release
+
+- include: host_kernel_modules.yml
+  when: >
+    inventory_hostname in groups['hosts']
+  tags:
+    - host_kernel_tuning
+
+- include: host_kernel_tuning.yml
+  when: >
+    inventory_hostname in groups['hosts']
+  tags:
+    - host_kernel_tuning
+
+- include: disable_unattended_upgrades.yml
+  tags:
+    - ubuntu_apt_configuration
+
+- include: configure_unattended_upgrades.yml
+  tags:
+    - ubuntu_apt_configuration
+
+- include: support_preinstall.yml
+  tags:
+    - support_packages
 
 - include: deploy_pccommon.yml
   when:
     - inventory_hostname in groups[ 'neutron_agents_container' ] or inventory_hostname in groups[ 'shared-infra_hosts' ] or inventory_hostname in groups[ 'utility_container' ]
   tags:
-    - "rpc_pccommon"
-
+    - ops_pccommon
+    - support_packages
 
 - include: aacraid_tools.yml
   when:
-    - openstack_ops_install_aacraid | default(false)
+    - install_aacraid | default(false)
     - inventory_hostname in groups[ 'swift_obj' ]
   tags:
-    - "rpc_aacraid_conf"
+    - ops_aacraid_conf
+    - support_packages
+
+- include: bashrc.yml
+  tags:
+    - bash_configuration
+
+- include: bash_histformat.yml
+  tags:
+    - bash_configuration
+
+- include: bash_autocompletion.yml
+  tags:
+    - bash_configuration
+
+- include: motd.yml
+  tags:
+    - login_configuration
+
+- include: spice_console.yml
+  when: >
+    inventory_hostname in groups['nova_console'] and nova_console_type == 'spice'
+  tags:
+    - nova_spice_console
+
+- include: support_key_pair.yml
+  when: >
+    groups['nova_api_os_compute']|length > 0 and inventory_hostname == groups['utility'][0]
+  tags:
+    - support_nova_configuration
+
+- include: support_sec_group.yml
+  when: >
+    groups['neutron_server']|length > 0 and inventory_hostname == groups['utility'][0]
+  tags:
+    - support_nova_configuration
+
+- include: distribute_auth_key.yml
+  when: >
+    groups['nova_api_os_compute']|length > 0 and inventory_hostname == groups['utility'][0]
+  tags:
+    - support_nova_configuration
+
+- include: retrieve_auth_key.yml
+  when: >
+    groups['nova_api_os_compute']|length > 0 and inventory_hostname != groups['utility'][0] and (inventory_hostname in groups['utility'] or inventory_hostname in groups['neutron_all'])
+  tags:
+    - support_nova_configuration
+
+- include: support_magnum.yml
+  when: >
+    groups['magnum_all']|length > 0 and inventory_hostname == groups['utility'][0]
+  tags:
+    - support_packages
+
+- include: holland_preinstall.yml
+  when: >
+    inventory_hostname in groups['galera']
+  tags:
+    - galera_holland_configuration
+
+- include: holland_db_setup.yml
+  when: >
+    inventory_hostname == groups['galera'][0]
+  tags:
+    - galera_holland_configuration
+
+- include: holland_config.yml
+  when: >
+    inventory_hostname in groups['galera']
+  tags:
+    - galera_holland_configuration
+
+- include: holland_create_backupset.yml
+  when: >
+    inventory_hostname in groups['galera']
+  tags:
+    - galera_holland_configuration
+
+- include: neutron_debug.yml
+  when: >
+    inventory_hostname in groups['neutron_agent']
+  tags:
+    - support_packages
+
+- include: create_default_nova_flavors.yml
+  when:  inventory_hostname == groups['utility'][0]
+  tags:
+    - support_nova_configuration
+
+- include: sos.yml
+  when:
+    - inventory_hostname in groups['hosts']
+  tags:
+    - support_packages
