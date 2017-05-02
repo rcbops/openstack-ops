@@ -67,11 +67,11 @@ Playbook integration
 
 Add role to your playbook:
 
-    - name: Install pccommon
+    - name: Install ops tools
       hosts: all
       gather_facts: "{{ gather_facts | default(True) }}"
       roles:
-         - { role: rcbops, tags: rpc_dependencies,rpc_pccommon }
+         - { role: rcbops }
 
 License
 -------
