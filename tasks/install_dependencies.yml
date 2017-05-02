@@ -15,19 +15,19 @@
 
 - name: Create venv base directory
   file:
-    dest: "{{ openstack_ops_venv |dirname }}"
+    dest: "{{ ops_venv |dirname }}"
     owner: "root"
     group: "root"
     mode: "755"
     state: "directory"
-  when: openstack_ops_pip_venv_enabled |bool
+  when: ops_pip_venv_enabled |bool
   tags:
    - always
 
 
 - name: Install requires pip packages
   pip:
-    name: "{{ openstack_ops_requires_pip_packages | join(' ') }}"
+    name: "{{ ops_requires_pip_packages | join(' ') }}"
     state: latest
     extra_args: >-
       {{ (pip_install_upper_constraints is defined) | ternary('--constraint ' + pip_install_upper_constraints | default(''),'') }}
@@ -43,9 +43,9 @@
   pip:
     name: "{{ item }}"
     extra_args: "{{ pip_install_options|default('') }}"
-    virtualenv: "{{ openstack_ops_venv }}"
-  with_items: "{{ openstack_ops_pip_dependencies }}"
-  when: openstack_ops_pip_dependencies is defined
+    virtualenv: "{{ ops_venv }}"
+  with_items: "{{ ops_pip_dependencies }}"
+  when: ops_pip_dependencies is defined
   register: pip_install
   until: pip_install|success
   retries: 3

@@ -1,5 +1,5 @@
 ---
-# Copyright 2017-Present, Rackspace US, Inc.
+# Copyright 2015-Present, Rackspace US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ops_aacraid_apt_repos:
-  - { repo: "deb {{ ops_aacraid_apt_repo_url }} {{ ansible_lsb.codename }} main", state: "present" }
-
-ops_hwraid_apt_repos:
-  - { repo: "deb {{ ops_hwraid_apt_repo_url }} {{ ansible_lsb.codename }} main", state: "present" }
+- name: Host kernel sysctl tuning
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    sysctl_set: "{{ item.set|default('yes') }}"
+    state: "{{ item.state|default('present') }}"
+    reload: "{{ item.reload|default('yes') }}"
+  ignore_errors: true
+  with_items: "{{ ops_host_kernel_sysctl }}"
+  when: ops_host_kernel_sysctl is defined

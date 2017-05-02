@@ -1,5 +1,5 @@
 ---
-# Copyright 2017-Present, Rackspace US, Inc.
+# Copyright 2014-Present, Rackspace US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ops_aacraid_apt_repos:
-  - { repo: "deb {{ ops_aacraid_apt_repo_url }} {{ ansible_lsb.codename }} main", state: "present" }
-
-ops_hwraid_apt_repos:
-  - { repo: "deb {{ ops_hwraid_apt_repo_url }} {{ ansible_lsb.codename }} main", state: "present" }
+- name: Set bash history format file
+  template:
+    owner: root
+    group: root
+    mode: 0755
+    src: histformat.sh.j2
+    dest: "/etc/profile.d/histformat.sh"

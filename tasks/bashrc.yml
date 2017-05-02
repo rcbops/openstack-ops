@@ -1,5 +1,5 @@
 ---
-# Copyright 2017-Present, Rackspace US, Inc.
+# Copyright 2014, Rackspace US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ops_aacraid_apt_repos:
-  - { repo: "deb {{ ops_aacraid_apt_repo_url }} {{ ansible_lsb.codename }} main", state: "present" }
+- name: Check default editor
+  shell:
+    echo '' | update-alternatives --config editor | grep 'mode' | grep '*'
+  register: editor
+  failed_when: false
+  when: ansible_os_family == 'Debian'
 
-ops_hwraid_apt_repos:
-  - { repo: "deb {{ ops_hwraid_apt_repo_url }} {{ ansible_lsb.codename }} main", state: "present" }
+- name: Set vim as default
+  command: update-alternatives --set editor /usr/bin/vim.basic
+  when:
+    - editor.rc != 0
+    - not editor.stdout|search('vim')
+    - ansible_os_family == 'Debian'
