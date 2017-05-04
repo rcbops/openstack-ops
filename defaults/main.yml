@@ -1,12 +1,11 @@
 ---
 
 ops_requires_pip_packages:
-  - "virtualenv"
+  - virtualenv
 
 ops_pip_dependencies:
-  - "python-openstackclient"
-  - "shade"
-  - "os-client-config"
+  - python-openstackclient
+  - os-client-config
 
 ops_apt_util_packages:
   - bash-completion
