@@ -18,7 +18,7 @@
     name: "{{ item.name }}"
     file_path: "{{ item.src }}"
     state: "present"
-    server: "{{ hostvars[groups['memcached'][0]]['ansible_ssh_host'] }}:11211"
+    server: "{{ hostvars[groups['memcached'][0]]['ansible_host'] }}:11211"
     encrypt_string: "{{ memcached_encryption_key }}"
     expires: 86400
   with_items:
