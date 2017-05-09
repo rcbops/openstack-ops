@@ -6,7 +6,7 @@ galaxy_info:
     for RPC-O products
   company: Rackspace
   license: Apache
-  min_ansible_version: 1.9
+  min_ansible_version: 2.2
   platforms:
     versions:
     - trusty
