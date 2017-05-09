@@ -33,7 +33,7 @@
     state: "retrieve"
     file_mode: "{{ item.file_mode }}"
     dir_mode: "{{ item.dir_mode }}"
-    server: "{{ hostvars[groups['memcached'][0]]['ansible_ssh_host'] }}:11211"
+    server: "{{ hostvars[groups['memcached'][0]]['ansible_host'] }}:11211"
     encrypt_string: "{{ memcached_encryption_key }}"
   with_items:
     - src: "/root/.ssh/rpc_support"
