@@ -168,3 +168,10 @@
     - inventory_hostname in groups['hosts']
   tags:
     - support_packages
+
+- include: hp_firmware_updater.yml
+  when:
+    - inventory_hostname in groups['hosts']
+    - ops_update_hp_firmware | bool == true
+  tags:
+    - hp_firmware_updater

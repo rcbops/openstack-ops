@@ -19,6 +19,7 @@ ops_apt_util_packages:
   - sudo
   - tcpdump
   - vim
+  - screen
 
 ops_apt_host_packages:
   - linux-crashdump
@@ -52,6 +53,19 @@ ops_hwraid_apt_keys:
 ops_hwraid_apt_packages:
   - megacli
   - lsiutil
+
+
+ops_update_hp_firmware: False
+
+ops_hp_tools_apt_repo_url: "http://downloads.linux.hpe.com/SDR/repo/mcp/ubuntu/"
+ops_hp_tools_apt_repo_keys:
+  - { url: "https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key1.pub", state: "present" }
+ops_hp_tools_apt_firmware_packages:
+  - rpm2cpio
+  - dmidecode
+  - ethtool
+  - hpssacli
+  - hponcfg
 
 
 ops_holland_venv_enabled: True

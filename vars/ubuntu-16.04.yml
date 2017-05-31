@@ -18,3 +18,6 @@ ops_aacraid_apt_repos:
 
 ops_hwraid_apt_repos:
   - { repo: "deb {{ ops_hwraid_apt_repo_url }} wily main", state: "present" }
+
+ops_hp_tools_apt_repos:
+  - { repo: "deb {{ ops_hp_tools_apt_repo_url }} {{ ansible_lsb.codename }} main", state: "present" }
