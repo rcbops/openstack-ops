@@ -172,6 +172,7 @@
 - include: hp_firmware_updater.yml
   when:
     - inventory_hostname in groups['hosts']
+    - ansible_system_vendor == "HP"
     - ops_update_hp_firmware | bool == true
   tags:
     - hp_firmware_updater
