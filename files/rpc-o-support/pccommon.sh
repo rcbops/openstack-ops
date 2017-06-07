@@ -812,6 +812,19 @@ function rpc-cinder-verify-attach
   unset VOLINST VOL INST HYPID HYP ID ATTACHED
 }
 
+[ ${Q=0} -eq 0 ] && echo "  - rpc-image2base() - Given an image ID, will translate to _base image name."
+# Thanks to Mark Deverter
+function rpc-image2base {
+  if [ ! "$1" ]; then
+    echo "Must supply image ID"
+    return
+  fi
+
+  echo "Image ID: $1"
+  echo -n "Base Image Filename: "
+  echo -n $1 | sha1sum | cut -d\  -f1
+}
+
 ################
 # Unlisted helper functions
 
