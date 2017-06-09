@@ -15,8 +15,18 @@ from subprocess import PIPE
 
 VERSION = '2017-05-31'
 
-checkPrereqs    = ["dmidecode", "ethtool", "hpssacli", "hponcfg", "lspci", "systool"]
-installPrereqs  = ["rpm2cpio"]
+# Command to package name mappings
+checkPrereqs    = {
+  "dmidecode": "dmidecode",
+  "ethtool":   "ethtool",
+  "hpssacli":  "hpssacli",
+  "hponcfg":   "hponcfg",
+  "lspci":     "pciutils",
+  "systool":   "sysfsutils"
+  }
+installPrereqs  = {
+  "rpm2cpio": "rpm2cpio"
+  }
 
 baseUrl = "http://aaronsegura.com/hpfw/"
 workDir = "%s/%s-%s" % (os.environ["HOME"], "hpfw-upgrade", dt.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
@@ -134,13 +144,7 @@ for i in checkPrereqs:
     else:
       sys.stdout.write("Unable to find %s.  Installing..." % i)
       sys.stdout.flush()
-      if i == "systool":
-        package = "sysfsutils"
-      elif i == "lspci":
-        package = "pciutils"
-      else:
-        package = i
-      p = subprocess.Popen(['/usr/bin/env', 'apt-get', 'install', '-y', package], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+      p = subprocess.Popen(['/usr/bin/env', 'apt-get', 'install', '-y', checkPrereqs[i], stdin=PIPE, stdout=PIPE, stderr=PIPE)
       p.communicate()
       if p.returncode > 0:
         print "Failed.  Do the needful."
@@ -173,7 +177,7 @@ if args.flash:
       else:
         sys.stdout.write("Unable to find %s.  Installing..." % i)
         sys.stdout.flush()
-        p = subprocess.Popen(['/usr/bin/env', 'apt-get', 'install', '-y', i], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        p = subprocess.Popen(['/usr/bin/env', 'apt-get', 'install', '-y', installPrereqs[i], stdin=PIPE, stdout=PIPE, stderr=PIPE)
         p.communicate()
         if p.returncode > 0:
           print "Failed.  Do the needful."
@@ -205,7 +209,7 @@ if "INIC" in args.do:
         for i, line in enumerate(systout):
           if slot in line:
             try:
-              names.append(re.search('(?<=Class Device\s=\s\")[e,p][n,m,t,0-9][o,s,h,p]?[0-9]f?[0-9]?', systout[i-1]).group(0))
+              names.append(re.search('(?<=Class Device\s=\s\")([^\"]|\\\")*, systout[i-1]).group(0))
             except IndexError:
               print "Could not find the NIC names for the {} in slot: {}" .format(model, slot)
               bye = True
