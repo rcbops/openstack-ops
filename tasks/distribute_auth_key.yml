@@ -13,16 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+- name: Check for key file
+  stat:
+    path: "/root/.ssh/rpc_support"
+  register: support_key_check
+
+- name: Get contents of rpc_support SSH key
+  slurp:
+    src: "/root/.ssh/rpc_support"
+  register: support_key
+  when: support_key_check.stat.exists |bool
+
+- name: Get contents of rpc_support SSH pub key
+  slurp:
+    src: "/root/.ssh/rpc_support.pub"
+  register: support_pub_key
+  when: support_key_check.stat.exists |bool
+
 - name: Distribute authorized keys for cluster consumption
-  memcached:
-    name: "{{ item.name }}"
-    file_path: "{{ item.src }}"
+  file:
+    path: "{{ item.path }}"
+    content: "{{ item.content }}"
     state: "present"
-    server: "{{ hostvars[groups['memcached'][0]]['ansible_host'] }}:11211"
-    encrypt_string: "{{ memcached_encryption_key }}"
-    expires: 86400
+    mode: "0600"
   with_items:
-    - src: "/root/.ssh/rpc_support"
-      name: "rpc_support"
-    - src: "/root/.ssh/rpc_support.pub"
-      name: "rpc_support_pub"
+    - path: "/root/.ssh/rpc_support"
+      content: "{{ support_key.content | b64decode }}"
+    - path: "/root/.ssh/rpc_support.pub"
+      content: "{{ support_pub_key.content | b64decode }}"

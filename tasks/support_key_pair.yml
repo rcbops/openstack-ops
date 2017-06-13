@@ -14,33 +14,42 @@
 # limitations under the License.
 
 - name: Check for key file
-  shell: ls /root/.ssh/rpc_support
+  stat:
+    path: /root/.ssh/rpc_support
   failed_when: false
-  changed_when: key_check.rc != 0
-  register: key_check
+  register: support_key_check
 
-- name: Create rpc_support SSH key
+- name: Create support SSH key
   shell: ssh-keygen -f "/root/.ssh/rpc_support" -t rsa -q -N ""
-  register: support_key
-  when: key_check|changed
+  register: support_key_create
+  when: not support_key_check.stat.exists |bool
 
-- name: Check for rpc_support keypair in nova
+- name: Get fingerprint of rpc_support SSH key
+  shell: ssh-keygen -E md5 -lf "/root/.ssh/rpc_support.pub"  |awk '/MD5:/ {h=substr($2,5,47); print h}'
+  register: support_key_fingerprint
+  when: support_key_check.stat.exists |bool or support_key_create|changed
+
+- name: Check for support keypair in nova
   shell: |
     . /root/openrc
     nova keypair-list | grep rpc_support
   failed_when: false
-  register: rpc_support_key
+  register: nova_support_key
 
-- name: Delete rpc_support keypair in nova
+- name: Delete support keypair in nova
   shell: |
     . /root/openrc
-    nova keypair-keypair-delete rpc_support
+    nova keypair-delete rpc_support
   failed_when: false
-  register: rpc_support_key_delete
-  when: support_key|changed and rpc_support_key.rc == 0
+  register: nova_support_key_delete
+  retries: 2
+  delay: 10
+  when: nova_support_key.rc == 0 and support_key_fingerprint.stdout not in nova_support_key.stdout
 
-- name: Add rpc_support key to nova
+- name: Add support key to nova
   shell: |
     . /root/openrc
     nova keypair-add --pub-key /root/.ssh/rpc_support.pub rpc_support
-  when: rpc_support_key.rc != 0 or rpc_support_key_delete|changed
+  retries: 2
+  delay: 10
+  when: nova_support_key_delete|changed or nova_support_key.rc == 1
