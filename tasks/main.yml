@@ -116,12 +116,6 @@
   tags:
     - support_nova_configuration
 
-- include: retrieve_auth_key.yml
-  when: >
-    groups['nova_api_os_compute']|length > 0 and inventory_hostname != groups['utility'][0] and (inventory_hostname in groups['utility'] or inventory_hostname in groups['neutron_all'])
-  tags:
-    - support_nova_configuration
-
 - include: support_magnum.yml
   when: >
     groups['magnum_all']|length > 0 and inventory_hostname == groups['utility'][0]
