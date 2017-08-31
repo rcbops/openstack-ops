@@ -144,7 +144,7 @@ for i in checkPrereqs:
     else:
       sys.stdout.write("Unable to find %s.  Installing..." % i)
       sys.stdout.flush()
-      p = subprocess.Popen(['/usr/bin/env', 'apt-get', 'install', '-y', checkPrereqs[i], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+      p = subprocess.Popen(['/usr/bin/env', 'apt-get', 'install', '-y', checkPrereqs[i]], stdin=PIPE, stdout=PIPE, stderr=PIPE)
       p.communicate()
       if p.returncode > 0:
         print "Failed.  Do the needful."
@@ -177,7 +177,7 @@ if args.flash:
       else:
         sys.stdout.write("Unable to find %s.  Installing..." % i)
         sys.stdout.flush()
-        p = subprocess.Popen(['/usr/bin/env', 'apt-get', 'install', '-y', installPrereqs[i], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        p = subprocess.Popen(['/usr/bin/env', 'apt-get', 'install', '-y', installPrereqs[i]], stdin=PIPE, stdout=PIPE, stderr=PIPE)
         p.communicate()
         if p.returncode > 0:
           print "Failed.  Do the needful."
@@ -203,19 +203,21 @@ if "INIC" in args.do:
       except IndexError:
         print "Could not find the model number for the nic in slot {}." .format(slot)
         bye = True
+
       if model:
         n = subprocess.Popen(['/usr/bin/env', 'systool', '-c', 'net'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
         systout = n.communicate()[0].strip().splitlines()
         for i, line in enumerate(systout):
           if slot in line:
             try:
-              names.append(re.search('(?<=Class Device\s=\s\")([^\"]|\\\")*, systout[i-1]).group(0))
+              names.append(re.search('(?<=Class Device\s=\s\")([^\\"])*', systout[i-1]).group(0))
             except IndexError:
               print "Could not find the NIC names for the {} in slot: {}" .format(model, slot)
               bye = True
+
         if names:
           inics[slot] = {}
-          f = subprocess.Popen(['/usr/bin/env', 'ethtool', '-i', '{}' .format(names[0])], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+          f = subprocess.Popen(['/usr/bin/env', 'ethtool', '-i', names[0]], stdin=PIPE, stdout=PIPE, stderr=PIPE)
           warez = f.communicate()[0].strip().upper().splitlines()
           for line in warez:
             if 'FIRMWARE-VERSION:' in line:
