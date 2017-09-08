@@ -30,7 +30,7 @@ ops_apt_host_packages:
   - vlan
 
 ops_neutron_debug_packages:
-  - arping
+  - iputils-arping
   - ethtool
 
 
