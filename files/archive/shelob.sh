@@ -145,7 +145,7 @@ function check_prereqs() {
   done
   echo ""
 
-  for pkg in vlan arping; do 
+  for pkg in vlan iputils-arping; do
     dpkg -l $pkg | grep ^ii > /dev/null 2>&1
     if [ $? -gt 0 ]; then
       echo "# Installing $pkg package locally..."
@@ -169,7 +169,7 @@ function configure_local_network() {
     TOCLEAN="local"
     ip l set up ${NIC}.${VLANID}
 
-    arping -c1 -S $DSTIP -p -i ${NIC}.${VLANID} $SRCIP > /dev/null 2>&1
+    arping -c1 -s $DSTIP -i ${NIC}.${VLANID} $SRCIP > /dev/null 2>&1
     if [ $? -eq 0 ]; then
       echo ""
       echo "    Unable to use source IP $SRCIP, already in use!  Choose another."
@@ -183,7 +183,7 @@ function configure_local_network() {
     fi
   fi
 
-  arping -c1 -S $SRCIP -p -i ${NIC}.${VLANID} $DSTIP > /dev/null 2>&1
+  arping -c1 -s $SRCIP -i ${NIC}.${VLANID} $DSTIP > /dev/null 2>&1
   if [ $? -eq 0 ]; then
     echo "Unable to use dest IP $DSTIP, already in use!  Choose another."
     exit 1
