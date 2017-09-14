@@ -21,7 +21,7 @@
   pre_tasks:
     - name: Create container archive directory
       file:
-        path: /opt/archives
+        path: /openstack/control-plane-archives
         state: directory
       delegate_to: "{{ physical_host }}"
 
@@ -43,11 +43,11 @@
         name: "{{ rpc_release }}-{{ inventory_hostname }}"
         state: "{{ container_state[current_state.stdout.strip()] }}"
         archive: true
-        archive_path: /opt/archives
+        archive_path: /openstack/control-plane-archives
       delegate_to: "{{ physical_host }}"
 
     - name: Archive container configuration
-      shell: "tar czf /opt/archives/{{ rpc_release }}-{{ inventory_hostname }}_config.tgz {{ container_config.results[0].stdout |replace('\n', ' ') }}"
+      shell: "tar czf /openstack/control-plane-archivess/{{ rpc_release }}-{{ inventory_hostname }}_config.tgz {{ container_config.results[0].stdout |replace('\n', ' ') }}"
       args:
         chdir: "/var/lib/lxc/{{ item }}"
       with_items: "{{ inventory_hostname }}"
