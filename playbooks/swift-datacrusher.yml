@@ -21,8 +21,11 @@
 # Options can be overridden with passing these arguments to openstack-ansible:
 # openstack-ansible swift-datacrusher.yml -e xfs_inode_size=256 -e xfs_format_options='-linternal' -e exclude_drive_labels="disk1,disk2" -e exclude_drive_labels_format_option="disk3,disk4"
 
-- name: Please remove me, I'm just a fail safe
-  please-remove-me-before-crushing-swift-and-you-know-what-you-are-doing:
+- hosts: all
+  vars_prompt:
+    - name: destroy_swift_data
+      prompt: "Do you really want to remove erase the swift cluster?"
+      default: False
 
 - name: Register mountpoints
   hosts: swift_obj
@@ -58,6 +61,7 @@
         - "swift-account-auditor"
         - "swift-container-sync"
         - "rsync"
+      when: destroy_swift_data |bool
       tags:
         - "service-stop"
         - "service-restart"
@@ -72,6 +76,7 @@
       when:
         - "{{ swift_drives.stdout_lines | length > 0 }}"
         - "{{ item.split(',')[1] not in ( exclude_drive_labels | default ({}) ) }}"
+        - destroy_swift_data |bool
       tags:
         - "remount"
         - "umount"
@@ -86,6 +91,7 @@
         - "{{ swift_drives.stdout_lines | length > 0 }}"
         - "{{ item.split(',')[1] not in ( exclude_drive_labels | default ({}) ) }}"
         - "{{ item.split(',')[1] not in ( exclude_drive_labels_format_option | default ({}) ) }}"
+        - destroy_swift_data |bool
       tags: format-xfs
 
 - name: Format Swift disk excluded options
@@ -98,6 +104,7 @@
         - "{{ swift_drives.stdout_lines | length > 0 }}"
         - "{{ item.split(',')[1] not in ( exclude_drive_labels | default ({}) ) }}"
         - "{{ item.split(',')[1] in ( exclude_drive_labels_format_option | default ({}) ) }}"
+        - destroy_swift_data |bool
       tags: format-xfs
 
 - name: Mount Swift disks
@@ -113,6 +120,7 @@
       when:
         - "{{ swift_drives.stdout_lines | length > 0 }}"
         - "{{ item.split(',')[1] not in ( exclude_drive_labels | default ({}) ) }}"
+        - destroy_swift_data |bool
       tags:
         - "remount"
         - "mount"
@@ -129,6 +137,7 @@
       when:
         - "{{ swift_drives.stdout_lines | length > 0 }}"
         - "{{ item.split(',')[1] not in ( exclude_drive_labels | default ({}) ) }}"
+        - destroy_swift_data |bool
       tags: fix-permissions
 
 - name: Start Swift Services
@@ -154,6 +163,7 @@
         - "swift-account-auditor"
         - "swift-container-sync"
         - "rsync"
+      when: destroy_swift_data |bool
       tags:
         - "service-start"
         - "service-restart"
