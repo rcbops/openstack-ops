@@ -24,8 +24,8 @@ Operational scripts
 -------------------
 
 Most RPC OpenStack supports scripts are currently running outside of ansible and are stored 
-inside the files folder.
-Those scripts will be converted into individual Ansible tasks over time.
+inside the playbooks/files folder.
+Those scripts will be converted into individual Ansible tasks over time, when necessary.
 
 ### rpc-o-support
 
@@ -48,32 +48,18 @@ like rpc-support role of RPC-O until those gets updated
 Requirements
 ------------
 
-This role expect to be installed/applied on a working RPC OpenStack environment which does run a
+This module expect to be installed/applied on a working RPC OpenStack environment which does run a
 supported product lifecycle (RPC-O currently)
 
 
-Role Variables
---------------
-
-None
-
-Dependencies
-------------
-
-None
-
-Playbook integration
+Execution
 ----------------
 
-# git clone https://github.com/rsoprivatecloud/openstack-ops.git rcbops
+    git clone -b 1.0.0 https://github.com/rsoprivatecloud/openstack-ops.git /opt/openstack-ops
+    source /usr/local/bin/openstack-ansible.rc
+    
+    cd /opt/openstack-ops/playbooks; openstack-ansible main.yml
 
-Add role to your playbook:
-
-    - name: Install ops tools
-      hosts: all
-      gather_facts: "{{ gather_facts | default(True) }}"
-      roles:
-         - { role: rcbops }
 
 License
 -------

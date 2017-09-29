@@ -1,0 +1,66 @@
+---
+# Copyright 2017-Present Rackspace Inc
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: Install hwraid tools onto storage and swift object hosts
+  hosts: storage_hosts:swift_obj
+  gather_facts: "{{ gather_facts | default(true) }}"
+  pre_tasks:
+    - include: "common-tasks/install-dependencies.yml"
+  tasks:
+    - name: Add HWRaid apt keys
+      apt_key:
+        url: "{{ item.url }}"
+        state: "{{ item.state }}"
+      with_items: "{{ ops_hwraid_apt_keys }}"
+      when:
+        - ops_hwraid_apt_keys is defined
+        - ansible_os_family == 'Debian'
+      register: add_keys_url
+      until: add_keys_url|success
+      retries: 2
+      delay: 2
+
+    - name: Add HWRaid apt repositories
+      apt_repository:
+        repo: "{{ item.repo }}"
+        state: "{{ item.state }}"
+        filename: "{{ item.filename | default(omit) }}"
+      with_items: "{{ ops_hwraid_apt_repos }}"
+      when:
+        - ansible_os_family == 'Debian'
+      register: add_repos
+      until: add_repos|success
+      retries: 2
+      delay: 2
+
+    - name: Update apt if necessary
+      apt:
+        update_cache: yes
+        cache_valid_time: 600
+      when: add_repos|changed
+
+    - name: Install HWRaid packages
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+        cache_valid_time: 600
+      with_items: "{{ ops_hwraid_apt_packages }}"
+      when:
+        - ops_hwraid_apt_packages is defined
+        - ansible_os_family == 'Debian'
+  vars_files:
+    - "vars/main.yml"
+    - "vars/raid-hardware-monitoring.yml"

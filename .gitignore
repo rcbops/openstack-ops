@@ -39,3 +39,8 @@ coverage.xml
 # Translations
 *.mo
 *.pot
+
+# Editor files
+.idea
+*.iml
+.DS_Store

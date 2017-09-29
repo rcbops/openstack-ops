@@ -1,0 +1,113 @@
+---
+# Copyright 2017-Present, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: Create RPC support key
+  hosts: os-infra_hosts[0]
+  gather_facts: "{{ gather_facts | default(true) }}"
+  pre_tasks:
+    - include: "common-tasks/install-dependencies.yml"
+  tasks:
+    - name: Check for key file
+      stat:
+        path: /root/.ssh/rpc_support
+      changed_when: false
+      failed_when: false
+      register: support_key_check
+
+    - name: Create support SSH key
+      shell: ssh-keygen -f "/root/.ssh/rpc_support" -t rsa -q -N ""
+      register: support_key_create
+      when: not support_key_check.stat.exists |bool
+
+    - name: Get contents of support SSH key
+      slurp:
+        src: "/root/.ssh/rpc_support"
+      register: support_key
+      when: support_key_check.stat.exists |bool or support_key_create|changed
+
+    - name: Get contents of support SSH pub key
+      slurp:
+        src: "/root/.ssh/rpc_support.pub"
+      register: support_pub_key
+      when: support_key_check.stat.exists |bool or support_key_create|changed
+
+    - name: Get fingerprint of rpc_support SSH key
+      shell: ssh-keygen -lf /root/.ssh/rpc_support.pub |awk '/(RSA|DSA)/ {print $2}'
+      register: support_key_fingerprint
+      when: support_key_check.stat.exists |bool or support_key_create|changed
+
+    - name: Check for support keypair in nova
+      shell: |
+        . /root/openrc
+        {{ ops_pip_venv_enabled | bool | ternary(ops_venv, omit) }}/bin/nova keypair-list | grep rpc_support
+      changed_when: false
+      failed_when: false
+      register: nova_support_key
+      tags: test
+
+    - name: Delete support keypair in nova
+      shell: |
+        . /root/openrc
+        {{ ops_pip_venv_enabled | bool | ternary(ops_venv, omit) }}/bin/nova keypair-delete rpc_support
+      failed_when: false
+      register: nova_support_key_delete
+      retries: 2
+      delay: 10
+      when: nova_support_key.rc == 0 and support_key_fingerprint.stdout not in nova_support_key.stdout
+
+    - name: Add support key to nova
+      shell: |
+        . /root/openrc
+        {{ ops_pip_venv_enabled | bool | ternary(ops_venv, omit) }}/bin/nova keypair-add --pub-key /root/.ssh/rpc_support.pub rpc_support
+      retries: 2
+      delay: 10
+      when: nova_support_key_delete|changed or nova_support_key.rc == 1
+  vars_files:
+    - "vars/main.yml"
+
+- name: Get RPC support pubkey
+  hosts: os-infra_hosts[0]
+  gather_facts: "false"
+  tasks:
+    - name: Retreive local support SSH key stats
+      stat:
+        path: /root/.ssh/rpc_support
+        checksum_algorithm: sha256
+      changed_when: false
+      failed_when: false
+      register: local_support_key_check
+
+- name: Distribute RPC support key
+  hosts: os-infra_hosts:utility_container
+  gather_facts: "false"
+  tasks:
+    - name: Distribute support SSH key for cluster operations
+      copy:
+        dest: "{{ item.dest }}"
+        content: "{{ item.content }}"
+        owner: "root"
+        group: "root"
+        mode: "0600"
+      with_items:
+        - dest: "/root/.ssh/rpc_support"
+          content: "{{ hostvars[groups['os-infra_hosts'][0]]['support_key'].content | b64decode }}"
+        - dest: "/root/.ssh/rpc_support.pub"
+          content: "{{ hostvars[groups['os-infra_hosts'][0]]['support_pub_key'].content | b64decode }}"
+      when:
+        - hostvars[groups['os-infra_hosts'][0]]['support_pub_key'].content |default('') |length > 64
+        - hostvars[groups['os-infra_hosts'][0]]['support_pub_key'].content |default('') |length > 64
+        - hostvars[groups['os-infra_hosts'][0]]['support_key'].content |b64decode |hash('sha256') != hostvars[groups['os-infra_hosts'][0]]['local_support_key_check'].stat.checksum |default('')
+  vars_files:
+    - "vars/main.yml"
