@@ -1,5 +1,5 @@
 ---
-# Bjoern Teipel <bjoern.teipel@rackspace.com>
+# 2017-Present, Bjoern Teipel <bjoern.teipel@rackspace.com>
 #
 # Play to tear down Swift data nodes
 #
@@ -24,7 +24,7 @@
 - hosts: all
   vars_prompt:
     - name: destroy_swift_data
-      prompt: "Do you really want to remove erase the swift cluster?"
+      prompt: "Do you really want to erase the swift cluster?"
       default: False
 
 - name: Register mountpoints
