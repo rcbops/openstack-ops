@@ -23,7 +23,6 @@
     - name: Install HP firmware update dependencies
       apt:
         name: "{{ item }}"
-        state: latest
       with_items: "{{ ops_hp_tools_apt_firmware_packages }}"
       register: install_packages
       until: install_packages|success
@@ -46,11 +45,12 @@
       shell: |
         ps a |grep update_hp_firmware.py |grep -v grep
       ignore_errors: True
+      changed_when: false
       register: update_hp_firmware_running
 
     - name: Execute HP firmware upgrade inside background
-      shell: |
-        {{ screen_binary.files.0.path }} -d -m -L -t "hp_firmware_update" /usr/local/bin/update_hp_firmware.py -f
+      command: '{{ screen_binary.files.0.path }} -d -m -L -t "hp_firmware_update" /usr/local/bin/update_hp_firmware.py -f'
+      changed_when: false
       when:
         - screen_binary.matched > 0
         - install_packages|success
