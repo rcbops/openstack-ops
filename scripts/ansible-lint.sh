@@ -17,11 +17,11 @@
 set -euo pipefail
 
 ## Main ----------------------------------------------------------------------
-if [[ -z "$VIRTUAL_ENV" ]] ; then
+if [ -z "$VIRTUAL_ENV" ] ; then
     echo "WARNING: Not running hacking inside a virtual environment."
 fi
 
-pushd tasks/
+pushd playbooks/
     echo "Running ansible-playbook syntax check"
 
     # Perform a lint check on all playbooks and roles.
