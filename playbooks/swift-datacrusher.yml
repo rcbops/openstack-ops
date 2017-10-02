@@ -21,27 +21,24 @@
 # Options can be overridden with passing these arguments to openstack-ansible:
 # openstack-ansible swift-datacrusher.yml -e xfs_inode_size=256 -e xfs_format_options='-linternal' -e exclude_drive_labels="disk1,disk2" -e exclude_drive_labels_format_option="disk3,disk4"
 
-- hosts: all
+- hosts: swift_obj
   vars_prompt:
     - name: destroy_swift_data
       prompt: "Do you really want to erase the swift cluster?"
       default: False
-
-- name: Register mountpoints
-  hosts: swift_obj
-  tasks:
-    #For active XFS mounts: awk '/\/srv\/node/ { split($2,i,"/"); print $1 "," i[4] }' /proc/mounts
-    #For any XFS mount: blkid -n xfs /dev/sd* |awk '/LABEL=\"disk/ { split($0,blkid,"\n"); for (n in blkid) { if (substr(blkid[n],0,5) == "/dev/") { device=$1; pos=match(blkid[n],"LABEL="); if (pos > 0) { str=device","substr(blkid[n],pos+7,6); gsub(":|\"","",str); print str } } } }'
-    - shell: |
+  pre_tasks:
+    - name: Register mountpoints
+      #For active XFS mounts: awk '/\/srv\/node/ { split($2,i,"/"); print $1 "," i[4] }' /proc/mounts
+      #For any XFS mount: blkid -n xfs /dev/sd* |awk '/LABEL=\"disk/ { split($0,blkid,"\n"); for (n in blkid) { if (substr(blkid[n],0,5) == "/dev/") { device=$1; pos=match(blkid[n],"LABEL="); if (pos > 0) { str=device","substr(blkid[n],pos+7,6); gsub(":|\"","",str); print str } } } }'
+      shell: |
         blkid -n xfs /dev/sd* |awk '/LABEL=\"disk/ { split($0,blkid,"\n"); for (n in blkid) { if (substr(blkid[n],0,5) == "/dev/") { device=$1; pos=match(blkid[n],"LABEL="); if (pos > 0) { str=device","substr(blkid[n],pos+7,6); gsub(":|\"","",str); print str } } } }'
       register: swift_drives
+      changed_when: false
       tags:
         - "always"
-
-- name: Stop Swift Services
-  hosts: swift_obj
   tasks:
-    - service:
+    - name: Stop Swift Services
+      service:
         name: "{{ item }}"
         state: stopped
       with_items:
@@ -67,12 +64,9 @@
         - "service-restart"
         - "remount"
 
-- name: Unmount Swift disks
-  hosts: swift_obj
-  tasks:
-    - shell: |
-        umount -f /srv/node/{{ item.split(',')[1] }}
-      with_items: swift_drives.stdout_lines
+    - name: Unmount Swift disks
+      command: umount -f /srv/node/{{ item.split(',')[1] }}
+      with_items: "{{ swift_drives.stdout_lines }}"
       when:
         - "{{ swift_drives.stdout_lines | length > 0 }}"
         - "{{ item.split(',')[1] not in ( exclude_drive_labels | default ({}) ) }}"
@@ -81,12 +75,11 @@
         - "remount"
         - "umount"
 
-- name: Format Swift disk
-  hosts: swift_obj
-  tasks:
-    - shell: |
-        mkfs.xfs -L {{ item.split(',')[1] }} -f -i size={{ xfs_inode_size |default('1024') | int }} {{ xfs_format_options |default('') }} {{ item.split(',')[0] }}
-      with_items: swift_drives.stdout_lines
+    - name: Format Swift disk
+      command: mkfs.xfs -L {{ item.split(',')[1] }} -f -i size={{ xfs_inode_size |default('1024') | int }} {{ xfs_format_options |default('') }} {{ item.split(',')[0] }}
+      with_items: "{{ swift_drives.stdout_lines }}"
+      register: swift_mkfs
+      changed_when: '"Writing inode tables: done" in swift_mkfs.stdout'
       when:
         - "{{ swift_drives.stdout_lines | length > 0 }}"
         - "{{ item.split(',')[1] not in ( exclude_drive_labels | default ({}) ) }}"
@@ -94,12 +87,11 @@
         - destroy_swift_data |bool
       tags: format-xfs
 
-- name: Format Swift disk excluded options
-  hosts: swift_obj
-  tasks:
-    - shell: |
-        mkfs.xfs -L {{ item.split(',')[1] }} -f -i size={{ xfs_inode_size |default('1024') | int }} {{ item.split(',')[0] }}
-      with_items: swift_drives.stdout_lines
+    - name: Format Swift disk excluded options
+      command: mkfs.xfs -L {{ item.split(',')[1] }} -f -i size={{ xfs_inode_size |default('1024') | int }} {{ item.split(',')[0] }}
+      with_items: "{{ swift_drives.stdout_lines }}"
+      register: swift_mkfs_exclude
+      changed_when: '"Writing inode tables: done" in swift_mkfs_exclude.stdout'
       when:
         - "{{ swift_drives.stdout_lines | length > 0 }}"
         - "{{ item.split(',')[1] not in ( exclude_drive_labels | default ({}) ) }}"
@@ -107,16 +99,14 @@
         - destroy_swift_data |bool
       tags: format-xfs
 
-- name: Mount Swift disks
-  hosts: swift_obj
-  tasks:
-    - mount:
+    - name: Mount Swift disks
+      mount:
         name: "/srv/node/{{ item.split(',')[1] }}"
         src: "LABEL={{ item.split(',')[1] }}"
         fstype: xfs
         opts: "{{ xfs_mount_options |default('rw,noatime,nodiratime,nobarrier,logbufs=8,noquota') }}"
         state: mounted
-      with_items: swift_drives.stdout_lines
+      with_items: "{{ swift_drives.stdout_lines }}"
       when:
         - "{{ swift_drives.stdout_lines | length > 0 }}"
         - "{{ item.split(',')[1] not in ( exclude_drive_labels | default ({}) ) }}"
@@ -125,25 +115,21 @@
         - "remount"
         - "mount"
 
-- name: Fix Swift Mountpoint permissions
-  hosts: swift_obj
-  tasks:
-    - file:
+    - name: Fix Swift Mountpoint permissions
+      file:
         name: "/srv/node/{{ item.split(',')[1] }}"
         mode: "0755"
         owner: "swift"
         group: "swift"
-      with_items: swift_drives.stdout_lines
+      with_items: "{{ swift_drives.stdout_lines }}"
       when:
         - "{{ swift_drives.stdout_lines | length > 0 }}"
         - "{{ item.split(',')[1] not in ( exclude_drive_labels | default ({}) ) }}"
         - destroy_swift_data |bool
       tags: fix-permissions
 
-- name: Start Swift Services
-  hosts: swift_obj
-  tasks:
-    - service:
+    - name: Start Swift Services
+      service:
         name: "{{ item }}"
         state: started
       with_items:
