@@ -21,16 +21,10 @@
   tasks:
     - name: Configure apt unattended upgrades
       template:
-        src: "apt-unattended-upgrades.j2"
+        src: "templates/apt-unattended-upgrades.j2"
         dest: '/etc/apt/apt.conf.d/50unattended-upgrades'
         owner: "root"
         group: "root"
-      when: ansible_os_family == 'Debian'
-
-    - name: Disable apt unattended upgrades
-      file:
-        name: '/etc/apt/apt.conf.d/50unattended-upgrades'
-        state: absent
       when: ansible_os_family == 'Debian'
   handlers:
     - include: "handlers/main.yml"

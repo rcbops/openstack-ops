@@ -65,7 +65,8 @@
         - "remount"
 
     - name: Unmount Swift disks
-      command: umount -f /srv/node/{{ item.split(',')[1] }}
+      command: |
+        umount -f /srv/node/{{ item.split(',')[1] }}
       with_items: "{{ swift_drives.stdout_lines }}"
       when:
         - "{{ swift_drives.stdout_lines | length > 0 }}"
@@ -76,7 +77,8 @@
         - "umount"
 
     - name: Format Swift disk
-      command: mkfs.xfs -L {{ item.split(',')[1] }} -f -i size={{ xfs_inode_size |default('1024') | int }} {{ xfs_format_options |default('') }} {{ item.split(',')[0] }}
+      command: |
+        mkfs.xfs -L {{ item.split(',')[1] }} -f -i size={{ xfs_inode_size |default('1024') | int }} {{ xfs_format_options |default('') }} {{ item.split(',')[0] }}
       with_items: "{{ swift_drives.stdout_lines }}"
       register: swift_mkfs
       changed_when: '"Writing inode tables: done" in swift_mkfs.stdout'
@@ -88,7 +90,8 @@
       tags: format-xfs
 
     - name: Format Swift disk excluded options
-      command: mkfs.xfs -L {{ item.split(',')[1] }} -f -i size={{ xfs_inode_size |default('1024') | int }} {{ item.split(',')[0] }}
+      command: |
+        mkfs.xfs -L {{ item.split(',')[1] }} -f -i size={{ xfs_inode_size |default('1024') | int }} {{ item.split(',')[0] }}
       with_items: "{{ swift_drives.stdout_lines }}"
       register: swift_mkfs_exclude
       changed_when: '"Writing inode tables: done" in swift_mkfs_exclude.stdout'

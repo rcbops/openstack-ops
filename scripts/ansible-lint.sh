@@ -28,6 +28,9 @@ pushd playbooks/
     ansible-lint --version
 
     echo "Running ansible-lint"
-    ansible-lint *.yml
+    # Exclude ANSIBLE0006 (tar used in place of unarchive module)
+    # Exclude ANSIBLE0013 (Use shell only when shell functionality is required)
+    # Exclude ANSIBLE0016 (Tasks that run when changed should likely be handlers)
+    ansible-lint -x ANSIBLE0006,ANSIBLE0013,ANSIBLE0016 *.yml
 popd
 

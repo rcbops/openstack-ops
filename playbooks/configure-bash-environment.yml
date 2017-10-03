@@ -26,12 +26,12 @@
     - name: Add source script to bash_completion.d
       copy:
         dest: "/etc/bash_completion.d/autocompletion_source.sh"
-        src: "bash_autocompletion_source.sh.j2"
+        src: "files/bash_autocompletion_source.sh.j2"
 
     - name: Add bash completion to openstack clients
       copy:
         dest: "/etc/openstack_completions/{{ item }}"
-        src: "{{ item }}.j2"
+        src: "files/{{ item }}.j2"
       with_items:
         - cinder.bash_completion
         - glance.bash_completion
@@ -45,12 +45,12 @@
         owner: root
         group: root
         mode: 0755
-        src: histformat.sh.j2
+        src: "templates/histformat.sh.j2"
         dest: "/etc/profile.d/histformat.sh"
 
     - name: Get default editor
-      shell:
-        echo '' | update-alternatives --config editor | grep 'mode' | grep '*'
+      shell: |
+        echo '' |update-alternatives --config editor |grep 'mode' |grep '*'
       register: editor
       failed_when: false
       when: ansible_os_family == 'Debian'
@@ -75,7 +75,7 @@
         owner: "root"
         group: "root"
         mode: "0755"
-        src: "20-openstack.j2"
+        src: "templates/20-openstack.j2"
         dest: "/etc/update-motd.d/20-openstack"
   handlers:
     - include: "handlers/main.yml"

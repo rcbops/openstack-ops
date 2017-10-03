@@ -13,12 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Install HP server monitoring
+- name: Install pcommon
   hosts: neutron_agents_container:shared-infra_hosts:utility_container
   gather_facts: "{{ gather_facts | default(true) }}"
   tasks:
-    - copy:
-        src: "rpc-o-support/pccommon.sh"
+    - name: Deploy pccommon
+      copy:
+        src: "files/rpc-o-support/pccommon.sh"
         dest: /root/pccommon.sh
         mode: 0600
   vars_files:

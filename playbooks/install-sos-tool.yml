@@ -33,7 +33,6 @@
     - name: Install sos pip dependencies
       pip:
         name: "{{ item }}"
-        state: latest
         extra_args: "{{ pip_install_options|default('') }}"
       with_items: "{{ ops_sos_pip_dependencies }}"
       when: ops_sos_pip_dependencies is defined
@@ -54,7 +53,6 @@
     - name: Install sos binary
       pip:
         name: "{{ ops_sos_git_dest }}"
-        state: latest
         extra_args: "{{ pip_install_options|default('') }}"
       register: pip_install
       until: pip_install|success
@@ -65,7 +63,7 @@
 
     - name: Copy sos.conf to physical host
       template:
-        src: sos.conf.j2
+        src: "templates/sos.conf.j2"
         dest: /etc/sos.conf
   handlers:
     - include: "handlers/main.yml"

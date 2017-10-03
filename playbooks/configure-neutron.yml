@@ -45,7 +45,9 @@
                                            --port-range-max {{ item }} \
                                            --remote-ip-prefix 0.0.0.0/0 \
                                            rpc-support
+
       register: sec_group_rules_ports
+      changed_when: sec_group_rules_ports.rc == 0
       when: sec_group_create|changed
       with_items:
         - 22
@@ -59,6 +61,7 @@
                                            --remote-ip-prefix 0.0.0.0/0 \
                                            rpc-support
       register: sec_group_rules_icmp
+      changed_when: sec_group_rules_icmp.rc == 0
       when: sec_group_create|changed
   handlers:
     - include: "handlers/main.yml"

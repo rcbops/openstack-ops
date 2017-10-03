@@ -27,8 +27,11 @@
       register: support_key_check
 
     - name: Create support SSH key
-      shell: ssh-keygen -f "/root/.ssh/rpc_support" -t rsa -q -N ""
+      command: |
+        ssh-keygen -f "/root/.ssh/rpc_support" -t rsa -q -N ""
       register: support_key_create
+      changed_when: support_key_create.rc == 0
+      failed_when: support_key_create.rc >= 1
       when: not support_key_check.stat.exists |bool
 
     - name: Get contents of support SSH key
@@ -44,25 +47,28 @@
       when: support_key_check.stat.exists |bool or support_key_create|changed
 
     - name: Get fingerprint of rpc_support SSH key
-      shell: ssh-keygen -lf /root/.ssh/rpc_support.pub |awk '/(RSA|DSA)/ {print $2}'
+      shell: |
+        ssh-keygen -lf /root/.ssh/rpc_support.pub |awk '/(RSA|DSA)/ {print $2}'
       register: support_key_fingerprint
+      changed_when: support_key_fingerprint.rc == 0
+      failed_when: false
       when: support_key_check.stat.exists |bool or support_key_create|changed
 
     - name: Check for support keypair in nova
       shell: |
         . /root/openrc
         {{ ops_pip_venv_enabled | bool | ternary(ops_venv, omit) }}/bin/nova keypair-list | grep rpc_support
+      register: nova_support_key
       changed_when: false
       failed_when: false
-      register: nova_support_key
-      tags: test
 
     - name: Delete support keypair in nova
       shell: |
         . /root/openrc
         {{ ops_pip_venv_enabled | bool | ternary(ops_venv, omit) }}/bin/nova keypair-delete rpc_support
-      failed_when: false
       register: nova_support_key_delete
+      changed_when: nova_support_key_delete.rc == 0
+      failed_when: false
       retries: 2
       delay: 10
       when: nova_support_key.rc == 0 and support_key_fingerprint.stdout not in nova_support_key.stdout
@@ -77,14 +83,13 @@
   vars_files:
     - "vars/main.yml"
 
-- name: Get RPC support pubkey
-  hosts: os-infra_hosts[0]
+- name: Get local RPC support pubkey hash
+  hosts: os-infra_hosts:utility_container
   gather_facts: "false"
   tasks:
     - name: Retreive local support SSH key stats
       stat:
         path: /root/.ssh/rpc_support
-        checksum_algorithm: sha256
       changed_when: false
       failed_when: false
       register: local_support_key_check
@@ -108,6 +113,6 @@
       when:
         - hostvars[groups['os-infra_hosts'][0]]['support_pub_key'].content |default('') |length > 64
         - hostvars[groups['os-infra_hosts'][0]]['support_pub_key'].content |default('') |length > 64
-        - hostvars[groups['os-infra_hosts'][0]]['support_key'].content |b64decode |hash('sha256') != hostvars[groups['os-infra_hosts'][0]]['local_support_key_check'].stat.checksum |default('')
+        - hostvars[groups['os-infra_hosts'][0]]['support_key'].content |b64decode |hash('sha1') != local_support_key_check.stat.checksum |default('')
   vars_files:
     - "vars/main.yml"

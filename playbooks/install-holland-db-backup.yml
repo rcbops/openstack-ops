@@ -58,7 +58,6 @@
     - name: Install apt packages required by holland
       apt:
         pkg: "{{ item }}"
-        state: present
         update_cache: yes
         cache_valid_time: 600
       with_items: "{{ ops_holland_packages | default([]) }}"
@@ -67,7 +66,6 @@
     - name: Install pip dependencies required by holland
       pip:
         name: "{{ item }}"
-        state: latest
         virtualenv: "{{ ops_holland_venv_enabled | bool | ternary(ops_holland_venv, omit) }}"
         extra_args: "{{ ops_pip_install_options | default('') }}"
       with_items: "{{ ops_holland_pip_dependencies | default([]) }}"
@@ -88,7 +86,6 @@
     - name: Install holland program
       pip:
         name: "/opt/{{ ops_holland_service_name }}_{{ ops_holland_git_install_branch | replace('/', '_') }}"
-        state: latest
         virtualenv: "{{ ops_holland_venv_enabled | bool | ternary(ops_holland_venv, omit) }}"
         extra_args: "{{ pip_install_options|default('') }}"
       register: pip_install
@@ -103,7 +100,6 @@
         name: "{{ ops_holland_git_dest }}/{{ item.path }}/{{ item.package }}"
         extra_args: "{{ pip_install_options|default('') }}"
         virtualenv: "{{ ops_holland_venv_enabled | bool | ternary(ops_holland_venv, omit) }}"
-        state: latest
       when: ops_holland_git_dest is defined and ops_holland_git_repo_plugins is defined
       with_items: "{{ ops_holland_git_repo_plugins }}"
       register: pip_install
@@ -146,9 +142,9 @@
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
       with_items:
-        - src: "holland-xtrabackup.conf.j2"
+        - src: "templates/holland-xtrabackup.conf.j2"
           dest: "/etc/holland/backupsets/rpc_support.conf"
-        - src: "holland.conf.j2"
+        - src: "templates/holland.conf.j2"
           dest: "/etc/holland/holland.conf"
       tags:
         - holland_conf
@@ -188,7 +184,7 @@
       register: found_holland_backups
 
     - name: Create holland backup (venv)
-      shell: |
+      command: |
         {{ ops_holland_venv_bin + '/' }}holland bk
       when:
         - ops_holland_venv_enabled | bool
@@ -197,7 +193,7 @@
         - holland_create_backup
         - holland_all
     - name: Create holland backup (no venv)
-      shell: |
+      command: |
         /usr/local/bin/holland bk
       when:
         - not ops_holland_venv_enabled | bool

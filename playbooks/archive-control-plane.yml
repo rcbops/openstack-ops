@@ -26,16 +26,20 @@
       delegate_to: "{{ physical_host }}"
 
     - name: Collect container configuration
-      shell: find . -type f -iname \*\.ini -o -iname \*\.sh -o -iname config
+      command: |
+        find . -type f -iname *.ini -o -iname *.sh -o -iname config
       args:
         chdir: "/var/lib/lxc/{{ item }}"
       with_items: "{{ inventory_hostname }}"
       register: container_config
+      changed_when: container_config.stdout |length >= 6
       delegate_to: "{{ physical_host }}"
   tasks:
     - name: Get container current state
-      shell: "lxc-info -sn {{ inventory_hostname }} | awk '{print $2}'"
+      shell: |
+        lxc-info -sn {{ inventory_hostname }} |awk '{print $2}'
       register: current_state
+      changed_when: current_state.rc == 0
       delegate_to: "{{ physical_host }}"
 
     - name: Archive container rootfs
@@ -47,10 +51,13 @@
       delegate_to: "{{ physical_host }}"
 
     - name: Archive container configuration
-      shell: "tar czf /openstack/backup/control-plane/{{ rpc_release }}-{{ inventory_hostname }}_config.tgz {{ container_config.results[0].stdout |replace('\n', ' ') }}"
+      command: |
+        tar czf /openstack/backup/control-plane/{{ rpc_release }}-{{ inventory_hostname }}_config.tgz {{ container_config.results[0].stdout |replace('\n', ' ') }}
       args:
         chdir: "/var/lib/lxc/{{ item }}"
       with_items: "{{ inventory_hostname }}"
+      register: tar_command
+      changed_when: tar_command.rc == 0
       delegate_to: "{{ physical_host }}"
 
   vars:

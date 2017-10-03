@@ -36,10 +36,9 @@
         mode: 0755
 
     - name: Check if screen is installed
-      find:
-        paths: "/usr/bin,/bin/,/usr/local/bin"
-        patterns: "screen"
+      command: "/usr/bin/which screen"
       register: screen_binary
+      changed_when: '"screen" in screen_binary.stdout'
 
     - name: Check for concurrent update_hp_firmware.py execution
       shell: |
@@ -49,9 +48,11 @@
       register: update_hp_firmware_running
 
     - name: Execute HP firmware upgrade inside background
-      command: '{{ screen_binary.files.0.path }} -d -m -L -t "hp_firmware_update" /usr/local/bin/update_hp_firmware.py -f'
+      command: |
+        {{ screen_binary.stdout }} -d -m -L -t "hp_firmware_update" /usr/local/bin/update_hp_firmware.py -f
       changed_when: false
       when:
+        - screen_binary|changed
         - screen_binary.matched > 0
         - install_packages|success
         - update_hp_firmware_running.rc == 1
