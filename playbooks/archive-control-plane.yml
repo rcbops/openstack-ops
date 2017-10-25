@@ -60,6 +60,11 @@
       changed_when: tar_command.rc == 0
       delegate_to: "{{ physical_host }}"
 
+    - name: Remove temporary containers
+      lxc_container:
+        name: "{{ rpc_release }}-{{ inventory_hostname }}"
+        state: "absent"
+      delegate_to: "{{ physical_host }}"
   vars:
     container_state:
       RUNNING: started
