@@ -84,7 +84,7 @@
     - "vars/main.yml"
 
 - name: Get local RPC support pubkey hash
-  hosts: os-infra_hosts[1:999]:utility_container
+  hosts: os-infra_hosts:utility_container
   gather_facts: "false"
   tasks:
     - name: Retreive local support SSH key stats
@@ -95,7 +95,7 @@
       register: local_support_key_check
 
 - name: Distribute RPC support key
-  hosts: os-infra_hosts:utility_container
+  hosts: os-infra_hosts[1:999]:utility_container
   gather_facts: "false"
   tasks:
     - name: Distribute support SSH key for cluster operations
