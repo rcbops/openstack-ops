@@ -33,10 +33,6 @@
   tags:
     - ops_dependencies
 
-- include: rpc_release.yml
-  tags:
-    - rpc_release
-
 - include: host_kernel_modules.yml
   when: >
     inventory_hostname in groups['hosts']
