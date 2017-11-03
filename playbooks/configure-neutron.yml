@@ -1,0 +1,83 @@
+---
+# Copyright 2017-Present Rackspace Inc
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: Configure OpenStack Neutron
+  hosts: utility_container[0]
+  gather_facts: "{{ gather_facts | default(true) }}"
+  pre_tasks:
+    - include: "common-tasks/install-dependencies.yml"
+  tasks:
+    - name: Check for rpc_support security group
+      shell: |
+        . /root/openrc
+        neutron security-group-list | /bin/grep -w "rpc-support"
+      register: rpc_support_sec_group
+      changed_when: false
+      failed_when: rpc_support_sec_group.rc not in [0, 1]
+
+    - name: Create rpc_support security group
+      shell: |
+        . /root/openrc
+        neutron security-group-create rpc-support
+      register: sec_group_create
+      changed_when: sec_group_create.rc == 0
+      failed_when: sec_group_create.rc != 0
+      when: rpc_support_sec_group.rc != 0
+
+    - name: Create rpc_support security group rules ports
+      shell: |
+        . /root/openrc
+        neutron security-group-rule-create --direction ingress \
+                                           --protocol tcp \
+                                           --port-range-min {{ item }} \
+                                           --port-range-max {{ item }} \
+                                           --remote-ip-prefix 0.0.0.0/0 \
+                                           rpc-support
+
+      register: sec_group_rules_ports
+      changed_when: sec_group_rules_ports.rc == 0
+      when: sec_group_create|changed
+      with_items:
+        - 22
+        - 3389
+
+    - name: Create rpc_support security group rules icmp
+      shell: |
+        . /root/openrc
+        neutron security-group-rule-create --direction ingress \
+                                           --protocol icmp \
+                                           --remote-ip-prefix 0.0.0.0/0 \
+                                           rpc-support
+      register: sec_group_rules_icmp
+      changed_when: sec_group_rules_icmp.rc == 0
+      when: sec_group_create|changed
+  handlers:
+    - include: "handlers/main.yml"
+  vars_files:
+    - "vars/main.yml"
+
+- name: Install packages required for support
+  hosts: neutron_agents_container
+  tasks:
+    - name: Installation
+      apt:
+        pkg: "{{ item }}"
+        state: present
+        update_cache: yes
+        cache_valid_time: 600
+      with_items: "{{ ops_neutron_debug_packages }}"
+      when: ansible_os_family == 'Debian'
+  vars_files:
+    - "vars/main.yml"

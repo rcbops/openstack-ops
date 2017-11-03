@@ -1,0 +1,16 @@
+---
+#
+# Execute all RPC support playbooks
+#
+- include: configure-apt.yml
+- include: configure-bash-environment.yml
+- include: configure-hosts.yml
+- include: configure-neutron.yml
+- include: configure-nova.yml
+- include: configure-spice-console.yml
+- include: install-holland-db-backup.yml
+- include: install-hp-server-monitoring.yml
+- include: install-hw-raid-tools.yml
+- include: install-pccommon.yml
+- include: install-sos-tool.yml
+- include: support-key.yml

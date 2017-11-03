@@ -1,0 +1,60 @@
+---
+# Copyright 2017-Present, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: Install HP firmware update tool
+  hosts: hosts
+  gather_facts: "{{ gather_facts | default(true) }}"
+  pre_tasks:
+    - include: "common-tasks/install-dependencies.yml"
+    - include: "common-tasks/install-hp-tools.yml"
+  tasks:
+    - name: Install HP firmware update dependencies
+      apt:
+        name: "{{ item }}"
+      with_items: "{{ ops_hp_tools_apt_firmware_packages }}"
+      register: install_packages
+      until: install_packages|success
+      retries: 2
+      delay: 2
+
+    - name: Copy HP firmware update script to hosts
+      copy:
+        src: files/update_hp_firmware.py
+        dest: /usr/local/bin/update_hp_firmware.py
+        mode: 0755
+
+    - name: Check if screen is installed
+      command: "/usr/bin/which screen"
+      register: screen_binary
+      changed_when: '"screen" in screen_binary.stdout'
+
+    - name: Check for concurrent update_hp_firmware.py execution
+      shell: |
+        ps a |grep update_hp_firmware.py |grep -v grep
+      ignore_errors: True
+      changed_when: false
+      register: update_hp_firmware_running
+
+    - name: Execute HP firmware upgrade as background task
+      command: |
+        {{ screen_binary.stdout }} -d -m -L -t "hp_firmware_update" /usr/local/bin/update_hp_firmware.py -f
+      changed_when: false
+      when:
+        - screen_binary|changed
+        - install_packages|success
+        - update_hp_firmware_running.rc == 1
+  vars_files:
+    - "vars/hp-hardware-monitoring.yml"
+    - "vars/main.yml"

@@ -1,0 +1,29 @@
+---
+# Copyright 2017-Present, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#
+# hwraid utilities
+#
+ops_hwraid_apt_repos:
+  - { repo: "deb http://mirror.rackspace.com/hwraid.le-vert.net/ubuntu {{ ansible_lsb.codename }} main", state: "present" }
+
+ops_hwraid_apt_keys:
+  - { url: "http://mirror.rackspace.com/hwraid.le-vert.net/ubuntu/hwraid.le-vert.net.gpg.key", state: "present" }
+
+ops_hwraid_apt_packages:
+  - megacli
+  - lsiutil
+  - arcconf
+

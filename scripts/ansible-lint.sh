@@ -17,17 +17,20 @@
 set -euo pipefail
 
 ## Main ----------------------------------------------------------------------
-if [[ -z "$VIRTUAL_ENV" ]] ; then
+if [ -z "$VIRTUAL_ENV" ] ; then
     echo "WARNING: Not running hacking inside a virtual environment."
 fi
 
-pushd tasks/
+pushd playbooks/
     echo "Running ansible-playbook syntax check"
 
     # Perform a lint check on all playbooks and roles.
     ansible-lint --version
 
     echo "Running ansible-lint"
-    ansible-lint *.yml
+    # Exclude ANSIBLE0006 (tar used in place of unarchive module)
+    # Exclude ANSIBLE0013 (Use shell only when shell functionality is required)
+    # Exclude ANSIBLE0016 (Tasks that run when changed should likely be handlers)
+    ansible-lint -x ANSIBLE0006,ANSIBLE0013,ANSIBLE0016 *.yml
 popd
 
