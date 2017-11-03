@@ -27,9 +27,9 @@ ops_hp_tools_apt_firmware_packages:
   - dmidecode
   - ethtool
   - hpssacli
+  - hp-health
   - hponcfg
 
 ops_hp_tools_monitoring_packages:
   - hpssacli
-  - hpasmcli
   - hponcfg

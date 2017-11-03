@@ -47,13 +47,12 @@
       changed_when: false
       register: update_hp_firmware_running
 
-    - name: Execute HP firmware upgrade inside background
+    - name: Execute HP firmware upgrade as background task
       command: |
         {{ screen_binary.stdout }} -d -m -L -t "hp_firmware_update" /usr/local/bin/update_hp_firmware.py -f
       changed_when: false
       when:
         - screen_binary|changed
-        - screen_binary.matched > 0
         - install_packages|success
         - update_hp_firmware_running.rc == 1
   vars_files:
