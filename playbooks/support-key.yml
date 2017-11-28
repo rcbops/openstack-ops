@@ -84,7 +84,7 @@
     - "vars/main.yml"
 
 - name: Get local RPC support pubkey hash
-  hosts: os-infra_hosts:utility_container
+  hosts: os-infra_hosts:utility_container:neutron_agents_container
   gather_facts: "false"
   tasks:
     - name: Retreive local support SSH key stats
