@@ -95,7 +95,7 @@
       register: local_support_key_check
 
 - name: Distribute RPC support key
-  hosts: os-infra_hosts[1:999]:utility_container
+  hosts: os-infra_hosts[1:999]:utility_container:neutron_agents_container
   gather_facts: "false"
   tasks:
     - name: Distribute support SSH key for cluster operations
