@@ -14,7 +14,7 @@
 # limitations under the License.
 
 - name: Install HP server monitoring
-  hosts: hosts
+  hosts: hosts:osds:mons
   gather_facts: "{{ gather_facts | default(true) }}"
   pre_tasks:
     - name: Remove outdated MCP repo
@@ -24,6 +24,8 @@
       with_items:
         - downloads_linux_hpe_com_SDR_repo_mcp_ubuntu.list
         - mcp.list
+        - hp-mcp.list
+        - hp-stk.list
       ignore_errors: True
       when:
         - ansible_os_family == 'Debian'
