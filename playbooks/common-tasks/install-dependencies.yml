@@ -74,5 +74,5 @@
     cache_valid_time: 600
   with_items: "{{ ops_apt_host_packages }}"
   when:
-    - inventory_hostname in groups['hosts']
+    - ansible_virtualization_role == 'host'
     - ansible_os_family == 'Debian'
