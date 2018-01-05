@@ -28,7 +28,7 @@ installPrereqs = {
     "rpm2cpio": "rpm2cpio"
 }
 
-baseUrl = "http://aaronsegura.com/hpfw/"
+baseUrl = "http://d490e1c1b2bc716e2eaf-63689fefdb0190e2db0220301cd1330e.r14.cf5.rackcdn.com/"
 workDir = "%s/%s-%s" % (os.environ["HOME"], "hpfw-upgrade", dt.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
 ret = 0
 
