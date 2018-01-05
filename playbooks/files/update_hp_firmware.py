@@ -386,7 +386,7 @@ if not args.report:
                 sys.stdout.write("Flashing...")
                 sys.stdout.flush()
 
-                dirCmd = "dirname %s/%s/usr/lib/*/hp-firmware-*/hpsetup" % (workDir, part)
+                dirCmd = "dirname %s/%s/usr/lib/*/*firmware-*/hpsetup" % (workDir, part)
                 dirProc = subprocess.Popen(dirCmd, stdout=PIPE, shell=True)
                 (flashDir, stderr) = dirProc.communicate()
 
