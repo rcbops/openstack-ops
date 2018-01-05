@@ -28,7 +28,7 @@ installPrereqs = {
     "rpm2cpio": "rpm2cpio"
 }
 
-baseUrl = "http://aaronsegura.com/hpfw/"
+baseUrl = "http://d490e1c1b2bc716e2eaf-63689fefdb0190e2db0220301cd1330e.r14.cf5.rackcdn.com/"
 workDir = "%s/%s-%s" % (os.environ["HOME"], "hpfw-upgrade", dt.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
 ret = 0
 
@@ -93,9 +93,9 @@ firmwares["ProLiant DL380 Gen9"] = {
     },
     "SYSTEM": {
         "check": "hpasmcli -s \"show server\" | grep ROM | cut -d: -f2- | tr -d ' '",
-        "ver": "02/17/2017",
-        "fwpkg": "hp-firmware-system-p89-2.40_2017_02_17-2.1.i386.rpm",
-        "md5": "4506ed3576c05989070fbe75bb58d65e",
+        "ver": "12/07/2017",
+        "fwpkg": "hp-firmware-system-p89-2.54_2017_12_07-1.1.i386.rpm",
+        "md5": "4e761671bbb0c2b72935fb29086550f9",
         "inp": "y\nn\n",
         "ret": 1
     },

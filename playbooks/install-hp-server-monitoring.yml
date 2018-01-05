@@ -23,6 +23,7 @@
         state: absent
       with_items:
         - downloads_linux_hpe_com_SDR_repo_mcp_ubuntu.list
+        - linux.hp.com.sources.list
         - mcp.list
         - hp-mcp.list
         - hp-stk.list
