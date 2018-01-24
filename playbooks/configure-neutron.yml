@@ -22,7 +22,7 @@
     - name: Check for rpc_support security group
       shell: |
         . /root/openrc
-        neutron {{ openrc_insecure | bool | ternary('--insecure','') }} security-group-list | /bin/grep -w "rpc-support"
+        neutron {{ openrc_insecure |default(false) |bool |ternary('--insecure','') }} security-group-list | /bin/grep -w "rpc-support"
       register: rpc_support_sec_group
       changed_when: false
       failed_when: rpc_support_sec_group.rc not in [0, 1]
@@ -30,7 +30,7 @@
     - name: Create rpc_support security group
       shell: |
         . /root/openrc
-        neutron {{ openrc_insecure | bool | ternary('--insecure','') }} security-group-create rpc-support
+        neutron {{ openrc_insecure |default(false) |bool |ternary('--insecure','') }} security-group-create rpc-support
       register: sec_group_create
       changed_when: sec_group_create.rc == 0
       failed_when: sec_group_create.rc != 0
@@ -39,7 +39,7 @@
     - name: Create rpc_support security group rules ports
       shell: |
         . /root/openrc
-        neutron {{ openrc_insecure | bool | ternary('--insecure','') }} security-group-rule-create \
+        neutron {{ openrc_insecure |default(false) |bool |ternary('--insecure','') }} security-group-rule-create \
                 --direction ingress \
                 --protocol tcp \
                 --port-range-min {{ item }} \
@@ -57,7 +57,7 @@
     - name: Create rpc_support security group rules icmp
       shell: |
         . /root/openrc
-        neutron {{ openrc_insecure | bool | ternary('--insecure','') }} security-group-rule-create \
+        neutron {{ openrc_insecure |default(false) |bool |ternary('--insecure','') }} security-group-rule-create \
                  --direction ingress \
                  --protocol icmp \
                  --remote-ip-prefix 0.0.0.0/0 \

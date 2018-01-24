@@ -21,7 +21,7 @@
   tasks:
     - name: Add default Nova flavors
       command: |
-        {{ ops_pip_venv_enabled | bool | ternary(ops_venv, omit) }}/bin/openstack {{ openrc_insecure | bool | ternary('--insecure','') }} --os-cloud default flavor create --ram {{ item.RAM }} --disk {{ item.Disk }} --vcpus {{ item.VCPUs }} --public {{ item.Name }}
+        {{ ops_pip_venv_enabled | bool | ternary(ops_venv, omit) }}/bin/openstack {{ openrc_insecure |default(false) |bool |ternary('--insecure','') }} --os-cloud default flavor create --ram {{ item.RAM }} --disk {{ item.Disk }} --vcpus {{ item.VCPUs }} --public {{ item.Name }}
       register: nova_flavor_create
       failed_when:
         - nova_flavor_create.stderr.find('already exists') == -1
