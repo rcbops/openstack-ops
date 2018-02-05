@@ -93,9 +93,9 @@ firmwares["ProLiant DL380 Gen9"] = {
     },
     "SYSTEM": {
         "check": "hpasmcli -s \"show server\" | grep ROM | cut -d: -f2- | tr -d ' '",
-        "ver": "12/07/2017",
-        "fwpkg": "hp-firmware-system-p89-2.54_2017_12_07-1.1.i386.rpm",
-        "md5": "4e761671bbb0c2b72935fb29086550f9",
+        "ver": "02/17/2017",
+        "fwpkg": "hp-firmware-system-p89-2.40_2017_02_17-2.1.i386.rpm",
+        "md5": "4506ed3576c05989070fbe75bb58d65e",
         "inp": "y\nn\n",
         "ret": 1
     },
