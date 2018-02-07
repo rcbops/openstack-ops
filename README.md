@@ -9,7 +9,6 @@ Travis is now used to lint various scripts in order to guarantee minimal coding 
 | Branch             | Build status     |
 |--------------------|------------------|
 | Master Branch | [![Build Status: Master Branch](https://travis-ci.org/rsoprivatecloud/openstack-ops.svg?branch=master)](https://travis-ci.org/rsoprivatecloud/openstack-ops) |
-| newton Branch | [![Build Status: newton Branch](https://travis-ci.org/rsoprivatecloud/openstack-ops.svg?branch=newton)](https://travis-ci.org/rsoprivatecloud/openstack-ops) |
 
 
 Intent
