@@ -1,0 +1,57 @@
+---
+# Copyright 2018-Present, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: Rebuild SSH known hosts
+  hosts: localhost
+  connection: local
+  gather_facts: "{{ gather_facts | default(true) }}"
+  pre_tasks:
+    - name: Get hosts from inventory
+      set_fact:
+        _known_ssh_hosts: >
+          {% set _var = [] -%}
+          {% for group in ['hosts','osds','mons','all_containers'] -%}
+          {%   for item in groups[group] | default([]) -%}
+          {%     if _var.append(item) -%}
+          {%     endif -%}
+          {%   endfor -%}
+          {% endfor -%}
+          {{ _var | unique }}
+
+  tasks:
+    - name: Retrieve public SSH keys
+      command: |
+         ssh-keyscan -H {{ item }}
+      with_items: "{{ _known_ssh_hosts }}"
+      register: _ssh_public_key_hash
+      failed_when: _ssh_public_key_hash.rc > 0
+      changed_when: _ssh_public_key_hash.rc == 0
+
+    - name: Ensure .ssh directory exists
+      file:
+        path: "/root/.ssh"
+        state: "directory"
+        mode: '0700'
+        owner: root
+        group: root
+
+    - name: Write known hosts into user .ssh directory
+      template:
+        src: templates/known_hosts.j2
+        dest: /root/.ssh/known_hosts
+        mode: '0600'
+        backup: yes
+  vars_files:
+    - "vars/main.yml"

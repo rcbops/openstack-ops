@@ -1,0 +1,6 @@
+# {{ ansible_managed }}
+{% for item in _ssh_public_key_hash.results %}
+{%   for line in item['stdout_lines'] %}
+{{ line }}
+{%   endfor %}
+{% endfor %}
