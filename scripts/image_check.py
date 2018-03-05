@@ -1,3 +1,9 @@
+===============================================================
+Used to get the status of all images in an environment. To get all the details try:
+
+python image_check.py --verbose --all
+===============================================================
+
 #!/bin/env python
 import argparse
 import MySQLdb
