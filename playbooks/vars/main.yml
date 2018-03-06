@@ -18,10 +18,12 @@ ops_requires_pip_packages:
 
 ops_pip_dependencies:
   - python-openstackclient
+  - python-neutronclient
 
 ops_apt_util_packages:
   - bash-completion
   - bridge-utils
+  - curl
   - dstat
   - htop
   - iotop
@@ -44,6 +46,7 @@ ops_apt_host_packages:
 ops_neutron_debug_packages:
   - iputils-arping
   - ethtool
+  - curl
 
 
 ops_venv: "/openstack/venvs/rcbops-{{ rpc_release }}"
