@@ -35,7 +35,7 @@ if [ -f /etc/openstack-release ]; then
 fi
 
 test -z "$OSA_VERSION" -a -z "$RPC_RELEASE"  && OSA_VERSION=9.0.0 #Fallback to RPC9
-Pest -z "$RPC_RELEASE" && RPC_RELEASE=$( echo $OSA_VERSION | cut -d '.' -f1)
+test -z "$RPC_RELEASE" && RPC_RELEASE=$( echo $OSA_VERSION | cut -d '.' -f1)
 
 ###############
 # These functions are intented to run inside containers only to determine the
