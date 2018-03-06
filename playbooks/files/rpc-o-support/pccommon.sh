@@ -21,24 +21,30 @@ HZ=`getconf CLK_TCK`
 function ix() { curl -F 'f:1=<-' http://ix.io < "${1:-/dev/stdin}"; }
 
 ################
-if [ "$( grep DISTRIB_RELEASE /etc/rpc-release 2> /dev/null)" ]; then
-  source /etc/rpc-release
-  RPC_RELEASE=`echo $DISTRIB_RELEASE | cut -d. -f1 | tr -d '[:alpha:]'`
-else
-  RPC_RELEASE="4"
+if [ -f /etc/rpc-release ]; then
+  if [ "$( grep DISTRIB_RELEASE /etc/rpc-release 2> /dev/null)" ]; then
+    source /etc/rpc-release
+    RPC_RELEASE=`echo $DISTRIB_RELEASE | cut -d. -f1 | tr -d '[:alpha:]'`
+  fi
 fi
 
-if [ "$( grep DISTRIB_RELEASE /etc/openstack-release 2> /dev/null)" ]; then
-  OSA_VERSION=$(awk -F= '/DISTRIB_RELEASE/ { x=gsub(/"/,"",$2); print $x }' /etc/openstack-release )
-else
-  OSA_VERSION=""
+if [ -f /etc/openstack-release ]; then
+  if [ "$( grep DISTRIB_RELEASE /etc/openstack-release 2> /dev/null)" ]; then
+    OSA_VERSION=$(awk -F= '/DISTRIB_RELEASE/ { x=gsub(/"/,"",$2); print $x }' /etc/openstack-release | tr -d '[:alpha:]')
+  fi
 fi
+
+test -z "$OSA_VERSION" -a -z "$RPC_RELEASE"  && OSA_VERSION=9.0.0 #Fallback to RPC9
+Pest -z "$RPC_RELEASE" && RPC_RELEASE=$( echo $OSA_VERSION | cut -d '.' -f1)
 
 ###############
 # These functions are intented to run inside containers only to determine the
 # current virtual environment for all OS services after kilo
 function rpc-get-neutron-venv {
+    #Upstart
     VENV_ACTIVATE=$( awk '/\..*\/bin\/activate/ {print $2}' /etc/init/neutron-*.conf 2> /dev/null |tail -1 )
+    #SystemD
+    VENV_ACTIVATE=$( awk -F'--config-file' '/ExecStart=/ { gsub(/(ExecStart=|neutron[^\/]+$)/,"",$1); print $1 "activate" }' /etc/systemd/system/neutron*.service | tail -1)
     if [ -n "$VENV_ACTIVATE" ]; then
         VENV_PATH=$( dirname $VENV_ACTIVATE )
         if [ -d "$VENV_PATH" ]; then
@@ -87,7 +93,7 @@ fi
 function rpc-hypervisor-free {
 
 if [ ! -s /etc/nova/nova.conf ]; then
-  NOVACONTAINER=`lxc-ls | grep nova | tail -1`
+  NOVACONTAINER=`lxc-ls -1 | grep nova_conductor | tail -1`
 
   if [ "$NOVACONTAINER" ]; then
     LXC="lxc-attach -n $NOVACONTAINER -- "
@@ -270,10 +276,10 @@ function rpc-environment-scan() {
 
   echo "  - Nova"
   host_repl=`nova list | awk '/[0-9]/ {print "s/"$2"/[[Instance: "$4"]]/g;"}' 2> /dev/null`
-  flav_repl=`nova flavor-list | awk -F\| '/[0-9]/ {print "s/"$3"/[[Flavor: "$8"v,"$4"M,"$5"\/"$6"G,"$7"swap]]/g;"}' | tr -d " "`
+  flav_repl=`nova flavor-list | awk -F\| '/[0-9]/ {print "s/"$3"/[[Flavor: "$8"v,"$4"M,"$5"\/"$6"G,"$7"swap]]/g;"}' 2>/dev/null | tr -d " "`
 
   echo "  - Glance"
-  img_repl=`nova image-list | awk -F\| '/[0-9]/ {gsub(/[ ]+/, "", $2);gsub(/^ /, "", $3);print "s/"$2"/[[Img: "$3"]]/g;"}'`
+  img_repl=`glance image-list | awk -F\| '/[0-9]/ {gsub(/[ ]+/, "", $2);gsub(/^ /, "", $3);print "s/"$2"/[[Img: "$3"]]/g;"}'`
 
   echo "Done!"
 }
@@ -299,12 +305,12 @@ function rpc-instance-test-networking() {
     if [ ! "$( hostname | egrep 'neutron(_|-)agents' )" ]; then
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
       echo "Attempting to find one for you..."
-      CONTAINER=`lxc-ls | egrep 'neutron(_|-)agents' |tail -1`
+      CONTAINER=`lxc-ls -1 | egrep 'neutron(_|-)agents' | tail -1`
       LXC="lxc-attach -n $CONTAINER -- "
 
       if [ "$CONTAINER" ]; then
         echo -e "\nUsing [$CONTAINER:]\n"
-        $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/openstack-ops/master/files/rpc-o-support/pccommon.sh
+        $LXC curl -L -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/openstack-ops/master/playbooks/files/rpc-o-support/pccommon.sh
         $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-get-neutron-venv ; rpc-instance-test-networking $1"
         $LXC rm /tmp/pccommon.sh
         unset CONTAINER  LXC
@@ -380,11 +386,11 @@ function rpc-instance-per-network() {
     if [ ! "$( hostname | egrep 'neutron(_|-)agents' )" ]; then
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
       echo "Attempting to find one for you..."
-      CONTAINER=`lxc-ls | egrep 'neutron(_|-)agents'`
+      CONTAINER=`lxc-ls -1 | egrep 'neutron(_|-)agents' | tail -1`
       LXC="lxc-attach -n $CONTAINER -- "
       if [ "$CONTAINER" ]; then
         echo -e "\nUsing [$CONTAINER]:\n"
-        $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/openstack-ops/master/files/rpc-o-support/pccommon.sh
+        $LXC curl -L -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/openstack-ops/master/playbooks/files/rpc-o-support/pccommon.sh
         $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-get-neutron-venv; rpc-instance-per-network $1"
         $LXC rm /tmp/pccommon.sh
         unset CONTAINER  LXC
@@ -499,11 +505,11 @@ function rpc-instance-per-network-per-hypervisor() {
     if [ ! "$( hostname | egrep 'neutron(_|-)agents' )" ]; then
       echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
       echo -n "Attempting to find one for you..."
-      CONTAINER=`lxc-ls | grep 'neutron(_|-)agents'`
+      CONTAINER=`lxc-ls -1 | egrep 'neutron(_|-)agents' | tail -1`
       LXC="lxc-attach -n $CONTAINER -- "
       if [ "$CONTAINER" ]; then
         echo -e "\nUsing [$CONTAINER]:\n"
-        $LXC curl -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/openstack-ops/master/files/rpc-o-support/pccommon.sh
+        $LXC curl -L -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/openstack-ops/master/playbooks/files/rpc-o-support/pccommon.sh
         $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-get-neutron-venv; rpc-instance-per-network-per-hypervisor"
         $LXC rm /tmp/pccommon.sh
         unset CONTAINER  LXC
@@ -646,19 +652,37 @@ function rpc-image-check () {
 
 [ ${Q=0} -eq 0 ] && echo "  - rpc-user-roles() - List all users and their roles across all tenants"
 function rpc-user-roles () {
-  for U in `keystone user-list | awk '/[0-9]/ { print $4 }'`; do
-    echo "User [$U] ::"
-    for T in `keystone tenant-list | awk '/[0-9]/ {print $4}'`; do
-      for R in `keystone user-role-list --user $U --tenant $T | awk '/[0-9]/ {print $4}'`; do
-        [ ${HDR=0} == 0 ] && echo -n "  Tenant [$T]: "
-        HDR=1
-        echo -n "$R "
+  if [ "$OS_IDENTITY_API_VERSION" = "3" ]; then
+    for D in default `openstack domain list | awk '/[0-9]+/ { print $2 }'`; do
+      for U in `openstack user list --domain $D | awk '/[0-9]/ { print $4 }'`; do
+        echo "User [$U] ::"
+        for T in `openstack project list | awk '/[0-9]/ {print $4}'`; do
+          for R in `openstack role assignment list --user $U --project $T --names | awk '/@/ {print $42'`; do
+            [ ${HDR=0} == 0 ] && echo -n "  Tenant [$T]: "
+            HDR=1
+            echo -n "$R "
+          done
+        [ ${HDR=0} == 1 ] && echo
+        unset HDR
+        done
+      echo
       done
-    [ ${HDR=0} == 1 ] && echo
-    unset HDR
     done
-  echo
-  done
+  else
+    for U in `keystone user-list | awk '/[0-9]/ { print $4 }'`; do
+      echo "User [$U] ::"
+      for T in `keystone tenant-list | awk '/[0-9]/ {print $4}'`; do
+        for R in `keystone user-role-list --user $U --tenant $T | awk '/[0-9]/ {print $4}'`; do
+          [ ${HDR=0} == 0 ] && echo -n "  Tenant [$T]: "
+          HDR=1
+          echo -n "$R "
+        done
+      [ ${HDR=0} == 1 ] && echo
+      unset HDR
+      done
+    echo
+    done
+  fi
 }
 
 #[ ${Q=0} -eq 0 ] && echo "  - rpc-update-pccommon() - Grabs the latest version of pccommon.sh if there is one"
