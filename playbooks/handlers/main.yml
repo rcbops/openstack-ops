@@ -17,4 +17,3 @@
   service:
     name: ssh
     state: restarted
-    pattern: sshd
