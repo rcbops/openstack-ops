@@ -24,7 +24,12 @@
           {% set _var = [] -%}
           {% for group in ['hosts','osds','mons','all_containers'] -%}
           {%   for item in groups[group] | default([]) -%}
-          {%     if _var.append(item) -%}
+          {%     if hostvars[item]['ansible_ssh_host'] is defined -%}
+          {%       set _ipaddress = hostvars[item]['ansible_ssh_host'] -%}
+          {%     else -%}
+          {%       set _ipaddress = hostvars[item]['ansible_host'] -%}
+          {%     endif -%}
+          {%     if _var.append({'name': item, 'ip': _ipaddress}) -%}
           {%     endif -%}
           {%   endfor -%}
           {% endfor -%}
@@ -33,7 +38,7 @@
   tasks:
     - name: Retrieve public SSH keys
       command: |
-         ssh-keyscan -H {{ item }}
+         ssh-keyscan -H {{ item['name'] }} {{ item['ip'] }}
       with_items: "{{ _known_ssh_hosts }}"
       register: _ssh_public_key_hash
       failed_when: _ssh_public_key_hash.rc > 0
