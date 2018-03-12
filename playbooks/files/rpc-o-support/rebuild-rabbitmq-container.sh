@@ -31,12 +31,12 @@ else
   openstack-ansible setup-everything.yml --tags rabbitmq-user
 fi;
 
-if [ -d "/opt/rpc-openstack" ]; then
-  cd /opt/rpc-openstack/rpcd/playbooks
-
-  if [ ! -d "/opt/rpc-maas" ]; then
+if [ -d /opt/rpc-maas/playbooks ]; then
+  pushd /opt/rpc-maas/playbooks
+    openstack-ansible -i /opt/rpc-openstack/openstack-ansible/playbooks/inventory maas-infra-rabbitmq.yml
+  popd
+else
+  pushd /opt/rpc-openstack/rpcd/playbooks
     openstack-ansible setup-maas.yml --tags rabbitmq-user
-  else
-    openstack-ansible setup-maas.yml --tags maas-infra-rabbitmq
-  fi;
-fi;
+  popd
+fi
