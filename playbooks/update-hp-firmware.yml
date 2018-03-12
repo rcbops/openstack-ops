@@ -25,7 +25,7 @@
         name: "{{ item }}"
       with_items: "{{ ops_hp_tools_apt_firmware_packages }}"
       register: install_packages
-      until: install_packages|success
+      until: install_packages |success
       retries: 2
       delay: 2
 
@@ -49,11 +49,11 @@
 
     - name: Execute HP firmware upgrade as background task
       command: |
-        {{ screen_binary.stdout }} -d -m -L -t "hp_firmware_update" /usr/local/bin/update_hp_firmware.py -f
+        {{ screen_binary.stdout }} -d -m -L -t "hp_firmware_update" bash -c "source {{ ops_pip_venv_enabled | bool | ternary(ops_venv + '/bin/activate', omit) }} || true; /usr/local/bin/update_hp_firmware.py -f"
       changed_when: false
       when:
-        - screen_binary|changed
-        - install_packages|success
+        - screen_binary |changed
+        - install_packages |success
         - update_hp_firmware_running.rc == 1
   vars_files:
     - "vars/hp-hardware-monitoring.yml"
