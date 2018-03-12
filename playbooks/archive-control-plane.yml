@@ -13,18 +13,45 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+- name: Get container hosts
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Create known container hosts fact
+      set_fact:
+        _known_container_hosts: >
+          {% set _var = [] -%}
+          {% for item in groups['all_containers'] | default([]) -%}
+          {%   if item not in ['ceph_all','rsyslog_all','elasticsearch_all'] -%}
+          {%     if hostvars[item]['physical_host'] | default(false) != item -%}
+          {%       if _var.append(hostvars[item]['physical_host']) -%}
+          {%       endif -%}
+          {%     endif -%}
+          {%   endif -%}
+          {% endfor -%}
+          {{ _var | unique }}
+
+    - name: Create dynamic lxc_host group
+      add_host:
+        hostname: "{{ item }}"
+        groups: "known_container_hosts"
+      with_items: "{{ _known_container_hosts }}"
+
+- name: Roll out archive directory
+  hosts: known_container_hosts
+  tasks:
+    - name: Create archival destination directory
+      file:
+        path: /openstack/backup/control-plane
+        state: directory
+
 - name: Archive container(s)
-  hosts: "{{ container_group|default('all_containers') }}"
+  hosts: "{{ container_group|default('all_containers:!ceph_all:!rsyslog_all:!elasticsearch_all') }}"
   gather_facts: false
   serial: '20%'
   user: root
   pre_tasks:
-    - name: Create container archive directory
-      file:
-        path: /openstack/backup/control-plane
-        state: directory
-      delegate_to: "{{ physical_host }}"
-
     - name: Collect container configuration
       command: |
         find . -type f -iname *.ini -o -iname *.sh -o -iname config
@@ -42,12 +69,28 @@
       changed_when: current_state.rc == 0
       delegate_to: "{{ physical_host }}"
 
+    - name: Remove old container archive
+      file:
+        name: "{{ item }}"
+        state: absent
+      with_items:
+        - "/openstack/backup/control-plane/{{ rpc_release }}-{{ inventory_hostname }}_config.tgz"
+        - "/openstack/backup/control-plane/{{ rpc_release }}-{{ inventory_hostname }}.tar.tgz"
+      ignore_errors: True
+      delegate_to: "{{ physical_host }}"
+
     - name: Archive container rootfs
       lxc_container:
-        name: "{{ rpc_release }}-{{ inventory_hostname }}"
+        name: "{{ inventory_hostname }}"
         state: "{{ container_state[current_state.stdout.strip()] }}"
         archive: true
         archive_path: /openstack/backup/control-plane
+      delegate_to: "{{ physical_host }}"
+
+    - name: Rename container archive
+      command: mv -f /openstack/backup/control-plane/{{ inventory_hostname }}.tar.tgz /openstack/backup/control-plane/{{ rpc_release }}-{{ inventory_hostname }}.tar.tgz
+      args:
+        creates: "/openstack/backup/control-plane/{{ rpc_release }}-{{ inventory_hostname }}.tar.tgz"
       delegate_to: "{{ physical_host }}"
 
     - name: Archive container configuration

@@ -173,14 +173,10 @@
   hosts: galera
   tasks:
     - name: List holland backups
-      find:
-        path: "/var/backup/holland_backups/rpc_support"
-        file_type: directory
-        age_stamp: ctime
-        age: -1d
-        size: 4m
-        use_regex: true
-        patterns: '\d+_\d+'
+      command: |
+         find /var/backup/holland_backups/rpc_support -iregex '.*/[0-9]+_[0-9]+/backup.xb' -type f -size +3M
+      ignore_errors: True
+      changed_when: found_holland_backups.rc != 0
       register: found_holland_backups
 
     - name: Create holland backup (venv)
@@ -188,7 +184,7 @@
         {{ ops_holland_venv_bin + '/' }}holland bk
       when:
         - ops_holland_venv_enabled | bool
-        - found_holland_backups.matched < 1
+        - found_holland_backups | changed
       tags:
         - holland_create_backup
         - holland_all
@@ -197,7 +193,7 @@
         /usr/local/bin/holland bk
       when:
         - not ops_holland_venv_enabled | bool
-        - found_holland_backups.matched < 1
+        - found_holland_backups | changed
   tags:
     - holland_create_backup
     - holland_all
