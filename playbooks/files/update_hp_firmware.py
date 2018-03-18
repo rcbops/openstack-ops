@@ -13,13 +13,13 @@ import subprocess
 import datetime as dt
 from subprocess import PIPE
 
-VERSION = '2017-05-31'
+VERSION = '2018-03-12'
 
 # Command to package name mappings
 checkPrereqs = {
     "dmidecode": "dmidecode",
     "ethtool": "ethtool",
-    "hpssacli": "hpssacli",
+    "ssacli": "ssacli",
     "hponcfg": "hponcfg",
     "lspci": "pciutils",
     "systool": "sysfsutils"
@@ -93,25 +93,25 @@ firmwares["ProLiant DL380 Gen9"] = {
     },
     "SYSTEM": {
         "check": "hpasmcli -s \"show server\" | grep ROM | cut -d: -f2- | tr -d ' '",
-        "ver": "02/17/2017",
-        "fwpkg": "hp-firmware-system-p89-2.40_2017_02_17-2.1.i386.rpm",
-        "md5": "4506ed3576c05989070fbe75bb58d65e",
+        "ver": "01/22/2018",
+        "fwpkg": "hp-firmware-system-p89-2.56_2018_01_22-1.1.i386.rpm",
+        "md5": "3aaecc7eb92353efe0311ae7f06e4dcf",
         "inp": "y\nn\n",
         "ret": 1
     },
     "ILO": {
         "check": "hponcfg -h | egrep Firmware | cut -d\  -f4",
-        "ver": "2.50",
-        "fwpkg": "hp-firmware-ilo4-2.50-1.1.i386.rpm",
-        "md5": "2141f1ff4f7a3ea637fd6e500add816d",
+        "ver": "2.55",
+        "fwpkg": "hp-firmware-ilo4-2.55-1.1.i386.rpm",
+        "md5": "92b5fcf134a26d3c831c976d7bcfa27f",
         "inp": "y\n",
         "ret": 0
     },
     "RAID": {
-        "check": "hpssacli controller all show config detail | grep -i firmware\ version | cut -d: -f2 | tr -d ' '| head -1",
-        "ver": "5.04",
-        "fwpkg": "hp-firmware-smartarray-ea3138d8e8-5.04-1.1.x86_64.rpm",
-        "md5": "a2fd504e1f77333f38ba5bbdbdeec36a",
+        "check": "ssacli controller all show config detail | grep -i firmware\ version | cut -d: -f2 | tr -d ' '| head -1",
+        "ver": "6.30",
+        "fwpkg": "hp-firmware-smartarray-ea3138d8e8-6.30-1.1.x86_64.rpm",
+        "md5": "bfba31f24a4de79307c44df97d3fd9e8",
         "inp": "A\n",
         "ret": 1
     },
@@ -124,12 +124,12 @@ firmwares["ProLiant DL380 Gen9"] = {
             "561FLR-T": "800005B6",
             "561T": "800005D3",
             "562i": "800006FC",
-            "562FLR-SFP+": "800029F7",
-            "562SFP+": "800029F6",
-            "563i": "80002B0E"
+            "562FLR-SFP+": "8000366D",
+            "562SFP+": "8000366C",
+            "563i": "800035C0"
         },
-        "fwpkg": "hp-firmware-nic-intel-1.11.13-1.1.x86_64.rpm",
-        "md5": "541db2f190e3741df626e24db1c1bf61",
+        "fwpkg": "hp-firmware-nic-intel-1.14.13-1.1.x86_64.rpm",
+        "md5": "ef789039adf106ea3b3a4e1296519507",
         "ret": 1
     }
 }
