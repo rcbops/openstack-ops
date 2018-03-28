@@ -39,6 +39,8 @@ parser.add_argument("-i", help="Install missing utilities and run check, no Flas
                     action="store_const", const=True, default=False)
 parser.add_argument("-r", help="Generate JSON report of current versions", dest="report", action="store_const",
                     const=True, default=False)
+parser.add_argument("--meltdown", help="Use a firmware mitigated for Meltdown/Spectre", dest="use_meltdown", action="store_const",
+                    const=True, default=False)
 parser.add_argument("--NIC", help="Flash NIC firmware", dest="do", action="append_const", const="NIC")
 parser.add_argument("--SYS", help="Flash System BIOS", dest="do", action="append_const", const="SYSTEM")
 parser.add_argument("--RAID", help="Flash RAID Controller", dest="do", action="append_const", const="RAID")
@@ -53,7 +55,7 @@ if args.do is None:
 if not args.flash and not args.install and not args.report:
     print ""
     print "*********************************************"
-    print "PERFORMING DRY RUN.  NO CHANGES WILL BE DONE."
+    print "PERFORMING DRY RUN. NO CHANGES WILL BE DONE."
     print "*********************************************"
     print ""
 elif args.install:
@@ -78,7 +80,7 @@ if args.flash:
     try:
         os.chdir(workDir)
     except:
-        print "Something went horribly wrong.  Aborting."
+        print "Something went horribly wrong. Aborting."
         exit(254)
 
 firmwares = {}
@@ -92,6 +94,14 @@ firmwares["ProLiant DL380 Gen9"] = {
         "ret": 1
     },
     "SYSTEM": {
+        "check": "hpasmcli -s \"show server\" | grep ROM | cut -d: -f2- | tr -d ' '",
+        "ver": "02/17/2017",
+        "fwpkg": "hp-firmware-system-p89-2.40_2017_02_17-2.1.i386.rpm",
+        "md5": "4506ed3576c05989070fbe75bb58d65e",
+        "inp": "y\nn\n",
+        "ret": 1
+    },
+    "SYSTEM-MELTDOWN": {
         "check": "hpasmcli -s \"show server\" | grep ROM | cut -d: -f2- | tr -d ' '",
         "ver": "01/22/2018",
         "fwpkg": "hp-firmware-system-p89-2.56_2018_01_22-1.1.i386.rpm",
@@ -137,21 +147,22 @@ firmwares["ProLiant DL380 Gen9"] = {
 # Check for pre-requisite packages necessary to determine versions
 if not args.report:
     print "Checking for intial pre-requisites..."
+
 for i in checkPrereqs:
     p = subprocess.Popen(['/usr/bin/env', 'which', i], stdin=PIPE, stdout=PIPE, stderr=PIPE)
     p.communicate()
     if p.returncode > 0:
         if not args.flash and not args.install:
-            sys.stdout.write("Unable to find %s, but performing DRY RUN, so will not be installed.  Stopping.\n" % i)
+            sys.stdout.write("Unable to find %s, but performing DRY RUN, so will not be installed. Stopping.\n" % i)
             exit(2)
         else:
-            sys.stdout.write("Unable to find %s.  Installing..." % i)
+            sys.stdout.write("Unable to find %s. Installing..." % i)
             sys.stdout.flush()
             p = subprocess.Popen(['/usr/bin/env', 'apt-get', 'install', '-y', checkPrereqs[i]], stdin=PIPE, stdout=PIPE,
                                  stderr=PIPE)
             p.communicate()
             if p.returncode > 0:
-                print "Failed.  Do the needful."
+                print "Failed. Do the needful."
                 exit(1)
             else:
                 print "Success!"
@@ -176,16 +187,16 @@ if args.flash:
         if p.returncode > 0:
             if not args.flash:
                 sys.stdout.write(
-                    "Unable to find %s, but performing DRY RUN, so will not be installed.  Stopping.\n" % i)
+                    "Unable to find %s, but performing DRY RUN, so will not be installed. Stopping.\n" % i)
                 exit(2)
             else:
-                sys.stdout.write("Unable to find %s.  Installing..." % i)
+                sys.stdout.write("Unable to find %s. Installing..." % i)
                 sys.stdout.flush()
                 p = subprocess.Popen(['/usr/bin/env', 'apt-get', 'install', '-y', installPrereqs[i]], stdin=PIPE,
                                      stdout=PIPE, stderr=PIPE)
                 p.communicate()
                 if p.returncode > 0:
-                    print "Failed.  Do the needful."
+                    print "Failed. Do the needful."
                     exit(1)
                 else:
                     print "Success!"
@@ -258,6 +269,9 @@ if args.report:
     report[servernum] = {}
     for part in firmwares[sysType]:
         if not part == 'INIC':
+            if part == 'SYSTEM' and args.use_meltdown:
+                part = 'SYSTEM-MELTDOWN'
+
             verProc = subprocess.Popen(firmwares[sysType][part]["check"], stdin=PIPE, stdout=PIPE, stderr=PIPE,
                                        shell=True)
             (version, stderr) = verProc.communicate()
@@ -293,7 +307,12 @@ needsUpdate = False
 if not args.report:
     for part in args.do:
         partUpdate = False
+
+        if part == 'SYSTEM' and args.use_meltdown:
+            part = 'SYSTEM-MELTDOWN'
+
         if not part == 'INIC':
+
 
             sys.stdout.write("\n")
             sys.stdout.write("Verifying current %s version: " % part)
@@ -342,7 +361,7 @@ if not args.report:
                 with open("./%s" % firmwares[sysType][part]["fwpkg"], "wb") as pkg:
                     pkg.write(r.content)
             except IOError:
-                print "Unable to write file %s.  Aborting." % firmwares[sysType][part]["fwpkg"]
+                print "Unable to write file %s. Aborting." % firmwares[sysType][part]["fwpkg"]
                 exit(4)
             else:
                 print " -> Success!"
@@ -372,7 +391,7 @@ if not args.report:
             try:
                 os.chdir("%s/%s" % (workDir, part))
             except:
-                print "Unable to chdir %s/%s.  Aborting." % (workDir, part)
+                print "Unable to chdir %s/%s. Aborting." % (workDir, part)
                 continue
 
             extractCmd = "rpm2cpio %s/%s | cpio -id" % (workDir, firmwares[sysType][part]["fwpkg"])
