@@ -1,4 +1,5 @@
-#!/bin/env python
+#!/usr/bin/env python2
+
 '''
 ============================================================================================
 Script used to fix the issue of having running instances whose glance image was deleted.
