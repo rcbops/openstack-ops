@@ -2,3 +2,4 @@ ansible>=1.9.1,<3.0.0
 os-client-config
 #shade  Removed until dependencies issues resolve with upstream requirements
 python-openstackclient
+paramiko
