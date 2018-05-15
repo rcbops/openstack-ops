@@ -9,6 +9,7 @@
 - include: configure-nova.yml
 - include: configure-spice-console.yml
 - include: install-holland-db-backup.yml
+- include: install-dell-server-monitoring.yml
 - include: install-hp-server-monitoring.yml
 - include: install-hw-raid-tools.yml
 - include: install-pccommon.yml
