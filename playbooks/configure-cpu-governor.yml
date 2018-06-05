@@ -1,0 +1,71 @@
+---
+- name: Configure Linux CPU governor
+  hosts: hosts:mons:osds
+  gather_facts: "{{ gather_facts | default(true) }}"
+  vars:
+    governor: "{{ cpu_governor | default('performance') }}"
+  pre_tasks:
+    - include: "common-tasks/install-dependencies.yml"
+  tasks:
+    - name: Check for cpuidle
+      stat:
+        path: /sys/devices/system/cpu/cpu0/cpuidle
+      register: cpuidle_check
+
+    - name: Disable ondemand service
+      service:
+        name: ondemand
+        state: stopped
+        enabled: false
+
+    - name: Install cpufrequtils
+      apt:
+        name: cpufrequtils
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: "Set CPU Govenor to {{ governor }}"
+      lineinfile:
+        dest: /etc/default/cpufrequtils
+        regexp: '^GOVERNOR'
+        line: 'GOVERNOR="{{ governor }}"'
+        state: present
+        create: true
+      notify: "cpufrequtils restart"
+
+    - name: Start and enable cpufrequtils
+      service:
+        name: cpufrequtils
+        enabled: yes
+        state: started
+
+    - name: Disable cpuidle states
+      shell: "echo 1 | tee /sys/devices/system/cpu/cpu*/cpuidle/state{{ item }}/disable"
+      with_sequence: start=2 end=4
+      when: cpuidle_check.stat.exists
+
+    - name: Persist cpuidle in rc.local
+      lineinfile:
+        dest: /etc/rc.local
+        line: "echo 1 | tee /sys/devices/system/cpu/cpu*/cpuidle/state{{ item }}/disable"
+        insertbefore: '^exit 0$'
+      with_sequence: start=2 end=4
+      when: cpuidle_check.stat.exists
+
+    - name: Check cpufreq
+      command: "cat /sys/devices/system/cpu/cpu{{ item }}/cpufreq/scaling_governor"
+      with_sequence: "start=0 count={{ ansible_processor_vcpus }}"
+      register: check_governor
+      failed_when: check_governor.rc > 1
+      changed_when: false
+
+    - name: "Restart cpufrequtils if not {{ governor }}"
+      debug:
+         msg: "Checking current governor"
+      notify: "cpufrequtils restart"
+      changed_when: "'{{ governor }}' not in item.stdout"
+      with_items: "{{ check_governor.results }}"
+  handlers:
+    - include: "handlers/main.yml"
+  vars_files:
+    - "vars/main.yml"
