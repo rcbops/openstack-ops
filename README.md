@@ -15,14 +15,37 @@ Intent
 ------
 
 This repository is intended to collect all scripts around OpenStack administration with RPC.
-The repository is currently being converted into a Ansible Galaxy compatible role in order to
-support intregration into post deployment processes of RPC-O and others.
+It has been converted into a standalone module to be compatible with RPC-O and increasingly
+other products, R or ceph, to automate common maintenance and administrative tasks.
 
+
+Playbooks
+---------
+
+| Name                      | Parameters       |  Description                  |
+|---------------------------|------------------|-------------------------------|
+| archive-control-plane.yml | rpc_release (Used to designate the origin version of the backup) | Archives running OSA managed LXC containers into /openstack/backup/control-plane. Services inside containers will experiences short freeze during archiving |
+| configure-apt.yml | None | Installs openstack-ops APT package dependencies while also turning off unattended APT upgrades |
+| configure-bash-environment.yml | None | Configures openstack cli bash completion, set vim as default editor and maintain MOTD |
+| configure-hosts.yml | ops_host_kernel_modules, ops_host_kernel_sysctl | Load bonding and 8021q modules, enabled IP forwarding |
+| configure-neutron.yml | None | Setup RPC security group and install neutron debugging tools inside agent container |
+| configure-nova.yml | None | Install standard nova flavor (e.g. m1.small) |
+| configure-spice-console.yml | None | Reinstall the missing CRTL+ALT+DEL Button to login into Windows guests |
+| gather-facts.yml | None | Rebuild ansible facts when necessary |
+| install-holland-db-backup.yml| None | Installs Holland DB backup into the galera container |
+| install-hp-server-monitoring.yml | None | Installs the HP Server Monitoring Tools |
+| install-hw-raid-tools.yml | None | Installs the famous  megacli, lsiutil, arcconf tools onto all storage hosts |
+| install-pccommon.yml | None | Deploys the post install QC script pccommon |
+| install-sos-tool.yml | None | Deploys the RPC sos tool onto all hosts |
+| rebuild-ssh-known-hosts.yml | None | Rebuild local SSH known hosts from current installed containers and hosts which is necessary post leapfrog upgrades |
+| support-key.yml | None | Install the RPC support SSH key into nova which is used for pccommon |
+| swift-datacrusher.yml | xfs_inode_size, xfs_mount_options, xfs_format_options, exclude_drive_labels, exclude_drive_labels_format_option | Automatically reformat a entire swift cluster (WIPE ALL DATA). Use only with caution |
+| update-hp-firmware.yml | firmware_use_meltdown | Automatically install the latest tested firmware for HP DL380 G9 server (NIC,ILO,RAID,BIOS) |
 
 Operational scripts
 -------------------
 
-Most RPC OpenStack supports scripts are currently running outside of ansible and are stored 
+Most RPC OpenStack supports scripts are currently running outside of ansible and are stored
 inside the playbooks/files folder.
 Those scripts will be converted into individual Ansible tasks over time, when necessary.
 
@@ -54,9 +77,9 @@ supported product lifecycle (RPC-O currently)
 Execution
 ----------------
 
-    git clone -b 1.0.0 https://github.com/rsoprivatecloud/openstack-ops.git /opt/openstack-ops
+    git clone -b 1.1.1 https://github.com/rsoprivatecloud/openstack-ops.git /opt/openstack-ops
     source /usr/local/bin/openstack-ansible.rc
-    
+
     cd /opt/openstack-ops/playbooks; openstack-ansible main.yml
 
 
