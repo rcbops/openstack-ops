@@ -87,9 +87,9 @@ firmwares = {}
 firmwares["ProLiant DL380 Gen9"] = {
     "NIC": {
         "check": "ethtool -i em1 | grep firmware | cut -d:  -f2- | tr -d ' '",
-        "ver": "5719-v1.46NCSIv1.3.16.0",
-        "fwpkg": "hp-firmware-nic-broadcom-2.17.6-1.1.x86_64.rpm",
-        "md5": "d300a2a95c1e4617bd4a07eede322511",
+        "ver": "5719-v1.46NCSIv1.4.18.0",
+        "fwpkg": "hp-firmware-nic-broadcom-2.20.7-1.1.x86_64.rpm",
+        "md5": "6881c7ac3b5fd7075d7a94d46f26fa9c",
         "inp": "\n",
         "ret": 1
     },
