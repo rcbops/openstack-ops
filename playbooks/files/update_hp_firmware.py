@@ -312,8 +312,6 @@ if not args.report:
             part = 'SYSTEM-MELTDOWN'
 
         if not part == 'INIC':
-
-
             sys.stdout.write("\n")
             sys.stdout.write("Verifying current %s version: " % part)
             sys.stdout.flush()
@@ -322,7 +320,7 @@ if not args.report:
             (version, stderr) = verProc.communicate()
 
             if verProc.returncode == 0 and firmwares[sysType][part]["ver"] in version.strip():
-                print "Already current. Nothing to do."
+                print "Already current (%s). Nothing to do." % (version.strip())
             else:
                 if verProc.returncode != 0:
                     print "Detection Failed! %s" % stderr
