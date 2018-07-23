@@ -119,9 +119,9 @@ firmwares["ProLiant DL380 Gen9"] = {
     },
     "RAID": {
         "check": "ssacli controller all show config detail | grep -i firmware\ version | cut -d: -f2 | tr -d ' '| head -1",
-        "ver": "6.30",
-        "fwpkg": "hp-firmware-smartarray-ea3138d8e8-6.30-1.1.x86_64.rpm",
-        "md5": "bfba31f24a4de79307c44df97d3fd9e8",
+        "ver": "6.60",
+        "fwpkg": "hp-firmware-smartarray-ea3138d8e8-6.60-1.1.x86_64.rpm",
+        "md5": "77f86cab5d0b2505835bb8a0bd49a180",
         "inp": "A\n",
         "ret": 1
     },
