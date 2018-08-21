@@ -22,27 +22,28 @@ ops_pip_dependencies:
 
 ops_apt_util_packages:
   - bash-completion
-  - bridge-utils
   - curl
   - dstat
   - htop
   - iotop
-  - iptables-persistent
   - lsof
-  - openssh-server
-  - python-pip
   - sudo
   - tcpdump
   - vim
   - screen
+  - python-pip
 
 ops_apt_host_packages:
+  - openssh-server
+  - bridge-utils
+  - iptables-persistent
   - linux-crashdump
   - debootstrap
   - lvm2
   - ntp
   - ntpdate
   - vlan
+  - python-pip
 
 ops_neutron_debug_packages:
   - iputils-arping

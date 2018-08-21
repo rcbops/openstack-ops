@@ -16,6 +16,8 @@
 - name: Configure bash environment on all hosts
   hosts: all
   gather_facts: "{{ gather_facts | default(true) }}"
+  pre_tasks:
+    - include: "common-tasks/install-dependencies.yml"
   tasks:
     - name: Create Openstack Completion directory
       file:
