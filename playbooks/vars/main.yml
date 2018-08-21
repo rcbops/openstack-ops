@@ -30,6 +30,7 @@ ops_apt_util_packages:
   - iptables-persistent
   - lsof
   - openssh-server
+  - python-pip
   - sudo
   - tcpdump
   - vim
@@ -65,4 +66,3 @@ ops_host_kernel_sysctl:
   - { key: 'net.ipv4.ip_forward', value: 1 }
   - { key: 'net.ipv4.conf.all.rp_filter', value: 0 }
   - { key: 'net.ipv4.conf.default.rp_filter', value: 0 }
-

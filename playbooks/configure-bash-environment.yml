@@ -56,11 +56,12 @@
       when: ansible_os_family == 'Debian'
 
     - name: Set vim.basic as default
-      command: update-alternatives --set editor /usr/bin/vim.basic
+      command: "update-alternatives --set editor /usr/bin/vim.basic"
       when:
         - editor.rc != 0
         - not editor.stdout|search('vim')
         - ansible_os_family == 'Debian'
+        - ansible_virtualization_role == 'host:utility_all'
 
     - name: Disable motd for ssh
       lineinfile:
