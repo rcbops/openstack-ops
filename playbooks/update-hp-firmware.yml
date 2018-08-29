@@ -26,6 +26,9 @@
       with_items: "{{ ops_hp_tools_apt_firmware_packages }}"
       register: install_packages
       until: install_packages |success
+      when:
+        - ansible_os_family == 'Debian'
+        - ansible_system_vendor == "HP"
       retries: 2
       delay: 2
 
@@ -34,11 +37,17 @@
         src: files/update_hp_firmware.py
         dest: /usr/local/bin/update_hp_firmware.py
         mode: 0755
+      when:
+        - ansible_os_family == 'Debian'
+        - ansible_system_vendor == "HP"
 
     - name: Check if screen is installed
       command: "/usr/bin/which screen"
       register: screen_binary
       changed_when: '"screen" in screen_binary.stdout'
+      when:
+        - ansible_os_family == 'Debian'
+        - ansible_system_vendor == "HP"
 
     - name: Check for concurrent update_hp_firmware.py execution
       shell: |
@@ -46,6 +55,9 @@
       ignore_errors: True
       changed_when: false
       register: update_hp_firmware_running
+      when:
+        - ansible_os_family == 'Debian'
+        - ansible_system_vendor == "HP"
 
     - name: Execute HP firmware upgrade as background task
       command: |
@@ -55,6 +67,8 @@
         - screen_binary |changed
         - install_packages |success
         - update_hp_firmware_running.rc == 1
+        - ansible_os_family == 'Debian'
+        - ansible_system_vendor == "HP"
   vars_files:
     - "vars/hp-hardware-monitoring.yml"
     - "vars/main.yml"
