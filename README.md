@@ -36,6 +36,7 @@ Playbooks
 | fix-lxc-container-bindmount.yml | None | Optional mitigation for RO-4387 on Newton+ containers when needed |
 | install-holland-db-backup.yml| None | Installs Holland DB backup into the galera container |
 | install-hp-server-monitoring.yml | None | Installs the HP Server Monitoring Tools |
+| install-dell-server-monitoring.yml | None | Installs the Dell Server Monitoring Tools |
 | install-hw-raid-tools.yml | None | Installs the famous  megacli, lsiutil, arcconf tools onto all storage hosts |
 | install-pccommon.yml | None | Deploys the post install QC script pccommon |
 | install-sos-tool.yml | None | Deploys the RPC sos tool onto all hosts |
