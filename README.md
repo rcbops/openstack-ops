@@ -27,11 +27,13 @@ Playbooks
 | archive-control-plane.yml | rpc_release (Used to designate the origin version of the backup) | Archives running OSA managed LXC containers into /openstack/backup/control-plane. Services inside containers will experiences short freeze during archiving |
 | configure-apt.yml | None | Installs openstack-ops APT package dependencies while also turning off unattended APT upgrades |
 | configure-bash-environment.yml | None | Configures openstack cli bash completion, set vim as default editor and maintain MOTD |
+| configure-cpu-governor.yml | None | Optional, disable CPU ondemand governor and replace it with performance |
 | configure-hosts.yml | ops_host_kernel_modules, ops_host_kernel_sysctl | Load bonding and 8021q modules, enabled IP forwarding |
 | configure-neutron.yml | None | Setup RPC security group and install neutron debugging tools inside agent container |
 | configure-nova.yml | None | Install standard nova flavor (e.g. m1.small) |
 | configure-spice-console.yml | None | Reinstall the missing CRTL+ALT+DEL Button to login into Windows guests |
 | gather-facts.yml | None | Rebuild ansible facts when necessary |
+| fix-lxc-container-bindmount.yml | None | Optional mitigation for RO-4387 on Newton+ containers when needed |
 | install-holland-db-backup.yml| None | Installs Holland DB backup into the galera container |
 | install-hp-server-monitoring.yml | None | Installs the HP Server Monitoring Tools |
 | install-hw-raid-tools.yml | None | Installs the famous  megacli, lsiutil, arcconf tools onto all storage hosts |
@@ -77,7 +79,7 @@ supported product lifecycle (RPC-O currently)
 Execution
 ----------------
 
-    git clone -b 1.1.1 https://github.com/rsoprivatecloud/openstack-ops.git /opt/openstack-ops
+    git clone https://github.com/rsoprivatecloud/openstack-ops.git /opt/openstack-ops
     source /usr/local/bin/openstack-ansible.rc
 
     cd /opt/openstack-ops/playbooks; openstack-ansible main.yml
