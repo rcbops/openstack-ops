@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 #
 #
 #
@@ -103,9 +103,9 @@ firmwares["ProLiant DL380 Gen9"] = {
     },
     "SYSTEM-MELTDOWN": {
         "check": "hpasmcli -s \"show server\" | grep ROM | cut -d: -f2- | tr -d ' '",
-        "ver": "01/22/2018",
-        "fwpkg": "hp-firmware-system-p89-2.56_2018_01_22-1.1.i386.rpm",
-        "md5": "3aaecc7eb92353efe0311ae7f06e4dcf",
+        "ver": "05/21/2018",
+        "fwpkg": "hp-firmware-system-p89-2.60_2018_05_21-1.1.i386.rpm",
+        "md5": "ef5cb0958d6e41ef359953c3201e41f0",
         "inp": "y\nn\n",
         "ret": 1
     },
