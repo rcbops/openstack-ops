@@ -53,18 +53,18 @@
         enabled: yes
         state: started
 
-    - name: Disable cpuidle states
-      shell: "echo 1 | tee /sys/devices/system/cpu/cpu*/cpuidle/state{{ item }}/disable"
-      with_sequence: start=2 end=4
+    - name: Retrieve available cpuidle states
+      shell: "ls -1 /sys/devices/system/cpu/cpu*/cpuidle/state[2-4]/disable"
+      register: cpus_cpuidle
       when: cpuidle_check.stat.exists
 
-    - name: Persist cpuidle in rc.local
+    - name: Persist cpuidle states
       lineinfile:
-        dest: /etc/rc.local
-        line: "echo 1 | tee /sys/devices/system/cpu/cpu*/cpuidle/state{{ item }}/disable"
-        insertbefore: '^exit 0$'
-      with_sequence: start=2 end=4
+        dest: "/etc/sysfs.conf"
+        line: "{{ item.lstrip('/sys/') }} = 1"
+      with_items: "{{ cpus_cpuidle.stdout_lines }}"
       when: cpuidle_check.stat.exists
+      notify: "restart sysfs"
 
     - name: Check cpufreq
       command: "cat /sys/devices/system/cpu/cpu{{ item }}/cpufreq/scaling_governor"
@@ -79,6 +79,17 @@
       notify: "cpufrequtils restart"
       changed_when: "'{{ governor }}' not in item.stdout"
       with_items: "{{ check_governor.results }}"
+
+    - name: cleanup rc.local
+      lineinfile:
+        dest: /etc/rc.local
+        line: "echo 1 | tee {{ item }}"
+        state: absent
+      with_items:
+        - "/sys/devices/system/cpu/cpu*/cpuidle/state2/disable"
+        - "/sys/devices/system/cpu/cpu*/cpuidle/state3/disable"
+        - "/sys/devices/system/cpu/cpu*/cpuidle/state4/disable"
+      when: cpuidle_check.stat.exists
   handlers:
     - include: "handlers/main.yml"
   vars_files:

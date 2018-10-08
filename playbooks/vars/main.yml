@@ -44,6 +44,7 @@ ops_apt_host_packages:
   - ntpdate
   - vlan
   - python-pip
+  - sysfsutils
 
 ops_neutron_debug_packages:
   - iputils-arping

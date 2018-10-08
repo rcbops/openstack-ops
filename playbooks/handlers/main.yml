@@ -22,3 +22,8 @@
   service:
     name: cpufrequtils
     state: restarted
+
+- name: restart sysfs
+  service:
+    name: sysfsutils
+    state: restarted
