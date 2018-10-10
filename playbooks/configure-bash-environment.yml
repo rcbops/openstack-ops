@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Configure bash environment on all hosts
-  hosts: all
+- name: Configure bash environment on hosts
+  hosts: hosts:utilities_container
   gather_facts: "{{ gather_facts | default(true) }}"
   pre_tasks:
     - include: "common-tasks/install-dependencies.yml"
@@ -63,7 +63,6 @@
         - editor.rc != 0
         - not editor.stdout|search('vim')
         - ansible_os_family == 'Debian'
-        - ansible_virtualization_role == 'host:utility_all'
 
     - name: Disable motd for ssh
       lineinfile:
