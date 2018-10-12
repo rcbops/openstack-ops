@@ -23,6 +23,7 @@
         state: absent
       with_items:
         - linux.dell.com.sources.list
+        - dell-omsa.list
       ignore_errors: True
       when:
         - ansible_os_family == 'Debian'
