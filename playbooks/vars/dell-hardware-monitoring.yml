@@ -17,7 +17,7 @@
 # Dell server utilities
 #
 ops_dell_tools_apt_repos:
-  - { repo: "deb http://linux.dell.com/repo/community/openmanage/911/{{ ansible_lsb.codename }} {{ ansible_lsb.codename }} main", state: "present", filename: "linux.dell.com.sources" }
+  - { repo: "deb http://linux.dell.com/repo/community/openmanage/910/{{ ansible_lsb.codename }} {{ ansible_lsb.codename }} main", state: "present", filename: "linux.dell.com.sources" }
 ops_dell_tools_apt_repo_keys:
   - { keyserver: "pool.sks-keyservers.net", id: "1285491434D8786F", state: "present" }
 ops_dell_tools_monitoring_packages:
