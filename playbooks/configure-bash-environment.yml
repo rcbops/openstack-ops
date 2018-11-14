@@ -14,7 +14,7 @@
 # limitations under the License.
 
 - name: Configure bash environment on hosts
-  hosts: hosts:utilities_container
+  hosts: hosts:utility_container
   gather_facts: "{{ gather_facts | default(true) }}"
   pre_tasks:
     - include: "common-tasks/install-dependencies.yml"
