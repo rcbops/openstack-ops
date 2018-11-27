@@ -63,16 +63,6 @@
       with_items: "{{ ops_holland_packages | default([]) }}"
       when: ansible_os_family == 'Debian'
 
-    - name: Install pip dependencies required by holland
-      pip:
-        name: "{{ item }}"
-        virtualenv: "{{ ops_holland_venv_enabled | bool | ternary(ops_holland_venv, omit) }}"
-        extra_args: "{{ ops_pip_install_options | default('') }}"
-      with_items: "{{ ops_holland_pip_dependencies | default([]) }}"
-      register: pip_install
-      until: pip_install | success
-      retries: 3
-
     - name: Get holland package from git
       git:
         repo: "{{ ops_holland_git_repo }}"

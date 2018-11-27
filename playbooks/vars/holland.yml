@@ -32,11 +32,10 @@ ops_holland_git_repo_plugins:
   - { path: "plugins", package: "holland.backup.xtrabackup" }
 
 ops_holland_pip_wheel_name: holland
-ops_holland_pip_dependencies:
-  - MySQL-python
 
 ops_holland_packages:
   - git
+  - python-mysqldb
 
 ops_holland_requires_dependencies:
   - virtualenv
