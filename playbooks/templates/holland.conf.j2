@@ -17,7 +17,7 @@ umask = 0007
 
 # Define a path for holland and its spawned processes
 
-path = {% if ops_holland_venv_enabled | bool %}{{ ops_holland_venv_bin }}:{% endif %}/usr/local/bin:/usr/local/sbin:/bin:/sbin:/usr/bin:/usr/sbin
+path = {{ ops_holland_venv_bin }}:/usr/local/bin:/usr/local/sbin:/bin:/sbin:/usr/bin:/usr/sbin
 
 [logging]
 ## where to write the log

@@ -66,8 +66,10 @@
     - name: Install pip dependencies required by holland
       pip:
         name: "{{ item }}"
-        virtualenv: "{{ ops_holland_venv_enabled | bool | ternary(ops_holland_venv, omit) }}"
-        extra_args: "{{ ops_pip_install_options | default('') }}"
+        virtualenv: "{{ ops_holland_venv }}"
+        extra_args: >-
+          {{ pip_install_options|default('') }}
+          --isolated
       with_items: "{{ ops_holland_pip_dependencies | default([]) }}"
       register: pip_install
       until: pip_install | success
@@ -86,7 +88,7 @@
     - name: Install holland program
       pip:
         name: "/opt/{{ ops_holland_service_name }}_{{ ops_holland_git_install_branch | replace('/', '_') }}"
-        virtualenv: "{{ ops_holland_venv_enabled | bool | ternary(ops_holland_venv, omit) }}"
+        virtualenv: "{{ ops_holland_venv }}"
         extra_args: "{{ pip_install_options|default('') }}"
       register: pip_install
       until: pip_install | success
@@ -98,8 +100,8 @@
     - name: Install holland pip repo plugins
       pip:
         name: "{{ ops_holland_git_dest }}/{{ item.path }}/{{ item.package }}"
+        virtualenv: "{{ ops_holland_venv }}"
         extra_args: "{{ pip_install_options|default('') }}"
-        virtualenv: "{{ ops_holland_venv_enabled | bool | ternary(ops_holland_venv, omit) }}"
       when: ops_holland_git_dest is defined and ops_holland_git_repo_plugins is defined
       with_items: "{{ ops_holland_git_repo_plugins }}"
       register: pip_install
@@ -156,7 +158,7 @@
         minute: "{{ (ansible_eth0['ipv4']['address']|replace('.', '')|int)%60}}"
         hour: 23
         state: present
-        job: "{{ ops_holland_venv_enabled | bool | ternary(ops_holland_venv_bin + '/python2.7', '') }} {{ ops_holland_venv_enabled | bool | ternary(ops_holland_venv_bin + '/', '/usr/local/bin/') }}holland bk"
+        job: "{{ ops_holland_venv_bin }}/python2.7 {{ ops_holland_venv_bin }}/holland bk"
         user: root
         cron_file: holland_backups
       tags:
@@ -179,21 +181,14 @@
       changed_when: found_holland_backups.rc != 0
       register: found_holland_backups
 
-    - name: Create holland backup (venv)
+    - name: Create holland backup
       command: |
-        {{ ops_holland_venv_bin + '/' }}holland bk
+        {{ ops_holland_venv_bin }}/holland bk
       when:
-        - ops_holland_venv_enabled | bool
         - found_holland_backups | changed
       tags:
         - holland_create_backup
         - holland_all
-    - name: Create holland backup (no venv)
-      command: |
-        /usr/local/bin/holland bk
-      when:
-        - not ops_holland_venv_enabled | bool
-        - found_holland_backups | changed
   tags:
     - holland_create_backup
     - holland_all
