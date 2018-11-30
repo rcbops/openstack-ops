@@ -89,7 +89,9 @@
       pip:
         name: "/opt/{{ ops_holland_service_name }}_{{ ops_holland_git_install_branch | replace('/', '_') }}"
         virtualenv: "{{ ops_holland_venv }}"
-        extra_args: "{{ pip_install_options|default('') }}"
+        extra_args: >-
+          {{ pip_install_options|default('') }}
+          --isolated
       register: pip_install
       until: pip_install | success
       retries: 2
