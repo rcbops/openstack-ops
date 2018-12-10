@@ -18,6 +18,16 @@
   gather_facts: "{{ gather_facts | default(true) }}"
   pre_tasks:
     - include: "common-tasks/install-dependencies.yml"
+
+    - name: Determine if OS is supported
+      set_fact:
+         is_supported_os: true
+      when:
+        - ( ansible_lsb.codename == 'xenial' or ansible_lsb.codename == 'trusty' )
+
+    - name: OS support state
+      debug: msg="OS is not supported, skipping playbook"
+      when: not is_supported_os |default(false) |bool
   tasks:
     - name: Add HWRaid apt keys
       apt_key:
@@ -26,7 +36,7 @@
       with_items: "{{ ops_hwraid_apt_keys }}"
       when:
         - ops_hwraid_apt_keys is defined
-        - ansible_os_family == 'Debian'
+        - is_supported_os |default(false) |bool
       register: add_keys_url
       until: add_keys_url|success
       retries: 2
@@ -39,7 +49,7 @@
         filename: "{{ item.filename | default(omit) }}"
       with_items: "{{ ops_hwraid_apt_repos }}"
       when:
-        - ansible_os_family == 'Debian'
+        - is_supported_os |default(false) |bool
       register: add_repos
       until: add_repos|success
       retries: 2
@@ -60,7 +70,7 @@
       with_items: "{{ ops_hwraid_apt_packages }}"
       when:
         - ops_hwraid_apt_packages is defined
-        - ansible_os_family == 'Debian'
+        - is_supported_os |default(false) |bool
   vars_files:
     - "vars/main.yml"
     - "vars/raid-hardware-monitoring.yml"
