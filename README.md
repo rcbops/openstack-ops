@@ -8,7 +8,7 @@ Travis is now used to lint various scripts in order to guarantee minimal coding 
 
 | Branch             | Build status     |
 |--------------------|------------------|
-| Master Branch | [![Build Status: Master Branch](https://travis-ci.org/rsoprivatecloud/openstack-ops.svg?branch=master)](https://travis-ci.org/rsoprivatecloud/openstack-ops) |
+| Master Branch | [![Build Status: Master Branch](https://travis-ci.org/rcbops/openstack-ops.svg?branch=master)](https://travis-ci.org/rcbops/openstack-ops) |
 
 
 Intent
@@ -80,7 +80,7 @@ supported product lifecycle (RPC-O currently)
 Execution
 ----------------
 
-    git clone https://github.com/rsoprivatecloud/openstack-ops.git /opt/openstack-ops
+    git clone https://github.com/rcbops/openstack-ops.git /opt/openstack-ops
     source /usr/local/bin/openstack-ansible.rc
 
     cd /opt/openstack-ops/playbooks; openstack-ansible main.yml
