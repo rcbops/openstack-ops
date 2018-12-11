@@ -1,4 +1,4 @@
-rsoprivatecloud/openstack-ops
+rcbops/openstack-ops
 =============================
 
 Build status
