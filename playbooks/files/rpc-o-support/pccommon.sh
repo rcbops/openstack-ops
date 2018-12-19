@@ -235,9 +235,9 @@ function rpc-port-stats() {
   fi
 
   echo "Using $1($port)"
- 
+
   # meaty stuff goes here
- 
+
   rm $tmpfile
   unset CTR tmpfile port br_int_port
   # Come back some day and clean up all the TX_ RX_ vars :/
@@ -302,23 +302,37 @@ function rpc-instance-test-networking() {
   fi
 
   if [ $RPC_RELEASE -ge 9 ]; then
-    if [ ! "$( hostname | egrep 'neutron(_|-)agents' )" ]; then
-      echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
-      echo "Attempting to find one for you..."
-      CONTAINER=`lxc-ls -1 | egrep 'neutron(_|-)agents' | tail -1`
-      LXC="lxc-attach -n $CONTAINER -- "
+    echo "Attempting to find neutron namespaces"
+    CONTAINER=`lxc-ls -1 | egrep 'neutron(_|-)agents' | tail -1`
+    LXC="lxc-attach -n $CONTAINER -- "
 
-      if [ "$CONTAINER" ]; then
-        echo -e "\nUsing [$CONTAINER:]\n"
-        $LXC curl -L -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/openstack-ops/master/playbooks/files/rpc-o-support/pccommon.sh
-        $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-get-neutron-venv ; rpc-instance-test-networking $1"
-        $LXC rm /tmp/pccommon.sh
-        unset CONTAINER  LXC
-      else
-        echo "Failed.  Giving Up."
-      fi
+    if [ -n "$CONTAINER" ]; then
+      echo -e "\nUsing [$CONTAINER:]\n"
+      $LXC curl -L -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rcbops/openstack-ops/master/playbooks/files/rpc-o-support/pccommon.sh
+      $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-get-neutron-venv ; rpc-instance-test-networking $1"
+      $LXC rm /tmp/pccommon.sh
+      unset CONTAINER LXC
+
       return
     fi
+
+    # Prepare primary neutron_dhcp_agent from deployment node only
+    . /usr/local/bin/openstack-ansible.rc 2>/dev/null
+    if [ $( which ansible) && ! $( ansible --list-hosts neutron_dhcp_agent |grep -q 'hosts (0)' ) ]; then
+      echo "Using ansible host $( ansible --list-hosts neutron_dhcp_agent[0] )"
+      ansible neutron_dhcp_agent[0] -m shell -a "curl -L -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rcbops/openstack-ops/master/playbooks/files/rpc-o-support/pccommon.sh"
+      ansible neutron_dhcp_agent[0] -m shell -a "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-get-neutron-venv ; rpc-instance-test-networking $1"
+
+      return
+    fi
+  fi
+
+  # Prepare on primary neutron_dhcp_agent
+  if [ "$( ip netns |egrep 'qdhcp|qrouter' )" ]; then
+    echo "Found local qrouter or qdhcp namespaces"
+  else
+    echo "Failed. Giving up."
+    return
   fi
 
   [ ! "$OS_NETCMD" ] && echo "Unable to find networking subsystem.  Giving up." && return
@@ -384,21 +398,37 @@ function rpc-instance-per-network() {
   UUID_LIST=""
   if [ $RPC_RELEASE -ge 9 ]; then
     if [ ! "$( hostname | egrep 'neutron(_|-)agents' )" ]; then
-      echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
-      echo "Attempting to find one for you..."
+      echo "Attempting to find neutron namespaces"
       CONTAINER=`lxc-ls -1 | egrep 'neutron(_|-)agents' | tail -1`
       LXC="lxc-attach -n $CONTAINER -- "
-      if [ "$CONTAINER" ]; then
+      if [ -n "$CONTAINER" ]; then
         echo -e "\nUsing [$CONTAINER]:\n"
-        $LXC curl -L -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/openstack-ops/master/playbooks/files/rpc-o-support/pccommon.sh
+        $LXC curl -L -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rcbops/openstack-ops/master/playbooks/files/rpc-o-support/pccommon.sh
         $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-get-neutron-venv; rpc-instance-per-network $1"
         $LXC rm /tmp/pccommon.sh
         unset CONTAINER  LXC
-      else
-        echo "Failed.  Giving Up."
+
+        return
       fi
-      return
+
+      # Prepare primary neutron_dhcp_agent from deployment node only
+      . /usr/local/bin/openstack-ansible.rc 2>/dev/null
+      if [ $( which ansible) && ! $( ansible --list-hosts neutron_dhcp_agent |grep -q 'hosts (0)' ) ]; then
+        echo "Using ansible host $( ansible --list-hosts neutron_dhcp_agent[0] )"
+        ansible neutron_dhcp_agent[0] -m shell -a "curl -L -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rcbops/openstack-ops/master/playbooks/files/rpc-o-support/pccommon.sh"
+        ansible neutron_dhcp_agent[0] -m shell -a "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-get-neutron-venv ; rpc-instance-per-network $1"
+
+        return
+      fi
     fi
+  fi
+
+  # Prepare on primary neutron_dhcp_agent
+  if [ "$( ip netns |egrep 'qdhcp|qrouter' )" ]; then
+    echo "Found local qrouter or qdhcp namespaces"
+  else
+    echo "Failed. Giving up."
+    return
   fi
 
   [ ! "$OS_NETCMD" ] && echo "Unable to find networking subsystem.  Giving up." && return
@@ -502,22 +532,37 @@ function rpc-instance-per-network() {
 function rpc-instance-per-network-per-hypervisor() {
 
   if [ $RPC_RELEASE -ge 9 ]; then
-    if [ ! "$( hostname | egrep 'neutron(_|-)agents' )" ]; then
-      echo "Must be run from Neutron Agents container in order to access appropriate network namespace"
-      echo -n "Attempting to find one for you..."
-      CONTAINER=`lxc-ls -1 | egrep 'neutron(_|-)agents' | tail -1`
-      LXC="lxc-attach -n $CONTAINER -- "
-      if [ "$CONTAINER" ]; then
-        echo -e "\nUsing [$CONTAINER]:\n"
-        $LXC curl -L -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rsoprivatecloud/openstack-ops/master/playbooks/files/rpc-o-support/pccommon.sh
-        $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-get-neutron-venv; rpc-instance-per-network-per-hypervisor"
-        $LXC rm /tmp/pccommon.sh
-        unset CONTAINER  LXC
-      else
-        echo "Failed.  Giving Up."
-      fi
+    echo "Attempting to find neutron namespaces"
+    CONTAINER=`lxc-ls -1 | egrep 'neutron(_|-)agents' | tail -1`
+    LXC="lxc-attach -n $CONTAINER -- "
+
+    if [ -n "$CONTAINER" ]; then
+      echo -e "\nUsing [$CONTAINER]:\n"
+      $LXC curl -L -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rcbops/openstack-ops/master/playbooks/files/rpc-o-support/pccommon.sh
+      $LXC bash -c "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-get-neutron-venv; rpc-instance-per-network-per-hypervisor"
+      $LXC rm /tmp/pccommon.sh
+      unset CONTAINER  LXC
+
       return
     fi
+
+    # Prepare primary neutron_dhcp_agent from deployment node only
+    . /usr/local/bin/openstack-ansible.rc 2>/dev/null
+    if [ $( which ansible) && ! $( ansible --list-hosts neutron_dhcp_agent |grep -q 'hosts (0)' ) ]; then
+      echo "Using ansible host $( ansible --list-hosts neutron_dhcp_agent[0] )"
+      ansible neutron_dhcp_agent[0] -m shell -a "curl -L -s -o /tmp/pccommon.sh https://raw.githubusercontent.com/rcbops/openstack-ops/master/playbooks/files/rpc-o-support/pccommon.sh"
+      ansible neutron_dhcp_agent[0] -m shell -a "source /root/openrc ; S=1 Q=1 source /tmp/pccommon.sh ; rpc-get-neutron-venv ; rpc-instance-test-networking $1"
+
+      return
+    fi
+  fi
+
+  # Prepare on primary neutron_dhcp_agent
+  if [ "$( ip netns |egrep 'qdhcp|qrouter' )" ]; then
+    echo "Found local qrouter or qdhcp namespaces"
+  else
+    echo "Failed. Giving up."
+    return
   fi
 
   [ ! "$OS_NETCMD" ] && echo "Unable to find networking subsystem.  Giving up." && return
@@ -687,7 +732,7 @@ function rpc-user-roles () {
 
 #[ ${Q=0} -eq 0 ] && echo "  - rpc-update-pccommon() - Grabs the latest version of pccommon.sh if there is one"
 function rpc-update-pccommon () {
-  GITHUB="https://raw.githubusercontent.com/rsoprivatecloud/openstack-ops/master/pccommon.sh"
+  GITHUB="https://raw.githubusercontent.com/rcbops/openstack-ops/master/pccommon.sh"
 
   [ !"$1" ] && PCCOMMON="./pccommon.sh" || PCCOMMON=$1
   if [ -s "$PCCOMMON" ]; then
@@ -764,7 +809,7 @@ function rpc-cinder-verify-lvm
     VOL=`echo $volhost | cut -d, -f1`
     HOST=`echo $volhost | cut -d, -f2 | cut -d@ -f1 | cut -d. -f1`
 
-    VOLSNAP=`cinder snapshot-list --all- --volume-id=$VOL | awk '/[0-9]/ {print $2}'` 
+    VOLSNAP=`cinder snapshot-list --all- --volume-id=$VOL | awk '/[0-9]/ {print $2}'`
 
     if [ "$(hostname | grep $HOST)" ]; then
       VOLEXISTS=`lvs | grep volume-$VOL`
@@ -776,7 +821,7 @@ function rpc-cinder-verify-lvm
     fi
 
     if [ "$VOLEXISTS" ]; then
-      echo "$VOL [ PASS ] @ $HOST" 
+      echo "$VOL [ PASS ] @ $HOST"
     else
       echo "$VOL [ FAIL ] @ $HOST"
     fi
@@ -796,7 +841,7 @@ function rpc-cinder-verify-lvm
       else
         echo "$snap[ FAIL ] @ $HOST (snapshot of $VOL)"
       fi
-    done 
+    done
 
     unset VOLEXISTS SNAPEXISTS
   done
@@ -805,7 +850,7 @@ function rpc-cinder-verify-lvm
 }
 
 # Performs cinder volume verification on hypervisors:
-#  * For each existing volume, there 
+#  * For each existing volume, there
 #  -- Pull list of volumes, SSH to cinder nodes if and check lvs
 [ ${Q=0} -eq 0 ] && echo "  - rpc-cinder-verify-attach() - Audit cinder volumes to verify instance attachments"
 function rpc-cinder-verify-attach
@@ -827,7 +872,7 @@ function rpc-cinder-verify-attach
     fi
 
     if [ "$ATTACHED" ]; then
-      echo "$VOL [ PASS ] @ $HYP/$INST:$ID" 
+      echo "$VOL [ PASS ] @ $HYP/$INST:$ID"
     else
       echo "$VOL [ FAIL ] @ $HYP/$INST:$ID"
     fi
