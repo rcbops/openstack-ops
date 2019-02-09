@@ -64,15 +64,40 @@
   tags:
     - always
 
+- name: Create virtualenv and upgrade setuptools
+  pip:
+    name: setuptools
+    state: latest
+    extra_args: >-
+      --isolated
+      {{ pip_install_options|default('') }}
+    virtualenv: "{{ ops_venv }}"
+  tags:
+    - always
+
 - name: Install pip dependencies
   pip:
-    name: "{{ item }}"
+    name: "{{ ops_pip_dependencies | join (' ') }}"
     extra_args: "{{ pip_install_options|default('') }}"
     virtualenv: "{{ ops_venv }}"
-  with_items: "{{ ops_pip_dependencies }}"
   when: ops_pip_dependencies is defined
   register: pip_install
-  until: pip_install|success
+  ignore_errors: true
+  tags:
+    - always
+
+- name: Install pip dependencies (fallback --isolated)
+  pip:
+    name: "{{ ops_pip_dependencies | join(' ') }}"
+    extra_args: >-
+      --isolated
+      {{ pip_install_options|default('') }}
+    virtualenv: "{{ ops_venv }}"
+  when:
+    - ops_pip_dependencies is defined
+    - not (pip_install|success)
+  register: pip_install_isolated
+  until: pip_install_isolated|success
   retries: 2
   tags:
     - always
