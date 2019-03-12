@@ -17,7 +17,7 @@ DELETE FROM nova.instance_faults WHERE instance_uuid IN ( SELECT uuid FROM nova.
 DELETE FROM nova.migrations WHERE instance_uuid IN ( SELECT uuid FROM nova.instances WHERE deleted > 0 );
 
 DROP PROCEDURE IF EXISTS NewtonVifCleanup;
-DELIMITER $$
+DELIMITER \$\$
 
 CREATE PROCEDURE NewtonVifCleanup(
     OUT nova_vif_table_exists BOOL)
@@ -29,7 +29,7 @@ BEGIN
     IF (nova_vif_table_exists) THEN
       DELETE FROM nova.virtual_interfaces WHERE instance_uuid IN ( SELECT uuid FROM nova.instances WHERE deleted > 0 );
     END IF;
-END$$
+END\$\$
 
 DELIMITER ;
 
