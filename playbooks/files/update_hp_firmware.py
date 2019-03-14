@@ -88,8 +88,8 @@ firmwares["ProLiant DL380 Gen9"] = {
     "NIC": {
         "check": "ethtool -i em1 | grep firmware | cut -d:  -f2- | tr -d ' '",
         "ver": "5719-v1.46NCSIv1.4.18.0",
-        "fwpkg": "hp-firmware-nic-broadcom-2.20.7-1.1.x86_64.rpm",
-        "md5": "6881c7ac3b5fd7075d7a94d46f26fa9c",
+        "fwpkg": "hp-firmware-nic-broadcom-2.22.3-1.1.x86_64.rpm",
+        "md5": "679b40ad0dd8fbaa3d823b6ffccebacd",
         "inp": "\n",
         "ret": 1
     },
@@ -103,17 +103,17 @@ firmwares["ProLiant DL380 Gen9"] = {
     },
     "SYSTEM-MELTDOWN": {
         "check": "hpasmcli -s \"show server\" | grep ROM | cut -d: -f2- | tr -d ' '",
-        "ver": "05/21/2018",
-        "fwpkg": "hp-firmware-system-p89-2.60_2018_05_21-1.1.i386.rpm",
-        "md5": "ef5cb0958d6e41ef359953c3201e41f0",
+        "ver": "10/17/2018",
+        "fwpkg": "hp-firmware-system-p89-2.64_2018_10_17-1.1.i386.rpm",
+        "md5": "f43c9f28c208cd0ab1fbf7bf554703a2",
         "inp": "y\nn\n",
         "ret": 1
     },
     "ILO": {
         "check": "hponcfg -h | egrep Firmware | cut -d\  -f4",
-        "ver": "2.55",
-        "fwpkg": "hp-firmware-ilo4-2.55-1.1.i386.rpm",
-        "md5": "92b5fcf134a26d3c831c976d7bcfa27f",
+        "ver": "2.61",
+        "fwpkg": "hp-firmware-ilo4-2.61-1.1.i386.rpm",
+        "md5": "4f67b4829284c1cdc94a30aec2705cc8",
         "inp": "y\n",
         "ret": 0
     },
@@ -138,8 +138,8 @@ firmwares["ProLiant DL380 Gen9"] = {
             "562SFP+": "8000366C",
             "563i": "800035C0"
         },
-        "fwpkg": "hp-firmware-nic-intel-1.14.13-1.1.x86_64.rpm",
-        "md5": "ef789039adf106ea3b3a4e1296519507",
+        "fwpkg": "hp-firmware-nic-intel-1.16.0-1.1.x86_64.rpm",
+        "md5": "c2af9badd28debbee468486ecac9fc4e",
         "ret": 1
     }
 }
