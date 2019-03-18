@@ -87,7 +87,7 @@ firmwares = {}
 firmwares["ProLiant DL380 Gen9"] = {
     "NIC": {
         "check": "ethtool -i em1 | grep firmware | cut -d:  -f2- | tr -d ' '",
-        "ver": "5719-v1.46NCSIv1.4.18.0",
+        "ver": "5719-v1.46NCSIv1.4.22.0",
         "fwpkg": "hp-firmware-nic-broadcom-2.22.3-1.1.x86_64.rpm",
         "md5": "679b40ad0dd8fbaa3d823b6ffccebacd",
         "inp": "\n",
@@ -127,15 +127,15 @@ firmwares["ProLiant DL380 Gen9"] = {
     },
     "INIC": {
         "ver": {
-            "560FLB": "800008C7",
+            "560FLB": "800008F0",
             "560FLR-SFP+": "80000838",
             "560SFP+": "80000835",
             "560M": "8000083D",
             "561FLR-T": "800005B6",
-            "561T": "800005D3",
+            "561T": "80000636",
             "562i": "800006FC",
-            "562FLR-SFP+": "8000366D",
-            "562SFP+": "8000366C",
+            "562FLR-SFP+": "800038C9",
+            "562SFP+": "800038C8",
             "563i": "800035C0"
         },
         "fwpkg": "hp-firmware-nic-intel-1.16.0-1.1.x86_64.rpm",
