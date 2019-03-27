@@ -13,7 +13,7 @@
 plugin = xtrabackup
 backups-to-keep = {{ rpc_support_holland_num_backups|default('4') }}
 auto-purge-failures = {{ rpc_support_holland_purge_failures|default('yes') }}
-purge-policy = after-backup
+purge-policy = {{ rpc_support_holland_purge_policy|default('after-backup') }}
 estimated-size-factor = 1.0
 
 # This section defines the configuration options specific to the backup
