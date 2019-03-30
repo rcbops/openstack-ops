@@ -2,11 +2,10 @@
 
 LANG=en_US.UTF-8
 
-cd /opt/rpc-openstack/openstack-ansible/playbooks
+cd /opt/openstack-ansible/playbooks 2>/dev/null || cd /opt/rpc-openstack/openstack-ansible/playbooks
 
-eval $@
-if [ -z "$iknowwhatido" ]; then
-  echo "Please call execute $0 iknowwhatido=1"
+if [ $( echo "$@" |grep i-know-what-i-do |wc -l ) -eq 0 ]; then
+  echo "Please call execute $0 i-know-what-i-do"
   exit 1
 fi
 
