@@ -1,8 +1,28 @@
 #!/bin/bash
 
+# Copyright 2019-Present, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Parameters
+#  Number of threads: 20 by default. The CPU benchmarks will be run with 1, the number threads desired and 2x the desired threads
+#  Number of test iterations: 10 by default
+#  Device to use for FIO: /dev/lxc/fio by default. Fio is instructed to use direct IO to a block device to remove variability caused from filesystems/caches
+#  IO test duration: 180 by default
+
 LANG=en_US.UTF-8
 
-THREADS=${1:-16}
+THREADS=${1:-20}
 ITER=${2:-10}
 WAIT_INBETWEEN_TESTS=60
 IO_BLK_DEV=${3:-/dev/lxc/fio}
