@@ -52,7 +52,7 @@ ops_neutron_debug_packages:
   - curl
 
 
-ops_venv: "/openstack/venvs/rcbops-{{ rpc_release }}"
+ops_venv: "/openstack/venvs/rcbops-{{ openstack_release |default(osa_release) }}"
 ops_venv_bin: "{{ ops_venv }}/bin"
 ops_pip_venv_enabled: True
 

@@ -1,0 +1,47 @@
+---
+# Copyright 2019-Present, Rackspace Inc
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Find /etc/openstack-release
+      stat:
+        path: /etc/openstack-release
+      ignore_errors: yes
+      register: osa_release_file
+
+    - name: Find /etc/rhosp-release
+      stat:
+        path: /etc/rhosp-release
+      ignore_errors: yes
+      register: osp_release_file
+
+    - name: Register OSA version
+      shell: awk -F= '/^DISTRIB_RELEASE/ {print $2}' {{ osa_release_file.stat.path }} | tr -d \"\'
+      when:
+        - osa_release_file is defined
+        - osa_release_file.stat.exists |bool
+      register: openstack_release
+
+    - name: Register OSP version
+      shell: egrep -o '[0-9]+\.[0-9]+' {{ osa_release_file.stat.path }}
+      when:
+        - osp_release_file is defined
+        - osp_release_file.stat.exists |bool
+      register: openstack_release
+
+   - name: Register openstack_release version
+     debug: var=openstack_release
