@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+- include: "common-playbooks/register-openstack-release.yml"
+
 - name: Install HP firmware update tool
   hosts: hosts:osds:mons:mgrs
   gather_facts: "{{ gather_facts | default(true) }}"
@@ -61,7 +63,7 @@
 
     - name: Execute HP firmware upgrade as background task
       command: |
-        {{ screen_binary.stdout }} -d -m -L -t "hp_firmware_update" bash -c "source {{ ops_pip_venv_enabled | bool | ternary(ops_venv + '/bin/activate', omit) }} || true; /usr/local/bin/update_hp_firmware.py -f {{ firmware_use_meltdown | default(false) | bool | ternary('--meltdown', '') }}"
+        {{ screen_binary.stdout }} -d -m -L -t "hp_firmware_update" bash -c "source {{ ops_venv + '/bin/activate' }} || true; /usr/local/bin/update_hp_firmware.py -f {{ firmware_use_meltdown | default(false) | bool | ternary('--meltdown', '') }}"
       changed_when: false
       when:
         - screen_binary |changed

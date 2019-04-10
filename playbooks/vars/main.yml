@@ -17,6 +17,7 @@ ops_requires_pip_packages:
   - virtualenv
 
 ops_pip_dependencies:
+  - shade
   - python-openstackclient
   - python-neutronclient
 
@@ -51,12 +52,8 @@ ops_neutron_debug_packages:
   - ethtool
   - curl
 
-
-ops_venv: "/openstack/venvs/rcbops-{{ rpc_release }}"
-ops_venv_bin: "{{ ops_venv }}/bin"
-ops_pip_venv_enabled: True
-
-
+# All OPS tools are now installed inside a python venv
+ops_venv: "/openstack/venvs/rcbops-{{ openstack_release |default('0.0.0') }}"
 
 # kernel modules required on hosts
 ops_host_kernel_modules:

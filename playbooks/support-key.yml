@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+- include: "common-playbooks/register-openstack-release.yml"
+
 - name: Create RPC support key
   hosts: os-infra_hosts[0]
   gather_facts: "{{ gather_facts | default(true) }}"
@@ -57,7 +59,7 @@
     - name: Check for support keypair in nova
       shell: |
         . /root/openrc
-        {{ ops_pip_venv_enabled | bool | ternary(ops_venv, omit) }}/bin/nova keypair-list | grep rpc_support
+        {{ ops_venv }}/bin/nova keypair-list | grep rpc_support
       register: nova_support_key
       changed_when: false
       failed_when: false
@@ -65,7 +67,7 @@
     - name: Delete support keypair in nova
       shell: |
         . /root/openrc
-        {{ ops_pip_venv_enabled | bool | ternary(ops_venv, omit) }}/bin/nova keypair-delete rpc_support
+        {{ ops_venv }}/bin/nova keypair-delete rpc_support
       register: nova_support_key_delete
       changed_when: nova_support_key_delete.rc == 0
       failed_when: false
@@ -76,7 +78,7 @@
     - name: Add support key to nova
       shell: |
         . /root/openrc
-        {{ ops_pip_venv_enabled | bool | ternary(ops_venv, omit) }}/bin/nova keypair-add --pub-key /root/.ssh/rpc_support.pub rpc_support
+        {{ ops_venv }}/bin/nova keypair-add --pub-key /root/.ssh/rpc_support.pub rpc_support
       retries: 2
       delay: 10
       when: nova_support_key_delete|changed or nova_support_key.rc == 1

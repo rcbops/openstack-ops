@@ -1,0 +1,41 @@
+---
+# Copyright 2019-Present, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- include: "common-playbooks/register-openstack-release.yml"
+
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Current OSA configuration {{ item }}
+      debug: var="{{ item }}"
+      with_items:
+        - internal_lb_vip_address
+        - external_lb_vip_address
+        - global_environment_variables
+        - neutron_provider_networks
+        - rpc_conn_pool_size
+        - rpc_response_timeout
+        - rpc_thread_pool_size
+        - neutron_api_workers
+        - galera_max_connections
+        - db_max_overflow
+        - db_max_pool_size
+        - db_pool_timeout
+        - memcached_connections
+        - rabbitmq_policies
+        - openstack_domain
+        - dhcp_domain
+        - openstack_service_publicuri_proto
+      when: openstack_product == "RPCO"
