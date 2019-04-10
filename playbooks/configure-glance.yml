@@ -15,49 +15,44 @@
 
 - include: "common-playbooks/register-openstack-release.yml"
 
-- name: Retrieve openrc
-  hosts: utility_container[0]
-  gather_facts: "{{ gather_facts | default(true) }}"
-  tasks:
-    - include: "common-tasks/synchronize-file.yml"
-
-  vars:
-    synchronize_files:
-       - src: "/root/openrc"
-         dest: "/root"
-         mode: "pull"
-
-  vars_files:
-    - "vars/main.yml"
-
-  tags:
-    - nova-default-flavor-setup
-
-- name: Configure settings for OpenStack Nova
+- name: OpenStack image setup
   hosts: localhost
   environment: "{{ deployment_environment_variables | default({}) }}"
   gather_facts: "{{ gather_facts | default(true) }}"
   pre_tasks:
     - include: "common-tasks/install-dependencies.yml"
   tasks:
-    - name: Create flavors of nova VMs
+    - name: Download system image file
+      get_url:
+        url: "{{ item.url }}"
+        dest: "/var/tmp/os_image_{{ item.name }}"
+        timeout: 1200
+      with_items: "{{ openstack_images }}"
+
+    - name: Install system image
       environment:
         PYTHONHOME: "{{ ops_venv }}"
-      os_nova_flavor:
+      os_image:
         endpoint_type: internal
         cloud: default
         state: present
+        is_public: true
         name: "{{ item.name }}"
-        ram: "{{ item.ram }}"
-        vcpus: "{{ item.vcpus }}"
-        disk: "{{ item.disk }}"
-        swap: "{{ item.swap }}"
-        ephemeral: "{{ item.ephemeral }}"
-      with_items: "{{ openstack_vm_flavors }}"
+        filename: "/var/tmp/os_image_{{ item.name }}"
+        disk_format: "{{ item.format }}"
+        properties: "{{ item.properties | default(omit) }}"
+      with_items: "{{ openstack_images }}"
+
+    - name: Clean up temp file
+      file:
+        dest: "/var/tmp/os_image_{{ item.name }}"
+        state: absent
+      with_items: "{{ openstack_images }}"
 
   vars_files:
     - "vars/main.yml"
     - "vars/openstack-service-config.yml"
 
   tags:
-    - nova-default-flavor-setup
+    - glance-image-upload
+

@@ -1,0 +1,118 @@
+---
+
+openstack_vm_flavors:
+  - name: m1.micro
+    ram: 256
+    vcpus: 1
+    disk: 1
+    swap: 0
+    ephemeral: 0
+  - name: m1.tiny
+    ram: 512
+    vcpus: 1
+    disk: 1
+    swap: 0
+    ephemeral: 0
+  - name: m1.mini
+    ram: 1024
+    vcpus: 2
+    disk: 3
+    swap: 0
+    ephemeral: 0
+  - name: m1.small
+    ram: 2048
+    vcpus: 3
+    disk: 12
+    swap: 4
+    ephemeral: 4
+  - name: m1.medium
+    ram: 4096
+    vcpus: 6
+    disk: 60
+    swap: 4
+    ephemeral: 20
+  - name: m1.large
+    ram: 8192
+    vcpus: 12
+    disk: 300
+    swap: 4
+    ephemeral: 150
+  - name: m1.xlarge
+    ram: 16384
+    vcpus: 24
+    disk: 600
+    swap: 4
+    ephemeral: 256
+  - name: m1.heavy
+    ram: 32768
+    vcpus: 48
+    disk: 1200
+    swap: 4
+    ephemeral: 256
+
+openstack_images:
+  - name: CentOS 7
+    format: qcow2
+    url: http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2
+    properties:
+      hw_scsi_model: "virtio-scsi"
+      hw_disk_bus: "scsi"
+      hw_vif_multiqueue_enabled: "true"
+      hw_qemu_guest_agent: "yes"
+      hypervisor_type: "kvm"
+      os_require_quiesce: "yes"
+      img_config_drive: "optional"
+  - name: Cirros-0.4.0 (kvm)
+    format: qcow2
+    url: http://download.cirros-cloud.net/0.4.0/cirros-0.4.0-x86_64-disk.img
+    properties:
+      hypervisor_type: "kvm"
+  - name: Cirros-0.4.0
+    format: qcow2
+    url: http://download.cirros-cloud.net/0.4.0/cirros-0.4.0-x86_64-disk.img
+    properties:
+      hypervisor_type: "qemu"
+  - name: Debian 9
+    format: qcow2
+    url: http://cdimage.debian.org/cdimage/openstack/current-9/debian-9-openstack-amd64.qcow2
+    properties:
+      hw_scsi_model: "virtio-scsi"
+      hw_disk_bus: "scsi"
+      hw_vif_multiqueue_enabled: "true"
+      hw_qemu_guest_agent: "yes"
+      hypervisor_type: "kvm"
+      os_require_quiesce: "yes"
+      img_config_drive: "optional"
+  - name: OpenSuse Leap 42.3
+    format: qcow2
+    url: http://download.opensuse.org/repositories/Cloud:/Images:/Leap_42.3/images/openSUSE-Leap-42.3-OpenStack.x86_64.qcow2
+    properties:
+      hw_scsi_model: "virtio-scsi"
+      hw_disk_bus: "scsi"
+      hw_vif_multiqueue_enabled: "true"
+      hw_qemu_guest_agent: "yes"
+      hypervisor_type: "kvm"
+      os_require_quiesce: "yes"
+      img_config_drive: "optional"
+  - name: Ubuntu 16.04
+    format: qcow2
+    url: http://uec-images.ubuntu.com/releases/16.04/release/ubuntu-16.04-server-cloudimg-amd64-disk1.img
+    properties:
+      hw_scsi_model: "virtio-scsi"
+      hw_disk_bus: "scsi"
+      hw_vif_multiqueue_enabled: "true"
+      hw_qemu_guest_agent: "yes"
+      hypervisor_type: "kvm"
+      os_require_quiesce: "yes"
+      img_config_drive: "optional"
+  - name: Ubuntu 18.04
+    format: qcow2
+    url: http://uec-images.ubuntu.com/releases/18.04/release/ubuntu-18.04-server-cloudimg-amd64.img
+    properties:
+      hw_scsi_model: "virtio-scsi"
+      hw_disk_bus: "scsi"
+      hw_vif_multiqueue_enabled: "true"
+      hw_qemu_guest_agent: "yes"
+      hypervisor_type: "kvm"
+      os_require_quiesce: "yes"
+      img_config_drive: "optional"

@@ -7,6 +7,7 @@
 - include: configure-hosts.yml
 - include: configure-neutron.yml
 - include: configure-nova.yml
+- include: configure-glance.yml
 - include: configure-spice-console.yml
 - include: install-holland-db-backup.yml
 - include: install-dell-server-monitoring.yml

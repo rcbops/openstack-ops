@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+- include: common-playbooks/register-openstack-release.yml
+
 - name: Get container hosts
   hosts: localhost
   connection: local
@@ -23,7 +25,7 @@
         _known_container_hosts: >
           {% set _var = [] -%}
           {% for item in groups['all_containers'] | default([]) -%}
-          {%   if item not in ['ceph_all','rsyslog_all','elasticsearch_all'] -%}
+          {%   if item not in ['ceph_all','rsyslog_all','elasticsearch_all','mons'] -%}
           {%     if hostvars[item]['physical_host'] | default(false) != item -%}
           {%       if _var.append(hostvars[item]['physical_host']) -%}
           {%       endif -%}
@@ -47,7 +49,7 @@
         state: directory
 
 - name: Archive container(s)
-  hosts: "{{ container_group|default('all_containers:!ceph_all:!rsyslog_all:!elasticsearch_all') }}"
+  hosts: "{{ container_group|default('all_containers:!ceph_all:!rsyslog_all:!elasticsearch_all:!mons') }}"
   gather_facts: false
   serial: '20%'
   user: root
@@ -74,8 +76,8 @@
         name: "{{ item }}"
         state: absent
       with_items:
-        - "/openstack/backup/control-plane/{{ rpc_release }}-{{ inventory_hostname }}_config.tgz"
-        - "/openstack/backup/control-plane/{{ rpc_release }}-{{ inventory_hostname }}.tar.tgz"
+        - "/openstack/backup/control-plane/{{ openstack_release }}-{{ inventory_hostname }}_config.tgz"
+        - "/openstack/backup/control-plane/{{ openstack_release }}-{{ inventory_hostname }}.tar.tgz"
       ignore_errors: True
       delegate_to: "{{ physical_host }}"
 
@@ -88,14 +90,14 @@
       delegate_to: "{{ physical_host }}"
 
     - name: Rename container archive
-      command: mv -f /openstack/backup/control-plane/{{ inventory_hostname }}.tar.tgz /openstack/backup/control-plane/{{ rpc_release }}-{{ inventory_hostname }}.tar.tgz
+      command: mv -f /openstack/backup/control-plane/{{ inventory_hostname }}.tar.tgz /openstack/backup/control-plane/{{ openstack_release }}-{{ inventory_hostname }}.tar.tgz
       args:
-        creates: "/openstack/backup/control-plane/{{ rpc_release }}-{{ inventory_hostname }}.tar.tgz"
+        creates: "/openstack/backup/control-plane/{{ openstack_release }}-{{ inventory_hostname }}.tar.tgz"
       delegate_to: "{{ physical_host }}"
 
     - name: Archive container configuration
       command: |
-        tar czf /openstack/backup/control-plane/{{ rpc_release }}-{{ inventory_hostname }}_config.tgz {{ container_config.results[0].stdout |replace('\n', ' ') }}
+        tar czf /openstack/backup/control-plane/{{ openstack_release }}-{{ inventory_hostname }}_config.tgz {{ container_config.results[0].stdout |replace('\n', ' ') }}
       args:
         chdir: "/var/lib/lxc/{{ item }}"
       with_items: "{{ inventory_hostname }}"
@@ -105,7 +107,7 @@
 
     - name: Remove temporary containers
       lxc_container:
-        name: "{{ rpc_release }}-{{ inventory_hostname }}"
+        name: "{{ openstack_release }}-{{ inventory_hostname }}"
         state: "absent"
       delegate_to: "{{ physical_host }}"
   vars:

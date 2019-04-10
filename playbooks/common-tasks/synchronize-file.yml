@@ -1,5 +1,5 @@
 ---
-# Copyright 2017-Present, Rackspace US, Inc.
+# Copyright 2019-Present, Rackspace US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Install pcommon
-  hosts: neutron_agents_container:shared-infra_hosts:utility_container
-  gather_facts: "{{ gather_facts | default(true) }}"
-  tasks:
-    - name: Deploy pccommon
-      copy:
-        src: "files/rpc-o-support/pccommon.sh"
-        dest: /root/pccommon.sh
-        mode: 0600
-  vars_files:
-    - "vars/main.yml"
+- name: Synchronize file object
+  synchronize:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  with_items: "{{ synchronize_files |default({}) }}"
