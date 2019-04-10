@@ -32,6 +32,19 @@ test -x "$(which sysbench)" || apt install -y sysbench fio > /dev/null 2>&1
 SB="$(which sysbench)"
 FIO="$(which fio)"
 
+
+# Check for version 1.0 on sysbench
+if [ -x "$(which sysbench)" ]; then
+  # Try to upgrade sysbench
+  apt install -y sysbench fio > /dev/null 2>&1
+
+  if [ "$($SB --version | cut -d " " -f2 | tr -d '.')" -lt 1000 ]; then
+    echo "Sysbench is too old, version 1.0 is required."
+    echo "Install the RPC first in order to be able to install sysbench in the required version."
+    exit 1
+  fi
+fi
+
 function cpu {
   local threads=$1
   local maxprime=200000
