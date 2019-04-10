@@ -28,7 +28,7 @@ WAIT_INBETWEEN_TESTS=60
 IO_BLK_DEV=${3:-/dev/lxc/fio}
 IO_BLK_DURATION=${4:-180}
 
-test -x $(which sysbench) || apt install -y sysbench fio > /dev/null 2>&1
+test -x "$(which sysbench)" || apt install -y sysbench fio > /dev/null 2>&1
 SB="$(which sysbench)"
 FIO="$(which fio)"
 
