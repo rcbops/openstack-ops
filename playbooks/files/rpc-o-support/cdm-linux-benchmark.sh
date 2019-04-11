@@ -38,9 +38,9 @@ if [ -x "$(which sysbench)" ]; then
   # Try to upgrade sysbench
   apt install -y sysbench fio > /dev/null 2>&1
 
-  if [ "$($SB --version | cut -d " " -f2 | tr -d '.')" -lt 1000 ]; then
+  if [ "$($SB --version | cut -d " " -f2 | tr -d '.' |fold -w 3)" -lt 100 ]; then
     echo "Sysbench is too old, version 1.0 is required."
-    echo "Install the RPC first in order to be able to install sysbench in the required version."
+    echo "Install RPC first in order to be able to install sysbench in the required version."
     exit 1
   fi
 fi
