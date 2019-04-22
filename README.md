@@ -24,7 +24,7 @@ Playbooks
 
 | Name                      | Parameters       |  Description                  |
 |---------------------------|------------------|-------------------------------|
-| archive-control-plane.yml | rpc_release (Used to designate the origin version of the backup) | Archives running OSA managed LXC containers into /openstack/backup/control-plane. Services inside containers will experiences short freeze during archiving |
+| archive-control-plane.yml | openstack_release (Optional, used to designate the origin version of the backup) | Archives running OSA managed LXC containers into /openstack/backup/control-plane. Services inside containers will experiences short freeze during archiving |
 | configure-apt.yml | None | Installs openstack-ops APT package dependencies while also turning off unattended APT upgrades |
 | configure-bash-environment.yml | None | Configures openstack cli bash completion, set vim as default editor and maintain MOTD |
 | configure-cpu-governor.yml | None | Optional, disable CPU ondemand governor and replace it with performance |
