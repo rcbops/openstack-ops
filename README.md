@@ -29,6 +29,7 @@ Playbooks
 | configure-bash-environment.yml | None | Configures openstack cli bash completion, set vim as default editor and maintain MOTD |
 | configure-cpu-governor.yml | None | Optional, disable CPU ondemand governor and replace it with performance |
 | configure-hosts.yml | ops_host_kernel_modules, ops_host_kernel_sysctl | Load bonding and 8021q modules, enabled IP forwarding |
+| configure-glance.yml | None | Install standard RPC OSS images like CentOS, Ubuntu etc.  |
 | configure-neutron.yml | None | Setup RPC security group and install neutron debugging tools inside agent container |
 | configure-nova.yml | None | Install standard nova flavor (e.g. m1.small) |
 | configure-spice-console.yml | None | Reinstall the missing CRTL+ALT+DEL Button to login into Windows guests |
@@ -55,7 +56,7 @@ Those scripts will be converted into individual Ansible tasks over time, when ne
 ### rpc-o-support
 
 This folder currently collects all support scripts for active RPC-O products
-RPC-R should be keep in a different once applicable due to the architectual differences.
+RPC-R should be keept in a different once applicable due to the architectual differences.
 
 ### archive folder
 
