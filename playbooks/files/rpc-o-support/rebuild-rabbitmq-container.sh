@@ -15,7 +15,7 @@ for i in $(seq 1 20); do
 done
 
 openstack-ansible -e container_group="rabbit_mq_container" -e force_containers_destroy="yes" -e force_containers_data_destroy="yes" lxc-containers-destroy.yml 
-openstack-ansible lxc-containers-create.yml --limit rabbit_mq_container:os-infra_hosts:infra_hosts
+openstack-ansible lxc-containers-create.yml --limit rabbit_mq_container:shared-infra_hosts:infra_hosts
 openstack-ansible rabbitmq-install.yml
 
 # Re-add OpenStack rabbitmq users
