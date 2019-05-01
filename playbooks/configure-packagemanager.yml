@@ -1,0 +1,74 @@
+---
+# Copyright 2017-Present, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- include: "common-playbooks/register-openstack-release.yml"
+
+- name: Configure package manager
+  hosts: hosts
+  environment: "{{ deployment_environment_variables | default({}) }}"
+  gather_facts: "{{ gather_facts | default(true) }}"
+  pre_tasks:
+    - include: "common-tasks/install-dependencies.yml"
+  tasks:
+    - name: Retrieve deb selections configuration for auto upgrades
+      shell: |
+         debconf-show unattended-upgrades |awk -F 'enable_auto_updates:' '{print $2}'
+      register: debconf_unattended_upgrades
+      ignore_errors: yes
+      changed_when: false
+      when: ansible_os_family == 'Debian'
+
+    - name: Set apt_autoupdate_enabled
+      set_fact:
+        apt_autoupdate_enabled: 1
+      when:
+        - ansible_os_family == 'Debian'
+        - debconf_unattended_upgrades is defined
+        - '"true" in debconf_unattended_upgrades.stdout'
+
+    - name: Update deb selections
+      shell: |
+       echo unattended-upgrades unattended-upgrades/enable_auto_updates boolean {{ apt_autoupdate_enabled |bool |lower }} | debconf-set-selections
+      when:
+        - ansible_os_family == 'Debian'
+        - apt_autoupdate_enabled is defined
+
+    - name: Configure scope of apt unattended upgrades
+      template:
+        src: "templates/apt-unattended-upgrades.j2"
+        dest: '/etc/apt/apt.conf.d/50unattended-upgrades'
+        owner: "root"
+        group: "root"
+      when: ansible_os_family == 'Debian'
+
+    - name: Configure apt periodic task
+      template:
+        src: "templates/apt-auto-upgrades.j2"
+        dest: '/etc/apt/apt.conf.d/20auto-upgrades'
+        owner: "root"
+        group: "root"
+      when: ansible_os_family == 'Debian'
+
+    - name: Restart unattended upgrade service
+      service:
+        name: unattended-upgrades
+        state: restarted
+        enabled: true
+
+  handlers:
+    - include: "handlers/main.yml"
+  vars_files:
+    - "vars/main.yml"
+    - "vars/main-{{ ansible_distribution | lower }}.yml"

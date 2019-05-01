@@ -2,7 +2,7 @@
 #
 # Execute all RPC support playbooks
 #
-- include: configure-apt.yml
+- include: configure-packagemanager.yml
 - include: configure-bash-environment.yml
 - include: configure-hosts.yml
 - include: configure-neutron.yml
