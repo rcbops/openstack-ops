@@ -25,7 +25,7 @@ Playbooks
 | Name                      | Parameters       |  Description                  |
 |---------------------------|------------------|-------------------------------|
 | archive-control-plane.yml | openstack_release (Optional, used to designate the origin version of the backup) | Archives running OSA managed LXC containers into /openstack/backup/control-plane. Services inside containers will experiences short freeze during archiving |
-| configure-packagemanager.yml | For debian style os, `apt_autoupdate_enabled` is set based off `debconf-show unattended-upgrades` selection. It can externally be overridden via `apt_autoupdate_enabled=1` | Installs package dependencies while also configuring automated package update |
+| configure-apt.yml | None | Installs openstack-ops APT package dependencies while also turning off unattended APT upgrades |
 | configure-bash-environment.yml | None | Configures openstack cli bash completion, set vim as default editor and maintain MOTD |
 | configure-cpu-governor.yml | None | Optional, disable CPU ondemand governor and replace it with performance |
 | configure-hosts.yml | ops_host_kernel_modules, ops_host_kernel_sysctl | Load bonding and 8021q modules, enabled IP forwarding |
