@@ -46,7 +46,6 @@ ops_apt_host_packages:
   - vlan
   - python-pip
   - sysfsutils
-  - unattended-upgrades
 
 ops_neutron_debug_packages:
   - iputils-arping
@@ -66,4 +65,3 @@ ops_host_kernel_sysctl:
   - { key: 'net.ipv4.ip_forward', value: 1 }
   - { key: 'net.ipv4.conf.all.rp_filter', value: 0 }
   - { key: 'net.ipv4.conf.default.rp_filter', value: 0 }
-
