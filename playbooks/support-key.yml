@@ -48,13 +48,37 @@
       register: support_pub_key
       when: support_key_check.stat.exists |bool or support_key_create|changed
 
-    - name: Get fingerprint of rpc_support SSH key
+    - name: Determine ssh-keygen hash option
+      shell: |
+        ssh-keygen --help 2>&1 | grep -q '\-E fingerprint_hash'
+      register: ssh_keygen_has_hash_opt
+      changed_when: ssh_keygen_has_hash_opt.rc == 0
+      ignore_errors: yes
+      failed_when: false
+
+    - name: Get fingerprint of rpc_support SSH key (old method)
       shell: |
         ssh-keygen -lf /root/.ssh/rpc_support.pub |awk '/(RSA|DSA)/ {print $2}'
       register: support_key_fingerprint
       changed_when: support_key_fingerprint.rc == 0
       failed_when: false
-      when: support_key_check.stat.exists |bool or support_key_create|changed
+      when:
+        - support_key_check.stat.exists |bool or support_key_create|changed
+        - ssh_keygen_has_hash_opt is undefined
+
+    - name: Get fingerprint of rpc_support SSH key
+      shell: |
+        ssh-keygen -l -E md5 -f /root/.ssh/rpc_support.pub |awk -F'MD5:' '/(RSA|DSA)/ {print substr($2,1,48)}'
+      register: support_key_fingerprint
+      changed_when: support_key_fingerprint.rc == 0
+      failed_when: false
+      when:
+        - support_key_check.stat.exists |bool or support_key_create|changed
+        - ssh_keygen_has_hash_opt is defined
+        - ssh_keygen_has_hash_opt |success
+
+    - name: SSH Key fingerprint on disk
+      debug: msg="{{ support_key_fingerprint.stdout }}"
 
     - name: Check for support keypair in nova
       shell: |
@@ -63,6 +87,9 @@
       register: nova_support_key
       changed_when: false
       failed_when: false
+
+    - name: nova SSH Key fingerprint
+      debug: msg="{{ nova_support_key.stdout }}"
 
     - name: Delete support keypair in nova
       shell: |
