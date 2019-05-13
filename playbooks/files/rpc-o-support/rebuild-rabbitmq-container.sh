@@ -2,6 +2,8 @@
 
 LANG=en_US.UTF-8
 
+OA_INF=/opt/openstack-ansible/playbooks/inventory
+
 cd /opt/openstack-ansible/playbooks 2>/dev/null || cd /opt/rpc-openstack/openstack-ansible/playbooks
 
 if [ $( echo "$@" |grep i-know-what-i-do |wc -l ) -eq 0 ]; then
@@ -32,7 +34,7 @@ fi;
 
 if [ -d /opt/rpc-maas/playbooks ]; then
   pushd /opt/rpc-maas/playbooks
-    openstack-ansible -i /opt/rpc-openstack/openstack-ansible/playbooks/inventory maas-infra-rabbitmq.yml
+    openstack-ansible -i $OA_INF maas-infra-rabbitmq.yml
   popd
 else
   pushd /opt/rpc-openstack/rpcd/playbooks
