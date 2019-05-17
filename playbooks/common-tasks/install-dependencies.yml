@@ -15,27 +15,25 @@
 
 - name: Install host packages required for RPC support
   apt:
-    pkg: "{{ item }}"
+    pkg: "{{ ops_apt_host_packages }}"
     state: present
     update_cache: yes
     cache_valid_time: 600
-  with_items: "{{ ops_apt_host_packages }}"
   when:
     - ansible_virtualization_role == 'host'
     - ansible_os_family == 'Debian'
 
 - name: Install packages required for RPC support
   apt:
-    pkg: "{{ item }}"
+    pkg: "{{ ops_apt_util_packages }}"
     state: present
     update_cache: yes
     cache_valid_time: 600
     force: yes
-  with_items: "{{ ops_apt_util_packages }}"
   when:
     - ansible_os_family == 'Debian'
   register: support_package_installs
-  until: support_package_installs|success
+  until: support_package_installs is success
   retries: 2
   delay: 10
 
@@ -51,13 +49,13 @@
 
 - name: Install requires pip packages
   pip:
-    name: "{{ ops_requires_pip_packages | join(' ') }}"
+    name: "{{ ops_requires_pip_packages }}"
     state: latest
     extra_args: >-
       {{ (pip_install_upper_constraints is defined) | ternary('--constraint ' + pip_install_upper_constraints | default(''),'') }}
       {{ pip_install_options | default('') }}
   register: install_packages
-  until: install_packages|success
+  until: install_packages is success
   retries: 2
   delay: 2
   tags:
@@ -76,7 +74,7 @@
 
 - name: Install pip dependencies
   pip:
-    name: "{{ ops_pip_dependencies | join (' ') }}"
+    name: "{{ ops_pip_dependencies }}"
     extra_args: "{{ pip_install_options|default('') }}"
     virtualenv: "{{ ops_venv }}"
   when: ops_pip_dependencies is defined
@@ -84,19 +82,17 @@
   ignore_errors: true
   tags:
     - always
-
-- name: Install pip dependencies (fallback --isolated)
   pip:
-    name: "{{ ops_pip_dependencies | join(' ') }}"
+    name: "{{ ops_pip_dependencies }}"
     extra_args: >-
       --isolated
       {{ pip_install_options|default('') }}
     virtualenv: "{{ ops_venv }}"
   when:
     - ops_pip_dependencies is defined
-    - not (pip_install|success)
+    - not (pip_install is success)
   register: pip_install_isolated
-  until: pip_install_isolated|success
+  until: pip_install_isolated is success
   retries: 2
   tags:
     - always

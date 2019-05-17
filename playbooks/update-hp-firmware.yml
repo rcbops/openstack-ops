@@ -27,7 +27,7 @@
         name: "{{ item }}"
       with_items: "{{ ops_hp_tools_apt_firmware_packages }}"
       register: install_packages
-      until: install_packages |success
+      until: install_packages is success
       when:
         - ansible_os_family == 'Debian'
         - ansible_system_vendor == "HP"
@@ -67,7 +67,7 @@
       changed_when: false
       when:
         - screen_binary |changed
-        - install_packages |success
+        - install_packages is success
         - update_hp_firmware_running.rc == 1
         - ansible_os_family == 'Debian'
         - ansible_system_vendor == "HP"
