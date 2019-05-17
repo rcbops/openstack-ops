@@ -75,7 +75,7 @@
       when:
         - support_key_check.stat.exists |bool or support_key_create|changed
         - ssh_keygen_has_hash_opt is defined
-        - ssh_keygen_has_hash_opt |success
+        - ssh_keygen_has_hash_opt is success
 
     - name: SSH Key fingerprint on disk
       debug: msg="{{ support_key_fingerprint.stdout }}"

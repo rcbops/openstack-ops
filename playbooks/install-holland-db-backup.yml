@@ -74,7 +74,7 @@
           --isolated
       with_items: "{{ ops_holland_pip_dependencies | default([]) }}"
       register: pip_install
-      until: pip_install | success
+      until: pip_install is success
       retries: 3
 
     - name: Get holland package from git
@@ -84,7 +84,7 @@
         version: "{{ ops_holland_git_install_branch }}"
       register: git_clone
       ignore_errors: yes
-      until: git_clone | success
+      until: git_clone is success
       retries: 2
 
     - name: Install holland program
@@ -95,7 +95,7 @@
           {{ pip_install_options|default('') }}
           --isolated
       register: pip_install
-      until: pip_install | success
+      until: pip_install is success
       retries: 2
       async: 1800
       delay: 5
@@ -109,7 +109,7 @@
       when: ops_holland_git_dest is defined and ops_holland_git_repo_plugins is defined
       with_items: "{{ ops_holland_git_repo_plugins }}"
       register: pip_install
-      until: pip_install | success
+      until: pip_install is success
       retries: 2
       delay: 10
       tags:
@@ -159,7 +159,7 @@
     - name: Create holland backup cron job
       cron:
         name: "holland-backup"
-        minute: "{{ (ansible_eth0['ipv4']['address']|replace('.', '')|int)%60}}"
+        minute: "{{ (ansible_all_ipv4_addresses[0]|replace('.', '')|int)%60}}"
         hour: 23
         state: present
         job: "{{ ops_holland_venv_bin }}/python2.7 {{ ops_holland_venv_bin }}/holland bk"

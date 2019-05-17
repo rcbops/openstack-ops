@@ -39,7 +39,7 @@
       with_items: "{{ ops_sos_pip_dependencies }}"
       when: ops_sos_pip_dependencies is defined
       register: pip_install
-      until: pip_install|success
+      until: pip_install is success
       retries: 3
 
     - name: Get sos package from git
@@ -49,7 +49,7 @@
         version: "{{ ops_sos_git_install_branch }}"
       register: git_clone
       ignore_errors: yes
-      until: git_clone|success
+      until: git_clone is success
       retries: 2
 
     - name: Install sos binary
@@ -57,7 +57,7 @@
         name: "{{ ops_sos_git_dest }}"
         extra_args: "{{ pip_install_options|default('') }}"
       register: pip_install
-      until: pip_install|success
+      until: pip_install is success
       retries: 2
       async: 1800
       delay: 5

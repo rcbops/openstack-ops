@@ -40,7 +40,7 @@
         - ops_hwraid_apt_keys is defined
         - is_supported_os |default(false) |bool
       register: add_keys_url
-      until: add_keys_url|success
+      until: add_keys_url is success
       retries: 2
       delay: 2
 
@@ -53,7 +53,7 @@
       when:
         - is_supported_os |default(false) |bool
       register: add_repos
-      until: add_repos|success
+      until: add_repos is success
       retries: 2
       delay: 2
 
