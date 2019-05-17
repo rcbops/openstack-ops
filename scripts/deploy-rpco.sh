@@ -75,6 +75,13 @@ if [ "$rpc_config_inplace" = false ]; then
       ln -sf ../../../global/configs/openstack/$f $f
     done
   popd
+
+  if [ ! -f /opt/rpc-config/account.yml ]; then
+    echo "*** Copying Runbook template into /opt/rpc-config"
+    for f in README.md account.yml; do
+      cp -f /opt/rpc-config/templates/$f /opt/rpc-config/
+    done
+  fi
 else
   echo "*** /opt/rpc-config already present, skipping."
 fi
