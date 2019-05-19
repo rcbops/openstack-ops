@@ -26,7 +26,7 @@ OSA_INVENTORY="/opt/openstack-ansible/inventory/dynamic_inventory.py"
 OSA_RUN_PLAY="${OSA_RUN_PLAY:-true}"
 ANSIBLE_FORKS=24
 
-test -f ~/.rackspace/datacenter && env="$(cat ~/.rackspace/datacenter)"
+test -f ~/.rackspace/datacenter && raxdc="$(cat ~/.rackspace/datacenter |tr '[:upper:]' '[:lower:]')"
 test -d /opt/rpc-config && rpc_config_inplace=true || rpc_config_inplace=false
 rm -rf ~/.pip/pip.conf 2>/dev/null
 
@@ -36,18 +36,20 @@ if [ $? -gt 1 ]; then
   exit 1
 fi
 
-if [ -z "$env" ]; then
+OSA_ENV="${OSA_ENV:-$raxdc}"
+if [ -z "$OSA_ENV" ]; then
   echo ""
-  echo "Which environment do you deploy (Use suffix like IAD3 as example) ?: "
+  echo "Which environment do you deploy (Use an acronym like IAD3 for example) ?: "
   read env
 
   mkdir -p ~/.rackspace
-  echo $env > ~/.rackspace/datacenter
+  echo $OSA_ENV > ~/.rackspace/datacenter
 fi
 
 # Ensure DC prefix is set
+OSA_ENV_LCASE="$(echo $OSA_ENV |tr '[:upper:]' '[:lower:]')"
 echo ""
-echo "*** Environment Name: $env"
+echo "*** Environment Name: $OSA_ENV_LCASE"
 echo "*** OSA Release: $OSA_RELEASE"
 echo "*** Deploy OSA: $OSA_RUN_PLAY"
 
@@ -59,12 +61,12 @@ test "$rpc_config_inplace" = true || git clone -o template https://github.com/rp
 git clone -b "$OSA_RELEASE" https://opendev.org/openstack/openstack-ansible /opt/openstack-ansible
 
 if [ "$rpc_config_inplace" = false ]; then
-  cp -r /opt/rpc-config/global /opt/rpc-config/$env
-  test -d /opt/rpc-config/$env && ln -sf /opt/rpc-config/$env/configs/openstack /etc/openstack_deploy
+  cp -r /opt/rpc-config/global /opt/rpc-config/$OSA_ENV_LCASE
+  test -d /opt/rpc-config/$OSA_ENV_LCASE && ln -sf /opt/rpc-config/$OSA_ENV_LCASE/configs/openstack /etc/openstack_deploy
 
   user_global_variables=""
   pushd /opt/rpc-config/global/configs/openstack
-    for f in user*variables.yml; do
+    for f in user*global*variables.yml; do
       user_global_variables+="$f "
     done
   popd
