@@ -82,15 +82,15 @@
   ignore_errors: true
   tags:
     - always
+
+- name: Install pip dependencies --isolated
   pip:
     name: "{{ ops_pip_dependencies }}"
     extra_args: >-
       --isolated
       {{ pip_install_options|default('') }}
     virtualenv: "{{ ops_venv }}"
-  when:
-    - ops_pip_dependencies is defined
-    - not (pip_install is success)
+  when: ops_pip_dependencies is defined and not (pip_install is success)
   register: pip_install_isolated
   until: pip_install_isolated is success
   retries: 2
