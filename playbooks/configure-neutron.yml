@@ -68,7 +68,7 @@
 
       register: sec_group_rules_ports
       changed_when: sec_group_rules_ports.rc == 0
-      when: sec_group_create|changed
+      when: sec_group_create is changed
       with_items:
         - 22
         - 3389
@@ -83,14 +83,14 @@
                  rpc-support
       register: sec_group_rules_icmp
       changed_when: sec_group_rules_icmp.rc == 0
-      when: sec_group_create|changed
+      when: sec_group_create is changed
   handlers:
     - include: "handlers/main.yml"
   vars_files:
     - "vars/main.yml"
 
 - name: Install packages required for support
-  hosts: neutron_agents_container
+  hosts: neutron_agent
   tasks:
     - name: Installation
       apt:
