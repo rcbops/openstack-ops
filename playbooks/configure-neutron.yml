@@ -15,8 +15,24 @@
 
 - include: "common-playbooks/register-openstack-release.yml"
 
+
+- name: Retrieve openrc
+  hosts: utility[0]
+  gather_facts: "{{ gather_facts | default(true) }}"
+  tasks:
+    - include: "common-tasks/synchronize-file.yml"
+
+  vars:
+    synchronize_files:
+       - src: "/root/openrc"
+         dest: "/root"
+         mode: "pull"
+
+  vars_files:
+    - "vars/main.yml"
+
 - name: Configure OpenStack Neutron
-  hosts: utility_container[0]
+  hosts: localhost
   environment: "{{ deployment_environment_variables | default({}) }}"
   gather_facts: "{{ gather_facts | default(true) }}"
   pre_tasks:

@@ -16,7 +16,7 @@
 - include: "common-playbooks/register-openstack-release.yml"
 
 - name: Retrieve openrc
-  hosts: utility_container[0]
+  hosts: utility[0]
   gather_facts: "{{ gather_facts | default(true) }}"
   tasks:
     - include: "common-tasks/synchronize-file.yml"
