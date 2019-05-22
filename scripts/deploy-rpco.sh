@@ -116,15 +116,15 @@ if [ "$OSA_RUN_PLAY" = true ]; then
   echo "*** OSA Inventory generation"
   $OSA_PYEXE $OSA_INVENTORY --check >/dev/null
 
-  echo "*** Executing OSA playbooks"
-  . /usr/local/bin/openstack-ansible.rc
-
   echo "*** Installing OSA base packages"
   ansible hosts -m shell -a 'DEBIAN_FRONTEND=noninteractive apt-get -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" -qy install aptitude build-essential ntp ntpdate openssh-server python-dev sudo' 2>&1 > ~/ansible-base-package-install.log
   if [ $? -gt 1 ]; then
     echo "*** Check for ansible errors at ~/ansible-base-package-install.log"
     exit 1
   fi
+
+  . /usr/local/bin/openstack-ansible.rc
+  echo "*** Executing OSA playbooks"
 
   pushd /opt/openstack-ansible/playbooks
     plays="setup-hosts.yml setup-infrastructure.yml setup-openstack.yml"
