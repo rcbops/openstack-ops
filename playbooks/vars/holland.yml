@@ -37,6 +37,7 @@ ops_holland_pip_dependencies:
 ops_holland_packages:
   - git
   - libmariadb-dev-compat
+  - libssl-dev
 
 ops_holland_requires_dependencies:
   - virtualenv
