@@ -23,20 +23,18 @@
   tasks:
     - name: Install packages required by sos
       apt:
-        pkg: "{{ item }}"
+        pkg: "{{ ops_sos_packages }}"
         state: present
         update_cache: yes
         cache_valid_time: 600
-      with_items: "{{ ops_sos_packages }}"
       when:
         - ops_sos_packages is defined
         - ansible_os_family == 'Debian'
 
     - name: Install sos pip dependencies
       pip:
-        name: "{{ item }}"
+        name: "{{ ops_sos_pip_dependencies }}"
         extra_args: "{{ pip_install_options|default('') }}"
-      with_items: "{{ ops_sos_pip_dependencies }}"
       when: ops_sos_pip_dependencies is defined
       register: pip_install
       until: pip_install is success
