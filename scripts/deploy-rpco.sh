@@ -40,7 +40,7 @@ OSA_ENV="${OSA_ENV:-$raxdc}"
 if [ -z "$OSA_ENV" ]; then
   echo ""
   echo "Which environment do you deploy (Use an acronym like IAD3 for example) ?: "
-  read env
+  read OSA_ENV
 
   mkdir -p ~/.rackspace
   echo $OSA_ENV > ~/.rackspace/datacenter
