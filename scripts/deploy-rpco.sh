@@ -19,6 +19,8 @@
 # 18.x = Rocky
 # 19.x = Stein
 
+set -e
+
 OSA_PYEXE=/opt/ansible-runtime/bin/python2.7
 OSA_RELEASE="${OSA_RELEASE:-stable/stein}"
 OSA_TOKEN_GEN="/opt/openstack-ansible/scripts/pw-token-gen.py"
