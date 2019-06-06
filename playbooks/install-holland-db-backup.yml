@@ -59,20 +59,18 @@
 
     - name: Install apt packages required by holland
       apt:
-        pkg: "{{ item }}"
+        pkg: "{{ ops_holland_packages | default([]) }}"
         update_cache: yes
         cache_valid_time: 600
-      with_items: "{{ ops_holland_packages | default([]) }}"
       when: ansible_os_family == 'Debian'
 
     - name: Install pip dependencies required by holland
       pip:
-        name: "{{ item }}"
+        name: "{{ ops_holland_pip_dependencies | default([]) }}"
         virtualenv: "{{ ops_holland_venv }}"
         extra_args: >-
           {{ pip_install_options|default('') }}
           --isolated
-      with_items: "{{ ops_holland_pip_dependencies | default([]) }}"
       register: pip_install
       until: pip_install is success
       retries: 3
@@ -148,7 +146,7 @@
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
       with_items:
-        - src: "templates/holland-xtrabackup.conf.j2"
+        - src: "templates/holland-mariabackup.conf.j2"
           dest: "/etc/holland/backupsets/rpc_support.conf"
         - src: "templates/holland.conf.j2"
           dest: "/etc/holland/holland.conf"
@@ -159,7 +157,7 @@
     - name: Create holland backup cron job
       cron:
         name: "holland-backup"
-        minute: "{{ (ansible_all_ipv4_addresses[0]|replace('.', '')|int)%60}}"
+        minute: "{{ (ansible_all_ipv4_addresses[0]|replace('.', '')|int)%60 }}"
         hour: 23
         state: present
         job: "{{ ops_holland_venv_bin }}/python2.7 {{ ops_holland_venv_bin }}/holland bk"
