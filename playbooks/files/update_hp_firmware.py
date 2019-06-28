@@ -13,7 +13,7 @@ import subprocess
 import datetime as dt
 from subprocess import PIPE
 
-VERSION = '2018-03-12'
+VERSION = '2019-06-19'
 
 # Command to package name mappings
 checkPrereqs = {
@@ -87,9 +87,9 @@ firmwares = {}
 firmwares["ProLiant DL380 Gen9"] = {
     "NIC": {
         "check": "ethtool -i em1 | grep firmware | cut -d:  -f2- | tr -d ' '",
-        "ver": "5719-v1.46NCSIv1.4.22.0",
-        "fwpkg": "hp-firmware-nic-broadcom-2.22.3-1.1.x86_64.rpm",
-        "md5": "679b40ad0dd8fbaa3d823b6ffccebacd",
+        "ver": "5719-v1.46NCSIv1.5.1.0",
+        "fwpkg": "hp-firmware-nic-broadcom-2.23.10-1.1.x86_64.rpm",
+        "md5": "7f40390d8d89d150faea075812ab9a90",
         "inp": "\n",
         "ret": 1
     },
@@ -103,25 +103,25 @@ firmwares["ProLiant DL380 Gen9"] = {
     },
     "SYSTEM-MELTDOWN": {
         "check": "hpasmcli -s \"show server\" | grep ROM | cut -d: -f2- | tr -d ' '",
-        "ver": "10/17/2018",
-        "fwpkg": "hp-firmware-system-p89-2.64_2018_10_17-1.1.i386.rpm",
-        "md5": "f43c9f28c208cd0ab1fbf7bf554703a2",
+        "ver": "03/25/2019",
+        "fwpkg": "hp-firmware-system-p89-2.72_2019_03_25-1.1.i386.rpm",
+        "md5": "220cc6165baa86a15555a18d806b94c3",
         "inp": "y\nn\n",
         "ret": 1
     },
     "ILO": {
         "check": "hponcfg -h | egrep Firmware | cut -d\  -f4",
-        "ver": "2.61",
-        "fwpkg": "hp-firmware-ilo4-2.61-1.1.i386.rpm",
-        "md5": "4f67b4829284c1cdc94a30aec2705cc8",
+        "ver": "2.70",
+        "fwpkg": "hp-firmware-ilo4-2.70-1.1.i386.rpm",
+        "md5": "3828dae3a4cb068428bc7cf71a06d3dd",
         "inp": "y\n",
         "ret": 0
     },
     "RAID": {
         "check": "ssacli controller all show config detail | grep -i firmware\ version | cut -d: -f2 | tr -d ' '| head -1",
-        "ver": "6.60",
-        "fwpkg": "hp-firmware-smartarray-ea3138d8e8-6.60-1.1.x86_64.rpm",
-        "md5": "77f86cab5d0b2505835bb8a0bd49a180",
+        "ver": "6.88",
+        "fwpkg": "hp-firmware-smartarray-ea3138d8e8-6.88-1.1.x86_64.rpm",
+        "md5": "fbcf3c5976aa6389dbeedde4bb208cb2",
         "inp": "A\n",
         "ret": 1
     },
@@ -138,8 +138,8 @@ firmwares["ProLiant DL380 Gen9"] = {
             "562SFP+": "800038C8",
             "563i": "800035C0"
         },
-        "fwpkg": "hp-firmware-nic-intel-1.16.0-1.1.x86_64.rpm",
-        "md5": "c2af9badd28debbee468486ecac9fc4e",
+        "fwpkg": "hp-firmware-nic-intel-1.17.17-2.1.x86_64.rpm",
+        "md5": "0a0f183c6eb9ff1774fb1e66666066cc",
         "ret": 1
     }
 }
