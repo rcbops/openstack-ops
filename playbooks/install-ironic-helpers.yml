@@ -1,0 +1,53 @@
+---
+- name: Set up Ironic helper tools
+  hosts: hosts:utility_container
+  tasks:
+    - name: Locate ironic_importer file
+      find:
+        paths: "{{ ops_venv }}"
+        patterns: ['ironic-importer']
+        recurse: yes
+      register: importer_find_result
+
+    - name: ironic_importer install find warning message
+      debug:
+        msg: "Warning! ironic-importer not found. Is it installed?"
+      when: importer_find_result.matched == 0
+
+    - name: Ensure symlink
+      file:
+        src: "{{ importer_find_result.files[-1].path }}"
+        dest: /usr/local/bin/ironic-importer
+        owner: root
+        group: root
+        state: link
+      when: importer_find_result.matched != 0
+
+    - name: Create cron job for image factory
+      cron:
+        name: Upload Images
+        minute: 0
+        hour: 12
+        weekday: "{{ [0,1,2,3,4,5,6] | random }}"
+        job: "ironic-image-factory"
+
+    - name: Locate image-factory file
+      find:
+        paths: "{{ ops_venv }}"
+        patterns: ['ironic-image-factory']
+        recurse: yes
+      register: image_factory_find_result
+
+    - name: ironic-image-factory install find warning message
+      debug:
+        msg: "Warning! ironic-image-factory not found. Is it installed?"
+      when: image_factory_find_result.matched == 0
+
+    - name: Ensure symlink
+      file:
+        src: "{{ importer_find_result.files[-1].path }}"
+        dest: /usr/local/bin/ironic-image-factory
+        owner: root
+        group: root
+        state: link
+      when: image_factory_find_result.matched != 0

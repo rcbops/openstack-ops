@@ -20,7 +20,8 @@ ops_pip_dependencies:
   - shade
   - python-openstackclient
   - python-neutronclient
-  - ironic_inventory
+  - ironic_importer
+  - ironic_image_factory
 
 ops_apt_util_packages:
   - bash-completion
