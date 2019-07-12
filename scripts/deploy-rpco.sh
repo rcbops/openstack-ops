@@ -27,6 +27,7 @@ OSA_TOKEN_GEN="/opt/openstack-ansible/scripts/pw-token-gen.py"
 OSA_INVENTORY="/opt/openstack-ansible/inventory/dynamic_inventory.py"
 OSA_RUN_PLAY="${OSA_RUN_PLAY:-true}"
 ANSIBLE_FORKS=24
+SKIP_PROMPTS="${SKIP_PROMPTS:-false}"
 
 test -f ~/.rackspace/datacenter && raxdc="$(cat ~/.rackspace/datacenter |tr '[:upper:]' '[:lower:]')"
 test -d /opt/rpc-config && rpc_config_inplace=true || rpc_config_inplace=false
@@ -55,8 +56,10 @@ echo "*** Environment Name: $OSA_ENV_LCASE"
 echo "*** OSA Release: $OSA_RELEASE"
 echo "*** Deploy OSA: $OSA_RUN_PLAY"
 
-echo "Is this correct (hit any key to continue) ?"
-read
+if [ "${SKIP_PROMPTS}" != "true" ]; then
+  echo "Is this correct (hit any key to continue) ?"
+  read
+fi
 
 rm -rf /opt/openstack-ansible 
 test "$rpc_config_inplace" = true || git clone -o template https://github.com/rpc-environments/RPCO-OSA-Template /opt/rpc-config
@@ -111,9 +114,11 @@ popd
 
 
 if [ "$OSA_RUN_PLAY" = true ]; then
-  echo ""
-  echo "Ready for OSA deployment (updated os-computes.yml etc.) ?"
-  read
+  if [ "${SKIP_PROMPTS}" != "true" ]; then
+    echo ""
+    echo "Ready for OSA deployment (updated os-computes.yml etc.) ?"
+    read
+  fi
 
   echo "*** OSA Inventory generation"
   $OSA_PYEXE $OSA_INVENTORY --check >/dev/null
