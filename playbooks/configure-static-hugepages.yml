@@ -1,0 +1,58 @@
+---
+# Copyright 2019-Present, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+- name: Enable static hugepages on compute nodes
+  hosts: compute_hosts
+  tasks:
+    - name: Deploy hugetlbfs mount
+      copy:
+        src: "files/dev-hugepages.mount"
+        dest: "/etc/systemd/system/dev-hugepages.mount"
+      when: ansible_service_mgr == "systemd" or ansible_service_mgr == "upstart"
+      notify: "systemd reload"
+
+    - name: Install hugepages packages
+      package:
+        name: "hugepages"
+        state: "present"
+
+    - name: Fix static hugepage support for to libvirt-qemu apparmor profile
+      lineinfile:
+        dest: "/etc/apparmor.d/abstractions/libvirt-qemu"
+        insertafter: '# for access to hugepages'
+        line: "  owner \"/mnt/hugepages/libvirt/qemu/**\" rw,"
+        state: present
+      notify: "apparmor restart"
+      when:
+        - ansible_os_family == 'Debian'
+
+    - name: Update kernel parameter for page size
+      replace:
+        name: "/etc/default/grub"
+        regexp: '^((GRUB_CMDLINE_LINUX.[^"]*)(?!.* hugepagesz=).[^"]*)'
+        replace: "\\1 hugepagesz={{ hugepage_size |default('2M') }} hugepages={{ hugepage_nr }} transparent_hugepages={{ transparent_hugepage_mode |default('never') }}"
+      notify: "update grub"
+      register: update_grub
+
+    - debug:
+        msg: Please reboot {{ inventory_hostname }} to enable kernel parameter changes
+      when:
+        - update_grub is defined
+        - update_grub |changed
+  vars_files:
+    - "vars/main.yml"
+  handlers:
+    - include: "handlers/main.yml"

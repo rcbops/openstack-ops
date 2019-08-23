@@ -23,7 +23,18 @@
     name: cpufrequtils
     state: restarted
 
+- name: multipath-tools restart
+  service:
+    name: multipath-tools
+    state: restarted
+
 - name: restart sysfs
   service:
     name: sysfsutils
     state: restarted
+
+- name: systemd reload
+  command: systemctl daemon-reload
+
+- name: update grub
+  command: /usr/sbin/update-grub2
