@@ -30,12 +30,16 @@
       package:
         name: "{{ sysfsutil_package }}"
         state: present
+      when:
+        - ansible_os_family == 'Debian'
 
     - name: Enable transparent huge pages
       lineinfile:
         path: "/etc/sysfs.conf"
         regexp: '^kernel.*transparent_hugepage\/enabled.*'
         line: "kernel/mm/transparent_hugepage/enabled = {{ tp_hugepage_mode |default('always') }}"
+      when:
+        - ansible_os_family == 'Debian'
 
     - name: Reload sysfsutils service
       service:
