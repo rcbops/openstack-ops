@@ -62,7 +62,7 @@ if [ "${SKIP_PROMPTS}" != "true" ]; then
 fi
 
 rm -rf /opt/openstack-ansible 
-test "$rpc_config_inplace" = true || git clone -o template https://github.com/rpc-environments/RPCO-OSA-Template /opt/rpc-config
+test "$rpc_config_inplace" = true || git clone -o template -b stable/stein https://github.com/rpc-environments/RPCO-OSA-Template /opt/rpc-config
 git clone -b "$OSA_RELEASE" https://opendev.org/openstack/openstack-ansible /opt/openstack-ansible
 
 if [ "$rpc_config_inplace" = false ]; then
