@@ -22,7 +22,7 @@
 set -e
 
 OSA_PYEXE=/opt/ansible-runtime/bin/python2.7
-OSA_RELEASE="${OSA_RELEASE:-19.0.4}"
+OSA_RELEASE="${OSA_RELEASE:-19.0.5}"
 OSA_TOKEN_GEN="/opt/openstack-ansible/scripts/pw-token-gen.py"
 OSA_INVENTORY="/opt/openstack-ansible/inventory/dynamic_inventory.py"
 OSA_RUN_PLAY="${OSA_RUN_PLAY:-true}"
@@ -61,7 +61,7 @@ if [ "${SKIP_PROMPTS}" != "true" ]; then
   read
 fi
 
-rm -rf /opt/openstack-ansible 
+rm -rf /opt/openstack-ansible
 test "$rpc_config_inplace" = true || git clone -o template -b stable/stein https://github.com/rpc-environments/RPCO-OSA-Template /opt/rpc-config
 git clone -b "$OSA_RELEASE" https://opendev.org/openstack/openstack-ansible /opt/openstack-ansible
 
