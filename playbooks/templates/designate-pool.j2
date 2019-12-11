@@ -1,0 +1,30 @@
+# {{ ansible_managed }}
+designate_pools_yaml:
+  - name: "default"
+    description: Default BIND9 Pool
+    attributes: {}
+    ns_records:
+{% for designate_bind in groups['designate_bind_all'] %}
+      - hostname: {{ designate_bind }}.{{ openstack_domain }}.
+        priority: 1
+{% endfor %}
+    nameservers:
+{% for designate_bind in groups['designate_bind_all'] %}
+      - host: {{ hostvars[designate_bind]['ansible_host'] }}
+        port: 53
+{% endfor %}
+    targets:
+{% for designate_bind in groups['designate_bind_all'] %}
+      - type: bind9
+        description: BIND9 Server {{ hostvars[designate_bind]['ansible_host'] }}
+        masters:
+{% for designate in groups['designate_all'] %}
+          - host: {{ hostvars[designate]['ansible_host'] }}
+            port: 5354
+{% endfor %}
+        options:
+          host: {{ hostvars[designate_bind]['ansible_host'] }}
+          port: 53
+          rndc_host: {{ hostvars[designate_bind]['ansible_host'] }}
+          rndc_port: 953
+{% endfor %}

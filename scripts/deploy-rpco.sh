@@ -131,10 +131,25 @@ if [ "$OSA_RUN_PLAY" = true ]; then
   fi
 
   . /usr/local/bin/openstack-ansible.rc
-  echo "*** Executing OSA playbooks"
+  echo "*** Executing OSA host and infrastructure playbooks"
 
   pushd /opt/openstack-ansible/playbooks
-    plays="setup-hosts.yml setup-infrastructure.yml setup-openstack.yml"
+    plays="setup-hosts.yml setup-infrastructure.yml"
+    for p in $plays; do
+      openstack-ansible $p
+    done
+  popd
+
+  if [ -f /etc/openstack_deploy/env.d/designate_bind.yml ]; then
+    echo "*** Installing BIND9 service for designate"
+    pushd /opt/openstack-ops
+      openstack-ansible playbooks/install-bind-designate.yml
+    popd
+  fi
+
+  echo "*** Executing OSA openstack playbook"
+  pushd /opt/openstack-ansible/playbooks
+    plays="setup-openstack.yml"
     for p in $plays; do
       openstack-ansible $p
     done

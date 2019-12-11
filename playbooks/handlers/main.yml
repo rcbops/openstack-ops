@@ -38,3 +38,8 @@
 
 - name: update grub
   command: /usr/sbin/update-grub2
+
+- name: Restart BIND
+  service:
+    name: bind9
+    state: restarted

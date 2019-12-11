@@ -68,6 +68,9 @@ ops_host_kernel_sysctl:
   - { key: 'net.ipv4.conf.default.rp_filter', value: 0 }
 
 
+# Listen IP for the bind servers which get's used by designate
+ops_bind_listen: "{{ ansible_host }};"
+
 # Allocate 80% for static hugepages when enabled
 hugepage_size: '2M'
 hugepage_nr: "{{ (ansible_memtotal_mb * 0.8 /2) |int }}"
