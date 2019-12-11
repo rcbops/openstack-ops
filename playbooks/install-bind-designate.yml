@@ -1,0 +1,151 @@
+---
+# Copyright 2019-Present, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- include: "common-playbooks/register-openstack-release.yml"
+
+- name: Install Bind Package
+  hosts: designate_bind_all
+  gather_facts: "{{ gather_facts | default(true) }}"
+  tasks:
+    - name: Install Base Packages
+      apt:
+        name: "bind9"
+        state: present
+      register: install_packages
+      until: install_packages is success
+      when:
+        - ansible_os_family == 'Debian'
+      retries: 2
+      delay: 2
+
+    - name: Install named configuration file
+      template:
+        src: templates/named.conf.j2
+        dest: /etc/bind/named.conf.options
+        owner: root
+        group: root
+      notify: Restart BIND
+
+    - name: Create needed directories
+      file:
+        name: "{{ item }}"
+        group: "bind"
+        mode: 0775
+        state: directory
+      with_items:
+        - "/var/cache/bind/data"
+        - "/var/cache/bind/dynamic"
+      notify: Restart BIND
+
+    - name: Pull one of the keys off one of the bind hosts
+      fetch:
+        src: /etc/bind/rndc.key
+        dest: /tmp/rndc.key
+        flat: yes
+      run_once: yes
+
+    - name: Distribute key to all bind hosts
+      copy:
+        src: /tmp/rndc.key
+        dest: /etc/bind/rndc.key
+      notify: Restart BIND
+  handlers:
+    - include: "handlers/main.yml"
+  vars_files:
+    - "vars/main.yml"
+
+- name: Install rndc.key
+  hosts: designate_all
+  gather_facts: "{{ gather_facts | default(true) }}"
+  tasks:
+    - block:
+        - name: Create designate folder
+          file:
+            name: /etc/bind
+            mode: 0775
+            state: directory
+
+        - name: Install rndc.key to designate hosts
+          copy:
+            src: /tmp/rndc.key
+            dest: /etc/bind/rndc.key
+
+        - name: Install BIND Utils (primary method)
+          apt:
+            name: bind9utils
+            state: present
+          when:
+            - ansible_os_family == 'Debian'
+          register: install_packages
+          until: install_packages is success
+          retries: 2
+          delay: 2
+  handlers:
+    - include: "handlers/main.yml"
+  vars_files:
+    - "vars/main.yml"
+
+
+- hosts: localhost
+  gather_facts: "{{ gather_facts | default(true) }}"
+  tasks:
+    - name: Rename existing designate_pools.yml
+      block:
+        - name: Find existing designate_pools.yml
+          stat:
+            path: /etc/openstack_deploy/designate_pools.yml
+          register: old_designate_pools_config
+          tags:
+            - update-designate-pools
+
+        - name: Rename designate_pools.yml to user_local_designate_pools.yml
+          copy:
+            src: "{{ old_designate_pools_config.stat.path }}"
+            dest: /etc/openstack_deploy/user_local_designate_pools.yml
+          when: old_designate_pools_config is defined and old_designate_pools_config.stat.exists |bool
+          tags:
+            - update-designate-pools
+
+        - name: Remove old designate_pools.yml
+          file:
+            path: /etc/openstack_deploy/designate_pools.yml
+            state: absent
+          ignore_errors: yes
+          tags:
+            - update-designate-pools
+
+    - name: Build user_local_designate_pools.yml
+      block:
+        - name: Find existing user_local_designate_pools.yml
+          stat:
+            path: /etc/openstack_deploy/user_local_designate_pools.yml
+          register: designate_pools_config
+          tags:
+            - update-designate-pools
+
+        - name: Create user_local_designate_pools.yml
+          template:
+            src: templates/designate-pool.j2
+            dest: /etc/openstack_deploy/user_local_designate_pools.yml
+          when: designate_pools_config is not defined or not designate_pools_config.stat.exists |bool
+          tags:
+            - update-designate-pools
+
+        - name: Message
+          debug: msg="Skipping installation of designate_pools.yml as already present"
+          when: designate_pools_config.stat.exists |bool
+          ignore_errors: yes
+          tags:
+            - update-designate-pools

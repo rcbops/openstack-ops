@@ -1,0 +1,45 @@
+options {
+        listen-on port 53 { {{ ops_bind_listen }}  };
+        directory       "/var/cache/bind";
+        dump-file       "/var/cache/bind/data/cache_dump.db";
+        statistics-file "/var/cache/bind/data/named_stats.txt";
+        memstatistics-file "/var/cache/bind/data/named_mem_stats.txt";
+        allow-query     { any; };
+        allow-notify    { {{ ansible_host }}; };
+
+        recursion no;
+
+        dnssec-enable yes;
+        dnssec-validation yes;
+
+        managed-keys-directory "/var/cache/bind/dynamic";
+
+        pid-file "/run/named/named.pid";
+        session-keyfile "/run/named/session.key";
+
+        allow-new-zones yes;
+        request-ixfr yes;
+
+        max-cache-size 256M;
+};
+
+include "/etc/bind/rndc.key";
+
+controls {
+  inet {{ ansible_host }} port 953
+    allow { {%- for designate in groups['designate_all'] %} {{hostvars[designate]['ansible_host']}}; {%- endfor -%} } keys {"rndc-key"; };
+  inet 127.0.0.1 port 953
+    allow { 127.0.0.1; } keys {"rndc-key"; };
+};
+
+
+logging {
+        channel default_debug {
+                file "data/named.run";
+                severity dynamic;
+        };
+};
+
+
+include "/etc/bind/zones.rfc1918";
+include "/etc/bind/bind.keys";
