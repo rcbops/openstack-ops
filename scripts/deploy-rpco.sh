@@ -142,8 +142,8 @@ if [ "$OSA_RUN_PLAY" = true ]; then
 
   if [ -f /etc/openstack_deploy/env.d/designate_bind.yml ]; then
     echo "*** Installing BIND9 service for designate"
-    pushd /opt/openstack-ops
-      openstack-ansible playbooks/install-bind-designate.yml
+    pushd /opt/openstack-ops/playbooks
+      openstack-ansible install-bind-designate.yml
     popd
   fi
 
