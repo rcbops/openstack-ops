@@ -53,12 +53,15 @@ installPrereqs = {
 # Map platforms against firmware versions
 nics = []
 nics = os.listdir('/sys/class/net/')
-if "eth0" in nics:
-    testnic = "eth0"
-elif "eno1" in nics:
-    testnic = "eno1"
-elif "em1" in nics:
-    testnic = "em1"
+testnic = "em1"
+for nic in nics:
+  if re.match("^(eth|em|eno)[0-9]+$", nic):
+    with open("/sys/class/net/{}/device/uevent".format(nic), "r") as uevent:
+           for cnt, line in enumerate(uevent):
+               if "DRIVER=tg3" in line:
+                   testnic = nic
+                   uevent.close()
+                   break
 
 firmwares = {}
 firmwares["ProLiant DL380 Gen9"] = {
