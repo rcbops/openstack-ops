@@ -25,6 +25,7 @@
         state: absent
       with_items:
         - downloads_linux_hpe_com_SDR_repo_mcp_ubuntu.list
+        - downloads_linux_hpe_com_SDR_repo_mcp.list
         - linux.hp.com.sources.list
         - mcp.list
         - hp-mcp.list
@@ -43,3 +44,5 @@
   vars_files:
     - "vars/main.yml"
     - "vars/hp-hardware-monitoring.yml"
+  vars:
+    - package_install_state: "latest"

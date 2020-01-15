@@ -23,7 +23,7 @@
   when:
     - ansible_os_family == 'Debian'
     - ansible_system_vendor == "Dell Inc."
-  until: add_keys|success
+  until: add_keys is success
   ignore_errors: True
   retries: 2
   delay: 2
@@ -38,7 +38,7 @@
   when:
     - ansible_os_family == 'Debian'
     - ansible_system_vendor == "Dell Inc."
-  until: add_repos|success
+  until: add_repos is success
   retries: 2
   delay: 2
 
@@ -64,7 +64,7 @@
     - ansible_os_family == 'Debian'
     - ansible_system_vendor == "Dell Inc."
   register: support_package_installs
-  until: support_package_installs|success
+  until: support_package_installs is success
   retries: 2
   delay: 10
 

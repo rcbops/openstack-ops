@@ -22,7 +22,7 @@
   when:
     - ansible_os_family == 'Debian'
     - ansible_system_vendor == "HP"
-  until: add_keys|success
+  until: add_keys is success
   ignore_errors: True
   retries: 2
   delay: 2
@@ -37,7 +37,7 @@
   when:
     - ansible_os_family == 'Debian'
     - ansible_system_vendor == "HP"
-  until: add_repos|success
+  until: add_repos is success
   retries: 2
   delay: 2
 
@@ -55,7 +55,7 @@
 - name: Install HP Monitoring packages
   apt:
     pkg: "{{ item }}"
-    state: present
+    state: "{{ package_install_state |default('present') }}"
     update_cache: yes
     cache_valid_time: 600
     force: yes
@@ -64,6 +64,6 @@
     - ansible_os_family == 'Debian'
     - ansible_system_vendor == "HP"
   register: support_package_installs
-  until: support_package_installs|success
+  until: support_package_installs is success
   retries: 2
   delay: 10
