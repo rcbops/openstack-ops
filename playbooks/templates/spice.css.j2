@@ -11,11 +11,9 @@
 
 #login
 {
-    width: 790px;
-    margin-top: 20px;
+    width: 95%;
     margin-left: auto;
     margin-right: auto;
-    padding: 2px 10px 2px 20px;
     border: 1px solid #999999;
     background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#24414e));
     background: -moz-linear-gradient(top,  #fff,  #24414e);
@@ -28,7 +26,7 @@
 {
     display: inline-block;
     margin-right: 5px;
-    padding-right: 10px;
+    padding: 2px 10px 2px 20px;
     border-right: 1px solid #999999;
     font-size: 20px;
     font-weight: bolder;
@@ -38,7 +36,6 @@
 #login input
 {
     padding: 5px;
-    background-color: #fAfAfA;
     border: 1px inset #999999;
     outline: none;
     -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
@@ -66,22 +63,26 @@
 
 #spice-area
 {
-    text-align: center;
-}
-.spice-screen
-{
-    display: inline-block;
-    padding: 10px;
-    min-width: 800px;
-    min-height: 600px;
+    height: 100%;
+    width: 95%;
+    padding: 0;
+    margin-left: auto;
+    margin-right: auto;
     border: solid #222222 1px;
-    background-color: #333333;
     -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
     -moz-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
     box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
     border-radius: 10px;
+}
+.spice-screen
+{
+    min-height: 600px;
+    height: 100%;
+    margin: 10px;
+    padding: 0;
+    background-color: #333333;
 }
 .spice-message {
     width: 700px;
@@ -102,6 +103,8 @@
     -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
     -moz-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
     box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
+    /* We default the message box to hidden. */
+    display: none;
 }
 .spice-message p {
     margin-bottom: 0em;
@@ -115,12 +118,15 @@
 }
 .spice-controlpane
 {
+    margin-left: 10px;
+    margin-right: auto;
     text-align: left;
     display: inline-block;
     padding: 10px;
-    min-width: 800px;
+    width: 98%;
     min-height: 20px;
     margin-top: 5px;
+    margin-bottom: 5px;
     border: solid #222222 1px;
     background-color: #333333;
     -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
