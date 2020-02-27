@@ -5,7 +5,8 @@ Version
 -------
 
 Version **1.3.x** is intended for all releases of OSA up to Rocky (18).
-All following releases (19 and later) will use the master branch.
+
+All following releases (19 and later) will use the **master** branch.
 
 
 
