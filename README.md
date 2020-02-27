@@ -1,14 +1,23 @@
 rcbops/openstack-ops
 =============================
 
+Version
+-------
+
+Version **1.3.x** is intended for all releases of OSA up to Rocky (18).
+All following releases (19 and later) will use the master branch.
+
+
+
 Build status
 ------------
 
 Travis is now used to lint various scripts in order to guarantee minimal coding standards.
 
-| Branch             | Build status     |
+| Relase             | Build status     |
 |--------------------|------------------|
-| Master Branch | [![Build Status: Master Branch](https://travis-ci.org/rcbops/openstack-ops.svg?branch=master)](https://travis-ci.org/rcbops/openstack-ops) |
+| 1.3.0 | [![Build Status: 1.3.0](https://travis-ci.org/rcbops/openstack-ops.svg?branch=1.3.0)](https://travis-ci.org/rcbops/openstack-ops) |
+| Master | [![Build Status: Master](https://travis-ci.org/rcbops/openstack-ops.svg?branch=master)](https://travis-ci.org/rcbops/openstack-ops) |
 
 
 Intent
@@ -82,6 +91,7 @@ Execution
 ----------------
 
     git clone https://github.com/rcbops/openstack-ops.git /opt/openstack-ops
+    # git checkout 1.3.x (Rocky and lower)
     source /usr/local/bin/openstack-ansible.rc
 
     cd /opt/openstack-ops/playbooks; openstack-ansible main.yml
