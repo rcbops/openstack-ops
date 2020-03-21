@@ -41,8 +41,6 @@ ops_apt_host_packages:
   - linux-crashdump
   - debootstrap
   - lvm2
-  - ntp
-  - ntpdate
   - vlan
   - python-pip
   - sysfsutils
