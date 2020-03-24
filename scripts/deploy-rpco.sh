@@ -18,16 +18,35 @@
 # 17.x = Queens
 # 18.x = Rocky
 # 19.x = Stein
+# 20.x = Train
 
 set -e
 
-OSA_PYEXE=/opt/ansible-runtime/bin/python2.7
+OSA_PYEXE=/opt/ansible-runtime/bin/python2
 OSA_RELEASE="${OSA_RELEASE:-19.0.10}"
 OSA_TOKEN_GEN="/opt/openstack-ansible/scripts/pw-token-gen.py"
 OSA_INVENTORY="/opt/openstack-ansible/inventory/dynamic_inventory.py"
 OSA_RUN_PLAY="${OSA_RUN_PLAY:-true}"
 ANSIBLE_FORKS=24
 SKIP_PROMPTS="${SKIP_PROMPTS:-false}"
+
+case ${OSA_RELEASE%%\.*} in
+  19)
+    OSA_PYEXE=/opt/ansible-runtime/bin/python2
+    RPCO_CONFIG_BRANCH="stable/stein"
+    ;;
+
+  20)
+    OSA_PYEXE=/opt/ansible-runtime/bin/python3
+    RPCO_CONFIG_BRANCH="stable/train"
+    ;;
+
+  *)
+    OSA_PYEXE=/opt/ansible-runtime/bin/python3
+    RPCO_CONFIG_BRANCH="stable/train"
+    ;;
+
+esac
 
 test -f ~/.rackspace/datacenter && raxdc="$(cat ~/.rackspace/datacenter |tr '[:upper:]' '[:lower:]')"
 test -d /opt/rpc-config && rpc_config_inplace=true || rpc_config_inplace=false
@@ -62,7 +81,7 @@ if [ "${SKIP_PROMPTS}" != "true" ]; then
 fi
 
 rm -rf /opt/openstack-ansible
-test "$rpc_config_inplace" = true || git clone -o template -b stable/stein https://github.com/rpc-environments/RPCO-OSA-Template /opt/rpc-config
+test "$rpc_config_inplace" = true || git clone -o template -b ${RPCO_CONFIG_BRANCH} https://github.com/rpc-environments/RPCO-OSA-Template /opt/rpc-config
 git clone -b "$OSA_RELEASE" https://opendev.org/openstack/openstack-ansible /opt/openstack-ansible
 
 if [ "$rpc_config_inplace" = false ]; then
