@@ -54,12 +54,11 @@
 
 - name: Install HP Monitoring packages
   apt:
-    pkg: "{{ item }}"
+    pkg: "{{ ops_hp_tools_monitoring_packages }}"
     state: "{{ package_install_state |default('present') }}"
     update_cache: yes
     cache_valid_time: 600
     force: yes
-  with_items: "{{ ops_hp_tools_monitoring_packages }}"
   when:
     - ansible_os_family == 'Debian'
     - ansible_system_vendor == "HP"

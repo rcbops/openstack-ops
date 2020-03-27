@@ -41,8 +41,8 @@
     - include: "common-tasks/install-dependencies.yml"
   tasks:
     - name: Create flavors of nova VMs
-      environment:
-        PYTHONHOME: "{{ ops_venv }}"
+      vars:
+        ansible_python_interpreter: "{{ ops_venv }}/bin/python"
       os_nova_flavor:
         endpoint_type: internal
         cloud: default

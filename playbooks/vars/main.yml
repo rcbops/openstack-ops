@@ -14,7 +14,6 @@
 # limitations under the License.
 
 ops_requires_pip_packages:
-  - virtualenv
 
 ops_pip_dependencies:
   - shade
@@ -32,7 +31,11 @@ ops_apt_util_packages:
   - tcpdump
   - vim
   - screen
+  - virtualenv
   - python-pip
+  - python3-pip
+  - python-setuptools
+  - python3-setuptools
 
 ops_apt_host_packages:
   - openssh-server
@@ -42,9 +45,13 @@ ops_apt_host_packages:
   - debootstrap
   - lvm2
   - vlan
+  - virtualenv
   - python-pip
+  - python3-pip
   - sysfsutils
   - unattended-upgrades
+  - python-setuptools
+  - python3-setuptools
 
 ops_neutron_debug_packages:
   - iputils-arping
@@ -53,6 +60,7 @@ ops_neutron_debug_packages:
 
 # All OPS tools are now installed inside a python venv
 ops_venv: "/openstack/venvs/rcbops-{{ openstack_release |default('0.0.0') }}"
+ops_python_interpreter: "{% if inventory_hostname == 'localhost' -%}/usr/bin/python3{% else -%}{{ ansible_python['executable'] }}{% endif -%}"
 
 # kernel modules required on hosts
 ops_host_kernel_modules:

@@ -30,8 +30,8 @@
       with_items: "{{ openstack_images }}"
 
     - name: Install system image
-      environment:
-        PYTHONHOME: "{{ ops_venv }}"
+      vars:
+        ansible_python_interpreter: "{{ ops_venv }}/bin/python"
       os_image:
         endpoint_type: internal
         cloud: default

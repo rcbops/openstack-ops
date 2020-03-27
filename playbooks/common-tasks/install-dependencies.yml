@@ -14,6 +14,8 @@
 # limitations under the License.
 
 - name: Install host packages required for RPC support
+  vars:
+    ansible_python_interpreter: "{{ ops_python_interpreter }}"
   apt:
     pkg: "{{ ops_apt_host_packages }}"
     state: present
@@ -24,6 +26,8 @@
     - ansible_os_family == 'Debian'
 
 - name: Install packages required for RPC support
+  vars:
+    ansible_python_interpreter: "{{ ops_python_interpreter }}"
   apt:
     pkg: "{{ ops_apt_util_packages }}"
     state: present
@@ -48,6 +52,8 @@
    - always
 
 - name: Install requires pip packages
+  vars:
+    ansible_python_interpreter: "{{ ops_python_interpreter }}"
   pip:
     name: "{{ ops_requires_pip_packages }}"
     state: latest
