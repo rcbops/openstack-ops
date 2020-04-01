@@ -19,6 +19,7 @@ ops_pip_dependencies:
   - shade
   - python-openstackclient
   - python-neutronclient
+  - openstacksdk==0.37.0
 
 ops_apt_util_packages:
   - bash-completion
