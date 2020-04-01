@@ -67,20 +67,23 @@
   retries: 2
   delay: 10
 
-- name: Start Dell services block
+- name: Start Dell Hardware Services Block
   block:
-    - name: Start Dell 'dataeng' service
+    - name: Start Dell 'dataeng' Service
       service:
         name: dataeng
         enabled: yes
       retries: 2
       delay: 2
   rescue:
-    - name: (fallback) Start Dell 'srvadmin' script
-      command: "/opt/dell/srvadmin/sbin/srvadmin-services.sh enable && /opt/dell/srvadmin/sbin/srvadmin-services.sh restart"
-      ignore_errors: yes
+    - name: (fallback) Enable Dell 'srvadmin' Service
+      command: "/opt/dell/srvadmin/sbin/srvadmin-services.sh enable"
+      retries: 2
+      delay: 2
+    - name: (fallback) Start Dell 'srvadmin' Service
+      command: "/opt/dell/srvadmin/sbin/srvadmin-services.sh restart"
       retries: 2
       delay: 2
   when:
     - ansible_os_family == 'Debian'
-    - anslbe_system_vendor == "Dell Inc."
+    - ansible_system_vendor == "Dell Inc."
