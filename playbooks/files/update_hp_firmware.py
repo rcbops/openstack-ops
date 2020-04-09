@@ -127,8 +127,8 @@ firmwares["ProLiant DL360 Gen9"] = {
             "562SFP+": "800038C8",
             "563i": "800035C0"
         },
-        "fwpkg": "hp-firmware-nic-intel-1.17.17-2.1.x86_64.rpm",
-        "md5": "0a0f183c6eb9ff1774fb1e66666066cc",
+        "fwpkg": "hp-firmware-nic-intel-1.16.0-1.1.x86_64.rpm",
+        "md5": "c2af9badd28debbee468486ecac9fc4e",
         "ret": 1
     }
 }
@@ -210,8 +210,8 @@ firmwares["ProLiant DL360 Gen10"] = {
             "562SFP+": "800038C8",
             "563i": "800035C0"
         },
-        "fwpkg": "hp-firmware-nic-intel-1.17.17-2.1.x86_64.rpm",
-        "md5": "0a0f183c6eb9ff1774fb1e66666066cc",
+        "fwpkg": "hp-firmware-nic-intel-1.16.0-1.1.x86_64.rpm",
+        "md5": "c2af9badd28debbee468486ecac9fc4e",
         "ret": 1
     }
 }
