@@ -17,7 +17,7 @@ Travis is now used to lint various scripts in order to guarantee minimal coding 
 
 | Relase             | Build status     |
 |--------------------|------------------|
-| 1.3.0 | [![Build Status: 1.3.0](https://travis-ci.org/rcbops/openstack-ops.svg?branch=1.3.0)](https://travis-ci.org/rcbops/openstack-ops) |
+| 1.3.2 | [![Build Status: 1.3.2](https://travis-ci.org/rcbops/openstack-ops.svg?branch=1.3.2)](https://travis-ci.org/rcbops/openstack-ops) |
 | Master | [![Build Status: Master](https://travis-ci.org/rcbops/openstack-ops.svg?branch=master)](https://travis-ci.org/rcbops/openstack-ops) |
 
 
