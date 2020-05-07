@@ -65,8 +65,8 @@
 
 - name: Create virtualenv and upgrade setuptools
   pip:
-    name: setuptools
-    state: latest
+    name: setuptools<45
+    state: present
     extra_args: >-
       --isolated
       {{ pip_install_options|default('') }}
