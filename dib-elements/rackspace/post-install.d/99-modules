@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [ 0 -gt 0 ]; then
+    set -x
+else
+    set -v
+fi
+
+set -eu
+set -o pipefail
+
+cat << EOM > /etc/modules
+8021q
+ixgbe
+ixgbevf
+tg3
+EOM
+
+cat << EOM > /etc/modprobe.d/ixgbe.conf
+options ixgbe max_vfs=63
+EOM
+

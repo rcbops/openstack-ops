@@ -1,0 +1,27 @@
+#!/bin/bash
+
+if [ 0 -gt 0 ]; then
+    set -x
+else
+    set -v
+fi
+
+set -eu
+set -o pipefail
+
+isRH=0
+
+egrep -i 'Centos|RedHat' /etc/redhat-release 2>/dev/null && isRH=1
+
+echo "DIB_BOOTLOADER_DEFAULT_CMDLINE: $DIB_BOOTLOADER_DEFAULT_CMDLINE"
+
+if [ $isRH -eq 1 ]; then
+  test -f /etc/default/grub && sed -i "s/^\(GRUB_CMDLINE_LINUX=\).*/\1\"${DIB_BOOTLOADER_DEFAULT_CMDLINE}\"/" /etc/default/grub
+  test $? -eq 0 && echo -n "Applied changes: " && grep GRUB_CMDLINE_LINUX /etc/default/grub
+else
+  test -f /etc/default/grub && sed -i "s/^\(GRUB_CMDLINE_LINUX_DEFAULT=\).*/\1\"${DIB_BOOTLOADER_DEFAULT_CMDLINE}\"/" /etc/default/grub
+  test $? -eq 0 && echo -n "Applied changes: " && grep GRUB_CMDLINE_LINUX_DEFAULT /etc/default/grub
+fi
+
+echo $?
+

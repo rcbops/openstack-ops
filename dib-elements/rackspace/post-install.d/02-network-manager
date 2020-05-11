@@ -1,0 +1,49 @@
+#!/bin/bash
+
+isRH=0
+
+egrep -q -i 'Centos|RedHat' /etc/redhat-release 2>/dev/null && isRH=1
+
+if [ $isRH -eq 1 ]; then
+  echo "Enabling em1 connection"
+
+  #yum -y install snapd
+  #systemctl enable --now snapd.socket
+  #ln -s /var/lib/snapd/snap /snap
+  #snap install netplan --edge --classic
+  #snap list
+
+  # DHCP is default IP method
+cat << _EM1 > /etc/sysconfig/network-scripts/ifcfg-em1
+TYPE=Ethernet
+BOOTPROTO=dhcp
+NAME=em1
+DEVICE=em1
+ONBOOT=yes
+_EM1
+
+else
+
+  mkdir -p /etc/netplan/
+
+  cat << _NP > /etc/netplan/50-cloud-init.yaml
+# This is the initial network config.
+# It can be overwritten by cloud-init or console-conf.
+network:
+    version: 2
+    ethernets:
+        em1:
+            match:
+                name: "em1"
+            dhcp4: true
+        all-en:
+            match:
+                name: "en*"
+            dhcp4: true
+        all-eth:
+            match:
+                name: "eth*"
+            dhcp4: true
+_NP
+
+fi

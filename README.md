@@ -1,5 +1,5 @@
 rcbops/openstack-ops
-=============================
+====================
 
 Version
 -------
@@ -55,11 +55,21 @@ Playbooks
 | swift-datacrusher.yml | xfs_inode_size, xfs_mount_options, xfs_format_options, exclude_drive_labels, exclude_drive_labels_format_option | Automatically reformat a entire swift cluster (WIPE ALL DATA). Use only with caution |
 | update-hp-firmware.yml | firmware_use_meltdown | Automatically install the latest tested firmware for HP DL380 G9 server (NIC,ILO,RAID,BIOS) |
 
-Operational scripts
--------------------
+
+Product scripts
+---------------
+
+| Name                           | Parameters       |  Description                                  |
+|--------------------------------|------------------|-----------------------------------------------|
+| scripts/deploy-rpco.sh         | OSA_RELEASE      | Defaults to the latest greenfield OSA release |
+| scripts/build-ironic-images.sh | [centos7,centos8,ubuntu] | Builds the given OS image, only one at a time can be specified |
+
+
+Support scripts
+---------------
 
 Most RPC OpenStack supports scripts are currently running outside of ansible and are stored
-inside the playbooks/files folder.
+inside the `playbooks/files` folder.
 Those scripts will be converted into individual Ansible tasks over time, when necessary.
 
 ### rpc-o-support
@@ -71,13 +81,6 @@ RPC-R should be keept in a different once applicable due to the architectual dif
 
 The scripts listed inside the archive folder or for historical reasons keept in this folder until the
 the product, it was intended to be used for, completely was removed from operations like RPC4 (probably never dies).
-
-
-### Other content
-
-Some scripts are still linked in on top level in order not to break existing processes
-like rpc-support role of RPC-O until those gets updated
-
 
 
 Requirements
