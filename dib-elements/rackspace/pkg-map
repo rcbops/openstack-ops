@@ -11,7 +11,8 @@
       "python3-dev": "python3-dev",
       "virtualenv": "virtualenv",
       "lvm": "",
-      "networkmgr": ""
+      "networkmgr": "",
+      "pkgmgr": ""
     },
     "centos": {
       "kernel": "kernel",
@@ -24,7 +25,8 @@
       "python3-dev": "",
       "virtualenv": "",
       "lvm": "lvm2",
-      "networkmgr": "NetworkManager"
+      "networkmgr": "NetworkManager",
+      "pkgmgr": "dnf"
     }
   },
   "default": {}

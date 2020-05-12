@@ -22,113 +22,34 @@ fi
 
 # Fix bad cloud-init unit files when present
 test -d /etc/systemd/system/cloud-init.target.wants && fixSystemdScripts=1 || fixSystemdScripts=0
-test $fixSystemdScripts -eq 1 && rm -rf /etc/systemd/system/cloud-init.target.wants
-  
-test $fixSystemdScripts -eq 1 && cat << _EOF > /etc/systemd/system/multi-user.target.wants/cloud-init.service
-[Unit]
-Description=Initial cloud-init job (metadata service crawler)
-Wants=cloud-init-local.service
-Wants=sshd-keygen.service
-Wants=sshd.service
-After=cloud-init-local.service
-After=NetworkManager.service network.service
-Before=network-online.target
-Before=sshd-keygen.service
-Before=sshd.service
-Before=systemd-user-sessions.service
-ConditionPathExists=!/etc/cloud/cloud-init.disabled
-ConditionKernelCommandLine=!cloud-init=disabled
 
-[Service]
-Type=oneshot
-ExecStart=/usr/bin/cloud-init init
-RemainAfterExit=yes
-TimeoutSec=0
-
-# Output needs to appear in instance console output
-StandardOutput=journal+console
-
-[Install]
-WantedBy=multi-user.target
-_EOF
-
-test $fixSystemdScripts -eq 1 && cat << _EOF > /etc/systemd/system/multi-user.target.wants/cloud-init-local.service
-[Unit]
-Description=Initial cloud-init job (pre-networking)
-DefaultDependencies=no
-Wants=network-pre.target
-After=systemd-remount-fs.service
-Requires=dbus.socket
-After=dbus.socket
-Before=NetworkManager.service network.service
-Before=network-pre.target
-Before=shutdown.target
-Before=firewalld.target
-Conflicts=shutdown.target
-RequiresMountsFor=/var/lib/cloud
-ConditionPathExists=!/etc/cloud/cloud-init.disabled
-ConditionKernelCommandLine=!cloud-init=disabled
-
-[Service]
-Type=oneshot
-ExecStartPre=/bin/mkdir -p /run/cloud-init
-ExecStartPre=/sbin/restorecon /run/cloud-init
-ExecStartPre=/usr/bin/touch /run/cloud-init/enabled
-ExecStart=/usr/bin/cloud-init init --local
-ExecStart=/bin/touch /run/cloud-init/network-config-ready
-RemainAfterExit=yes
-TimeoutSec=0
-
-# Output needs to appear in instance console output
-StandardOutput=journal+console
-
-[Install]
-WantedBy=multi-user.target
-_EOF
+if [ $fixSystemdScripts -eq 1 ]; then
+  mv /etc/systemd/system/cloud-init.target.wants/* /etc/systemd/system/multi-user.target.wants/
+  rm -rf /etc/systemd/system/cloud-init.target.wants
+fi
 
 # Turn off script EC2 datasource compatibility checking
 # See https://bugs.launchpad.net/cloud-init/+bug/1660385
-cat << _EOF > /etc/cloud/cloud.cfg.d/99-ec2-datasource.cfg
+cat << EOT > /etc/cloud/cloud.cfg.d/99-ec2-datasource.cfg
 #cloud-config
  datasource:
   Ec2:
    strict_id: false
-_EOF
+EOT
 
-cat << _EOF > /etc/cloud/cloud.cfg.d/99-warnings.cfg
+cat << EOT > /etc/cloud/cloud.cfg.d/99-warnings.cfg
 #cloud-config
  warnings:
    dsid_missing_source: off
-_EOF
+EOT
 
 # Configure only suported datasources
-cat << _EOF > /etc/cloud/cloud.cfg.d/99-datasource.cfg
+cat << EOT > /etc/cloud/cloud.cfg.d/99-datasource.cfg
 #cloud-config
   datasources_list:
     - OpenStack
     - Ec2
     - None
-_EOF
-
-# Explicitly laad the userdata script with apppending 
-# scripts_user to the modules list
-cat << _EOF > /etc/cloud/cloud.cfg.d/01-cloud-modules.cfg
-#cloud-config
-  cloud_init_modules:
-    - disk_setup
-    - migrator
-    - bootcmd
-    - write-files
-    - growpart
-    - resizefs
-    - set_hostname
-    - update_hostname
-    - update_etc_hosts
-    - rsyslog
-    - users-groups
-    - ssh
-    - scripts_user
-_EOF
-
+EOT
 
 ls -l /etc/cloud/cloud.cfg.d/

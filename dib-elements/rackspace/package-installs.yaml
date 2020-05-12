@@ -9,3 +9,4 @@ python3-dev:
 virtualenv:
 lvm:
 networkmgr:
+pkgmgr:
