@@ -15,6 +15,8 @@ DELETE FROM nova.instance_system_metadata WHERE instance_uuid IN ( SELECT uuid F
 DELETE FROM nova.instance_extra WHERE instance_uuid IN ( SELECT uuid FROM nova.instances WHERE deleted > 0 );
 DELETE FROM nova.instance_faults WHERE instance_uuid IN ( SELECT uuid FROM nova.instances WHERE deleted > 0 );
 DELETE FROM nova.migrations WHERE instance_uuid IN ( SELECT uuid FROM nova.instances WHERE deleted > 0 );
+DELETE FROM nova_api.request_specs WHERE instance_uuid IN ( SELECT uuid FROM nova.instances WHERE deleted > 0 );
+DELETE FROM nova_api.instance_mappings WHERE instance_uuid IN ( SELECT uuid FROM nova.instances WHERE deleted > 0 );
 
 DROP PROCEDURE IF EXISTS NewtonVifCleanup;
 DELIMITER \$\$
