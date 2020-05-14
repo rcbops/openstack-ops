@@ -23,7 +23,7 @@
 set -e
 
 OSA_PYEXE=/opt/ansible-runtime/bin/python2
-OSA_RELEASE="${OSA_RELEASE:-19.0.10}"
+OSA_RELEASE="${OSA_RELEASE:-19.1.0}"
 OSA_TOKEN_GEN="/opt/openstack-ansible/scripts/pw-token-gen.py"
 OSA_INVENTORY="/opt/openstack-ansible/inventory/dynamic_inventory.py"
 OSA_RUN_PLAY="${OSA_RUN_PLAY:-true}"
