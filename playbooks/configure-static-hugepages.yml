@@ -51,7 +51,7 @@
         msg: Please reboot {{ inventory_hostname }} to enable kernel parameter changes
       when:
         - update_grub is defined
-        - update_grub |changed
+        - update_grub is changed
   vars_files:
     - "vars/main.yml"
   handlers:

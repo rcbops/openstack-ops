@@ -70,7 +70,7 @@
         {{ screen_binary.stdout }} -d -m -L -t "hp_firmware_update" bash -c "source {{ ops_venv + '/bin/activate' }} || true; /usr/local/bin/update_hp_firmware.py -f {{ firmware_use_meltdown | default(false) | bool | ternary('--meltdown', '') }}"
       changed_when: false
       when:
-        - screen_binary |changed
+        - screen_binary is changed
         - install_packages is success
         - update_hp_firmware_running.rc == 1
         - ansible_os_family == 'Debian'

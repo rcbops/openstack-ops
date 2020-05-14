@@ -42,13 +42,13 @@
       slurp:
         src: "/root/.ssh/rpc_support"
       register: support_key
-      when: support_key_check.stat.exists |bool or support_key_create|changed
+      when: support_key_check.stat.exists |bool or support_key_create is changed
 
     - name: Get contents of support SSH pub key
       slurp:
         src: "/root/.ssh/rpc_support.pub"
       register: support_pub_key
-      when: support_key_check.stat.exists |bool or support_key_create|changed
+      when: support_key_check.stat.exists |bool or support_key_create is changed
 
     - name: Determine ssh-keygen hash option
       shell: |
@@ -65,7 +65,7 @@
       changed_when: support_key_fingerprint.rc == 0
       failed_when: false
       when:
-        - support_key_check.stat.exists |bool or support_key_create|changed
+        - support_key_check.stat.exists |bool or support_key_createx is changed
         - ssh_keygen_has_hash_opt is undefined
 
     - name: Get fingerprint of rpc_support SSH key
@@ -75,7 +75,7 @@
       changed_when: support_key_fingerprint.rc == 0
       failed_when: false
       when:
-        - support_key_check.stat.exists |bool or support_key_create|changed
+        - support_key_check.stat.exists |bool or support_key_create is changed
         - ssh_keygen_has_hash_opt is defined
         - ssh_keygen_has_hash_opt is success
 
@@ -110,7 +110,7 @@
         {{ ops_venv }}/bin/nova keypair-add --pub-key /root/.ssh/rpc_support.pub rpc_support
       retries: 2
       delay: 10
-      when: nova_support_key_delete|changed or nova_support_key.rc == 1
+      when: nova_support_key_delete is changed or nova_support_key.rc == 1
   vars_files:
     - "vars/main.yml"
 

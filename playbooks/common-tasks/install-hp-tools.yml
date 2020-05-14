@@ -46,7 +46,7 @@
     update_cache: yes
     cache_valid_time: 600
   when:
-    - add_repos|changed
+    - add_repos is changed
     - ansible_os_family == 'Debian'
   retries: 2
   delay: 2

@@ -63,7 +63,7 @@
       apt:
         update_cache: yes
         cache_valid_time: 600
-      when: add_repos|changed
+      when: add_repos is changed
 
     - name: Install HWRaid packages
       apt:
