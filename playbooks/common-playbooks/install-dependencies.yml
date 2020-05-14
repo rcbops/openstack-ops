@@ -1,0 +1,101 @@
+---
+# Copyright 2017-Present, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: Determine upper OSA constraints
+  hosts: localhost
+  tasks:
+    - include_vars: "{{ item }}"
+      with_first_found:
+        - "/opt/openstack-ansible/playbooks/defaults/repo_packages/openstack_services.yml"
+      when: '"RPCO" in openstack_product'
+
+    - set_fact:
+        osa_requirements_hash: "{{ requirements_git_install_branch }}"
+
+- name: Install host packages required for RPC support
+  hosts: "{{ host_group }}"
+  tasks:
+    - name: Install host packages
+      vars:
+        ansible_python_interpreter: "{{ ops_python_interpreter }}"
+      package:
+        name: "{{ ops_apt_host_packages }}"
+        state: present
+      when:
+        - ansible_virtualization_role == 'host'
+
+    - name: Install packages required for RPC support
+      vars:
+        ansible_python_interpreter: "{{ ops_python_interpreter }}"
+      package:
+        name: "{{ ops_apt_util_packages }}"
+        state: present
+      register: support_package_installs
+      until: support_package_installs is success
+      retries: 2
+      delay: 10
+
+    - name: Create venv base directory
+      file:
+        dest: "{{ ops_venv |dirname }}"
+        owner: "root"
+        group: "root"
+        mode: "0755"
+        state: "directory"
+      tags:
+       - always
+
+    - name: Create virtualenv and upgrade setuptools
+      pip:
+        name: setuptools
+        state: latest
+        extra_args: >-
+          --isolated
+          {{ pip_install_options|default('') }}
+        virtualenv: "{{ ops_venv }}"
+      tags:
+        - always
+
+    - name: Install pip packages
+      pip:
+        name: "{{ ops_pip_packages }}"
+        virtualenv: "{{ ops_venv }}"
+        extra_args: >-
+          {{ (pip_install_upper_constraints is defined) | ternary('--constraint ' + pip_install_upper_constraints | default(''), '--constraint ' + osa_upper_constraints_url) }}
+
+          {{ pip_install_options | default('') }}
+      when: ops_pip_packages is defined
+      register: pip_install
+      ignore_errors: true
+      tags:
+        - always
+
+    - name: Fallback pip packages  install (--isolated)
+      pip:
+        name: "{{ ops_pip_packages }}"
+        extra_args: >-
+          --isolated
+          {{ (pip_install_upper_constraints is defined) | ternary('--constraint ' + pip_install_upper_constraints | default(''), '--constraint ' + osa_upper_constraints_url) }}
+          {{ pip_install_options|default('') }}
+        virtualenv: "{{ ops_venv }}"
+      when: ops_pip_packages is defined and not (pip_install is success)
+      register: pip_install_isolated
+      until: pip_install_isolated is success
+      retries: 2
+      tags:
+        - always
+
+  vars_files:
+    - "../vars/main.yml"

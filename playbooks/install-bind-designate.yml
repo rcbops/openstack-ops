@@ -13,20 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- include: "common-playbooks/register-openstack-release.yml"
+- import_playbook: "common-playbooks/register-openstack-release.yml"
 
 - name: Install Bind Package
   hosts: designate_bind_all
   gather_facts: "{{ gather_facts | default(true) }}"
   tasks:
     - name: Install Base Packages
-      apt:
+      package:
         name: "bind9"
-        state: present
+        state: latest
+        update_cache: "{{ (ansible_pkg_mgr == 'apt') | ternary('yes', omit) }}"
+        cache_valid_time: "{{ (ansible_pkg_mgr == 'apt') | ternary(ops_package_cache_timeout, omit) }}"
       register: install_packages
       until: install_packages is success
-      when:
-        - ansible_os_family == 'Debian'
       retries: 2
       delay: 2
 
@@ -83,11 +83,11 @@
             dest: /etc/bind/rndc.key
 
         - name: Install BIND Utils (primary method)
-          apt:
+          package:
             name: bind9utils
-            state: present
-          when:
-            - ansible_os_family == 'Debian'
+            state: latest
+            update_cache: "{{ (ansible_pkg_mgr == 'apt') | ternary('yes', omit) }}"
+            cache_valid_time: "{{ (ansible_pkg_mgr == 'apt') | ternary(ops_package_cache_timeout, omit) }}"
           register: install_packages
           until: install_packages is success
           retries: 2

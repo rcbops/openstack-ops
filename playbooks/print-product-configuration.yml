@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- include: "common-playbooks/register-openstack-release.yml"
+- import_playbook: "common-playbooks/register-openstack-release.yml"
 
 - hosts: localhost
   gather_facts: no

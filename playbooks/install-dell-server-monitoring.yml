@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- include: "common-playbooks/register-openstack-release.yml"
+- import_playbook: "common-playbooks/register-openstack-release.yml"
+
+- import_playbook: "common-playbooks/install-dependencies.yml"
+  vars:
+    host_group: "hosts:osds:mons"
 
 - name: Install Dell server monitoring
   hosts: hosts:osds:mons
@@ -31,8 +35,6 @@
         - ansible_os_family == 'Debian'
         - ansible_system_vendor == "Dell Inc."
       retries: 2
-
-    - include: "common-tasks/install-dependencies.yml"
   tasks:
     - include: "common-tasks/install-dell-tools.yml"
   handlers:

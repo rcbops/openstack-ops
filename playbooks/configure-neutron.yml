@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- include: "common-playbooks/register-openstack-release.yml"
+- import_playbook: "common-playbooks/register-openstack-release.yml"
 
+- import_playbook: "common-playbooks/install-dependencies.yml"
+  vars:
+    host_group: "localhost"
 
 - name: Retrieve openrc
   hosts: utility[0]
@@ -35,8 +38,6 @@
   hosts: localhost
   environment: "{{ deployment_environment_variables | default({}) }}"
   gather_facts: "{{ gather_facts | default(true) }}"
-  pre_tasks:
-    - include: "common-tasks/install-dependencies.yml"
   tasks:
     - name: Check for rpc_support security group
       shell: |
@@ -93,12 +94,8 @@
   hosts: neutron_agent
   tasks:
     - name: Installation
-      apt:
-        pkg: "{{ item }}"
-        state: present
-        update_cache: yes
-        cache_valid_time: 600
-      with_items: "{{ ops_neutron_debug_packages }}"
+      package:
+        name: "{{ ops_neutron_debug_packages }}"
       when: ansible_os_family == 'Debian'
   vars_files:
     - "vars/main.yml"

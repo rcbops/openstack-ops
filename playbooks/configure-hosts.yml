@@ -13,14 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- include: "common-playbooks/register-openstack-release.yml"
+- import_playbook: "common-playbooks/register-openstack-release.yml"
+
+- import_playbook: "common-playbooks/install-dependencies.yml"
+  vars:
+    host_group: "hosts"
 
 - name: Configure hosts
   hosts: hosts
   environment: "{{ deployment_environment_variables | default({}) }}"
   gather_facts: "{{ gather_facts | default(true) }}"
-  pre_tasks:
-    - include: "common-tasks/install-dependencies.yml"
   tasks:
     - name: "Ensure kernel module(s)"
       modprobe:

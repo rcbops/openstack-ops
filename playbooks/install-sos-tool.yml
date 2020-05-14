@@ -12,21 +12,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+- import_playbook: "common-playbooks/register-openstack-release.yml"
 
-- include: "common-playbooks/register-openstack-release.yml"
+- import_playbook: "common-playbooks/install-dependencies.yml"
+  vars:
+    host_group: "hosts"
 
 - name: Install the sos utility
   hosts: hosts
   gather_facts: "{{ gather_facts | default(true) }}"
-  pre_tasks:
-    - include: "common-tasks/install-dependencies.yml"
   tasks:
     - name: Install packages required by sos
-      apt:
-        pkg: "{{ ops_sos_packages }}"
+      package:
+        name: "{{ ops_sos_packages }}"
         state: present
-        update_cache: yes
-        cache_valid_time: 600
+        update_cache: "{{ (ansible_pkg_mgr == 'apt') | ternary('yes', omit) }}"
+        cache_valid_time: "{{ (ansible_pkg_mgr == 'apt') | ternary(ops_package_cache_timeout, omit) }}"
       when:
         - ops_sos_packages is defined
         - ansible_os_family == 'Debian'

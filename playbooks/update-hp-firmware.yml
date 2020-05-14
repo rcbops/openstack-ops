@@ -13,19 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- include: "common-playbooks/register-openstack-release.yml"
+- import_playbook: "common-playbooks/register-openstack-release.yml"
+
+- import_playbook: "common-playbooks/install-dependencies.yml"
+  vars:
+    host_group: "hosts:osds:mons:mgrs"
 
 - name: Install HP firmware update tool
   hosts: hosts:osds:mons:mgrs
   gather_facts: "{{ gather_facts | default(true) }}"
   pre_tasks:
-    - include: "common-tasks/install-dependencies.yml"
     - include: "common-tasks/install-hp-tools.yml"
   tasks:
     - name: Install HP firmware update dependencies
-      apt:
-        name: "{{ item }}"
-      with_items: "{{ ops_hp_tools_apt_firmware_packages }}"
+      package:
+        name: "{{ ops_hp_tools_apt_firmware_packages }}"
+        update_cache: "{{ (ansible_pkg_mgr == 'apt') | ternary('yes', omit) }}"
+        cache_valid_time: "{{ (ansible_pkg_mgr == 'apt') | ternary(ops_package_cache_timeout, omit) }}"
       register: install_packages
       until: install_packages is success
       when:

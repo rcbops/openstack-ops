@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- include: "common-playbooks/register-openstack-release.yml"
+- import_playbook: "common-playbooks/register-openstack-release.yml"
+
+- import_playbook: "common-playbooks/install-dependencies.yml"
+  vars:
+    host_group: "galera"
 
 - name: Configure holland DB user
   hosts: galera[0]
@@ -49,20 +53,18 @@
 - name: Install holland OpenStack DB backup utility
   hosts: galera
   gather_facts: "{{ gather_facts | default(true) }}"
-  pre_tasks:
-    - include: "common-tasks/install-dependencies.yml"
   tasks:
     - name: Create venv dir for holland
       file:
         path: "{{ ops_holland_venv }}"
         state: directory
 
-    - name: Install apt packages required by holland
-      apt:
-        pkg: "{{ ops_holland_packages | default([]) }}"
-        update_cache: yes
-        cache_valid_time: 600
-      when: ansible_os_family == 'Debian'
+    - name: Install packages required by holland
+      package:
+        name: "{{ ops_holland_packages | default([]) }}"
+        state: latest
+        update_cache: "{{ (ansible_pkg_mgr == 'apt') | ternary('yes', omit) }}"
+        cache_valid_time: "{{ (ansible_pkg_mgr == 'apt') | ternary(ops_package_cache_timeout, omit) }}"
 
     - name: Install pip dependencies required by holland
       pip:

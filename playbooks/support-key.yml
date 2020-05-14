@@ -13,13 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- include: "common-playbooks/register-openstack-release.yml"
+- import_playbook: "common-playbooks/register-openstack-release.yml"
+
+- import_playbook: "common-playbooks/install-dependencies.yml"
+  vars:
+    host_group: "shared-infra_hosts"
 
 - name: Create RPC support key
   hosts: shared-infra_hosts[0]
   gather_facts: "{{ gather_facts | default(true) }}"
-  pre_tasks:
-    - include: "common-tasks/install-dependencies.yml"
   tasks:
     - name: Check for key file
       stat:

@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ops_requires_pip_packages:
-
-ops_pip_dependencies:
+ops_pip_packages:
   - shade
   - python-openstackclient
   - python-neutronclient
@@ -61,6 +59,11 @@ ops_neutron_debug_packages:
 # All OPS tools are now installed inside a python venv
 ops_venv: "/openstack/venvs/rcbops-{{ openstack_release |default('0.0.0') }}"
 ops_python_interpreter: "{% if inventory_hostname == 'localhost' -%}/usr/bin/python3{% else -%}{{ ansible_python['executable'] }}{% endif -%}"
+ops_package_cache_timeout: "{{ cache_timeout | default('3600') }}"
+
+# Limit openstack requirements to Stein when not automatically determined
+osa_requirements_hash: "{{ hostvars['localhost']['osa_requirements_hash'] |default('881814daf02179eb47be4f3ce248560b2b8199fd') }}"
+osa_upper_constraints_url: "{{ requirements_git_url | default('https://git.openstack.org/cgit/openstack/requirements/plain/upper-constraints.txt?h=' ~ osa_requirements_hash) }} "
 
 # kernel modules required on hosts
 ops_host_kernel_modules:
