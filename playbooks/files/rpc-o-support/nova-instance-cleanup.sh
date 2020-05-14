@@ -15,10 +15,9 @@ DELETE FROM nova.instance_system_metadata WHERE instance_uuid IN ( SELECT uuid F
 DELETE FROM nova.instance_extra WHERE instance_uuid IN ( SELECT uuid FROM nova.instances WHERE deleted > 0 );
 DELETE FROM nova.instance_faults WHERE instance_uuid IN ( SELECT uuid FROM nova.instances WHERE deleted > 0 );
 DELETE FROM nova.migrations WHERE instance_uuid IN ( SELECT uuid FROM nova.instances WHERE deleted > 0 );
-DELETE FROM nova_api.request_specs WHERE instance_uuid IN ( SELECT uuid FROM nova.instances WHERE deleted > 0 );
-DELETE FROM nova_api.instance_mappings WHERE instance_uuid IN ( SELECT uuid FROM nova.instances WHERE deleted > 0 );
 
 DROP PROCEDURE IF EXISTS NewtonVifCleanup;
+DROP PROCEDURE IF EXISTS NovaApiCleanup;
 DELIMITER \$\$
 
 CREATE PROCEDURE NewtonVifCleanup(
@@ -33,13 +32,27 @@ BEGIN
     END IF;
 END\$\$
 
+CREATE PROCEDURE NovaApiCleanup(
+    OUT nova_api_db_exists BOOL)
+BEGIN
+    SELECT COUNT(*) > 0 as BOOL FROM information_schema.TABLES
+      WHERE TABLE_NAME = 'instance_mappings'
+      AND TABLE_SCHEMA LIKE 'nova_api%' INTO nova_api_db_exists;
+     IF (nova_api_db_exists) THEN
+       DELETE FROM nova_api.request_specs WHERE instance_uuid IN ( SELECT uuid FROM nova.instances WHERE deleted > 0 );
+       DELETE FROM nova_api.instance_mappings WHERE instance_uuid IN ( SELECT uuid FROM nova.instances WHERE deleted > 0 );
+     END IF;
+END\$\$
+
 DELIMITER ;
 
 CALL NewtonVifCleanup(@nova_vif_table_exists);
+CALL NovaApiCleanup(@nova_api_db_exists);
 
 DELETE FROM nova.instances WHERE deleted > 0;
 
 DROP PROCEDURE NewtonVifCleanup;
+DROP PROCEDURE NovaApiCleanup;
 EOF
 
 mysql -BNe 'source /root/nova-instance-cleanup.sql;' | tee /root/nova-instance-cleanup.log
