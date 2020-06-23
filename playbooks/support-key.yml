@@ -65,7 +65,7 @@
       changed_when: support_key_fingerprint.rc == 0
       failed_when: false
       when:
-        - support_key_check.stat.exists |bool or support_key_createx is changed
+        - support_key_check.stat.exists |bool or support_key_create is changed
         - ssh_keygen_has_hash_opt is undefined
 
     - name: Get fingerprint of rpc_support SSH key
