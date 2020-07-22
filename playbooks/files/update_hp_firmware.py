@@ -108,9 +108,9 @@ firmwares["ProLiant DL360 Gen9"] = {
     },
     "ILO": {
         "check": "hponcfg -h | awk '/Firmware/ {print $4}'",
-        "ver": "2.70",
-        "fwpkg": "hp-firmware-ilo4-2.70-1.1.i386.rpm",
-        "md5": "3828dae3a4cb068428bc7cf71a06d3dd",
+        "ver": "2.73",
+        "fwpkg": "hp-firmware-ilo4-2.73-1.1.i386.rpm",
+        "md5": "c436f2200c8341cdb4c44899954038bc",
         "inp": "y\n",
         "ret": 0
     },
@@ -167,33 +167,33 @@ firmwares["ProLiant DL360 Gen10"] = {
     },
     "SYSTEM": {
         "check": "ipmitool fru |grep 'MB BIOS' -A5 |awk -F ': ' '/Product Version/ {print $2}'",
-        "ver": "10/21/2019",
-        "fwpkg": "hp-firmware-system-u32-2.22_2019_11_13-1.1.x86_64.rpm",
-        "md5": "b5222bb8f139229bcf06177c817772f5",
+        "ver": "03/09/2020",
+        "fwpkg": "hp-firmware-system-u32-2.32_2020_03_09-1.1.x86_64.rpm",
+        "md5": "5d8377fee36b74635699a5ec9f62b9b3",
         "inp": "y\nn\n",
         "ret": 1
     },
     "SYSTEM-MELTDOWN": {
         "check": "ipmitool fru |grep 'MB BIOS' -A5 |awk -F ': ' '/Product Version/ {print $2}'",
-        "ver": "10/21/2019",
-        "fwpkg": "hp-firmware-system-u32-2.22_2019_11_13-1.1.x86_64.rpm",
-        "md5": "b5222bb8f139229bcf06177c817772f5",
+        "ver": "03/09/2020",
+        "fwpkg": "hp-firmware-system-u32-2.32_2020_03_09-1.1.x86_64.rpm",
+        "md5": "5d8377fee36b74635699a5ec9f62b9b3",
         "inp": "y\nn\n",
         "ret": 1
     },
     "RAID": {
         "check": "ssacli controller all show config detail | grep -i firmware\ version | cut -d: -f2 | tr -d ' '| head -1",
-        "ver": "2.62",
-        "fwpkg": "hp-firmware-smartarray-f7c07bdbbd-2.62-1.1.x86_64.rpm",
-        "md5": "6757387a3419412a417eba2da6dda2f0",
+        "ver": "2.65",
+        "fwpkg": "hp-firmware-smartarray-f7c07bdbbd-2.65-1.1.x86_64.rpm",
+        "md5": "4e950035ad39eec3dc013c998d6acde0",
         "inp": "A\n",
         "ret": 1
     },
     "ILO": {
         "check": "hponcfg -h | awk '/Firmware/ {print $4}'",
-        "ver": "1.45",
-        "fwpkg": "hp-firmware-ilo5-1.45-1.1.x86_64.rpm",
-        "md5": "3ddccffc3c4030955e70ae6277425364",
+        "ver": "2.14",
+        "fwpkg": "hp-firmware-ilo5-2.14-1.1.x86_64.rpm",
+        "md5": "5049dcb80f0af9b63ceb5aba051750c2",
         "inp": "y\n",
         "ret": 0
     },
