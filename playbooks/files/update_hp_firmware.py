@@ -440,12 +440,12 @@ def main(debug=False, **kwargs):
                 slot = busInfo.split(':')[1] +":"+ busInfo.split(':')[2]
                 inics[slot] = {}
 
-                s = subprocess.Popen(['/usr/bin/env', 'lspci', '-v', '-d', '8086:1528'],
+                s = subprocess.Popen(['/usr/bin/env', 'lspci', '-v', '-s', slot],
                     stdin=PIPE, stdout=PIPE, stderr=PIPE)
                 out = s.communicate()[0].strip().decode(encoding='UTF-8')
                 for x in re.split('\n\n', out):
                     try:
-                        model = re.search('56[0-3][A-Z,i]{1,3}-?[A-Z]{0,3}\+?', x).group(0)
+                        model = re.search('[3,5][6][0-9][A-Z,i]{1,3}-?[A-Z]{0,5}\+?',x).group(0)
                     except IndexError:
                         print("Could not find the model number for the nic in slot {}.".format(slot))
                         nicError = True
