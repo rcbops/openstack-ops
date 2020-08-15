@@ -76,9 +76,9 @@ firmwares["ProLiant DL360 Gen9"] = {
     "spp-version": "2019.12.0",
     "NIC": {
         "check": "ethtool -i {} | grep firmware | cut -d:  -f2- | tr -d ' '".format(testnic),
-        "ver": "5719-v1.46NCSIv1.5.1.0",
-        "fwpkg": "hp-firmware-nic-broadcom-2.23.10-1.1.x86_64.rpm",
-        "md5": "7f40390d8d89d150faea075812ab9a90",
+        "ver": "5719-v1.46NCSIv1.5.12.0",
+        "fwpkg": "hp-firmware-nic-broadcom-2.25.1-1.1.x86_64.rpm",
+        "md5": "c0d1d2a1199e59c020b54aee844e2fb4",
         "inp": "\n",
         "ret": 1
     },
@@ -159,9 +159,9 @@ firmwares["ProLiant DL360 Gen10"] = {
     "spp-version": "2019.12.0",
     "NIC": {
         "check": "ethtool -i {} | grep firmware | cut -d:  -f2- | tr -d ' '".format(testnic),
-        "ver": "5719-v1.46NCSIv1.5.1.0",
-        "fwpkg": "hp-firmware-nic-broadcom-2.23.10-1.1.x86_64.rpm",
-        "md5": "7f40390d8d89d150faea075812ab9a90",
+        "ver": "5719-v1.46NCSIv1.5.12.0",
+        "fwpkg": "hp-firmware-nic-broadcom-2.25.1-1.1.x86_64.rpm",
+        "md5": "c0d1d2a1199e59c020b54aee844e2fb4",
         "inp": "\n",
         "ret": 1
     },
