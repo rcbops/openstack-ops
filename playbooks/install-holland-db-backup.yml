@@ -88,28 +88,26 @@
       retries: 2
 
     - name: Install holland program
-      pip:
-        name: "/opt/{{ ops_holland_service_name }}_{{ ops_holland_git_install_branch | replace('/', '_') }}"
-        virtualenv: "{{ ops_holland_venv }}"
-        extra_args: >-
-          {{ pip_install_options|default('') }}
-          --isolated
-      register: pip_install
-      until: pip_install is success
+      shell:
+        cmd: "{{ ops_holland_venv_bin }}/python setup.py install"
+        chdir: "/opt/{{ ops_holland_service_name }}_{{ ops_holland_git_install_branch | replace('/', '_') }}"
+      register: holland_install
+      until: holland_install is success
       retries: 2
       async: 1800
       delay: 5
       poll: 5
+      tags:
+        - holland_install
 
     - name: Install holland pip repo plugins
-      pip:
-        name: "{{ ops_holland_git_dest }}/{{ item.path }}/{{ item.package }}"
-        virtualenv: "{{ ops_holland_venv }}"
-        extra_args: "{{ pip_install_options|default('') }}"
+      shell:
+        cmd: "{{ ops_holland_venv_bin }}/python setup.py install"
+        chdir: "{{ ops_holland_git_dest }}/{{ item.path }}/{{ item.package }}"
       when: ops_holland_git_dest is defined and ops_holland_git_repo_plugins is defined
       with_items: "{{ ops_holland_git_repo_plugins }}"
-      register: pip_install
-      until: pip_install is success
+      register: plugin_install
+      until: plugin_install is success
       retries: 2
       delay: 10
       tags:
@@ -121,6 +119,7 @@
         path: "{{ item }}"
       with_items:
         - "/var/backup/holland_backups"
+        - "/var/backup/holland_backups/rpc_support"
         - "/var/log/holland"
         - "/etc/holland"
       tags:
@@ -162,7 +161,7 @@
         minute: "{{ (ansible_all_ipv4_addresses[0]|replace('.', '')|int)%60 }}"
         hour: 23
         state: present
-        job: "{{ ops_holland_venv_bin }}/python2.7 {{ ops_holland_venv_bin }}/holland bk"
+        job: "{{ ops_holland_venv_bin }}/python {{ ops_holland_venv_bin }}/holland bk"
         user: root
         cron_file: holland_backups
       tags:
@@ -189,7 +188,7 @@
       command: |
         {{ ops_holland_venv_bin }}/holland bk
       when:
-        - found_holland_backups | changed
+        - found_holland_backups.stdout_lines | length == 0
       tags:
         - holland_create_backup
         - holland_all
