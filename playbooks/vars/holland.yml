@@ -22,7 +22,7 @@ ops_holland_service_name: holland
 ops_holland_repo_path: "holland_{{ ops_holland_git_install_branch | replace('/', '_') }}"
 
 ops_holland_git_repo: https://github.com/holland-backup/holland
-ops_holland_git_install_branch: "v1.1.15"
+ops_holland_git_install_branch: "{%- if ansible_python.version.major == 2 -%}v1.1.20{% else %}v1.2.1{% endif %}"
 ops_holland_git_dest: "/opt/{{ ops_holland_repo_path }}"
 # git_repo_plugins are other installable packages contained within the same git repo
 ops_holland_git_repo_plugins:
@@ -32,7 +32,7 @@ ops_holland_git_repo_plugins:
 
 ops_holland_pip_wheel_name: holland
 ops_holland_pip_dependencies:
-  - "mysqlclient<=1.3.13"
+  - "{%- if ansible_python.version.major == 2 -%}mysqlclient<=1.3.13{% else %}mysqlclient{% endif %}"
 
 ops_holland_packages:
   - git
