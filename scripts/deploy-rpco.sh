@@ -19,11 +19,12 @@
 # 18.x = Rocky
 # 19.x = Stein
 # 20.x = Train
+# 21.x = Ussuri
 
 set -e
 
 OSA_PYEXE=/opt/ansible-runtime/bin/python3
-OSA_RELEASE="${OSA_RELEASE:-20.1.7}"
+OSA_RELEASE="${OSA_RELEASE:-21.2.3}"
 OSA_TOKEN_GEN="/opt/openstack-ansible/scripts/pw-token-gen.py"
 OSA_INVENTORY="/opt/openstack-ansible/inventory/dynamic_inventory.py"
 OSA_RUN_PLAY="${OSA_RUN_PLAY:-true}"
