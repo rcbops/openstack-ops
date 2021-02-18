@@ -23,32 +23,32 @@ openstack_vm_flavors:
     ram: 2048
     vcpus: 3
     disk: 12
-    swap: 4
-    ephemeral: 4
+    swap: 0
+    ephemeral: 0
   - name: m1.medium
     ram: 4096
     vcpus: 6
     disk: 60
-    swap: 4
-    ephemeral: 20
+    swap: 0
+    ephemeral: 0
   - name: m1.large
     ram: 8192
     vcpus: 12
     disk: 300
-    swap: 4
-    ephemeral: 150
+    swap: 0
+    ephemeral: 0
   - name: m1.xlarge
     ram: 16384
     vcpus: 24
     disk: 600
-    swap: 4
-    ephemeral: 256
+    swap: 0
+    ephemeral: 0
   - name: m1.heavy
     ram: 32768
     vcpus: 48
     disk: 1200
-    swap: 4
-    ephemeral: 256
+    swap: 0
+    ephemeral: 0
 
 openstack_images:
   - name: CentOS 7
