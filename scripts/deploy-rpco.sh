@@ -47,7 +47,7 @@ case ${OSA_RELEASE%%\.*} in
     ;;
   *)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
-    RPCO_CONFIG_BRANCH="stable/train"
+    RPCO_CONFIG_BRANCH="stable/ussuri"
     ;;
 
 esac
