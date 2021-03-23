@@ -28,7 +28,7 @@ fi
 . /opt/image-builder/bin/activate
 
 
-DIST=${1:-ubuntu}
+DIST=${1:-focal}
 export OUTPUT_DIR=~/ironic-images
 
 #### Disk Image Builder variables (DIB)
@@ -45,7 +45,11 @@ export DIB_CLOUD_INIT_DATASOURCES="Ec2, ConfigDrive, OpenStack"
 
 
 case $DIST in
-  ubuntu)
+  focal)
+    export DISTRO_NAME=ubuntu
+    export DIB_RELEASE=focal
+  ;;
+  bionic)
     export DISTRO_NAME=ubuntu
     export DIB_RELEASE=bionic
   ;;
@@ -62,7 +66,7 @@ case $DIST in
 
   *)
     export DISTRO_NAME=ubuntu
-    export DIB_RELEASE=bionic
+    export DIB_RELEASE=focal
   ;;
 esac
 
