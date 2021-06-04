@@ -17,7 +17,7 @@
 # HP server utilities
 #
 ops_hp_tools_apt_repos:
-  - { repo: "deb http://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_lsb.codename }}/10.80 non-free", state: "present" }
+  - { repo: "deb http://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_lsb.codename }}/12.05 non-free", state: "present" }
 
 ops_hp_tools_apt_repo_keys:
   - { url: "https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key1.pub", state: "present" }
@@ -29,6 +29,7 @@ ops_hp_tools_apt_firmware_packages:
   - ssacli
   - hp-health
   - hponcfg
+  - python3-distro
 
 ops_hp_tools_monitoring_packages:
   - ssacli

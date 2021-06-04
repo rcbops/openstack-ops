@@ -33,7 +33,7 @@ import subprocess
 import xml.dom.minidom
 
 # Globals
-VERSION = '2020-01-14'
+VERSION = '2021-06-03'
 PP = pprint.PrettyPrinter(indent=4)
 
 # Command to package name mappings
@@ -90,14 +90,6 @@ firmwares["ProLiant DL360 Gen9"] = {
         "inp": "y\nn\n",
         "ret": 1
     },
-    "SYSTEM-MELTDOWN": {
-        "check": "hpasmcli -s \"show server\" | grep ROM | cut -d: -f2- | tr -d ' '",
-        "ver": "10/16/2020",
-        "fwpkg": "hp-firmware-system-p89-2.80_2020_10_16-1.1.i386.rpm",
-        "md5": "386b87b8364f98ae013178324aa86c5e",
-        "inp": "y\nn\n",
-        "ret": 1
-    },
     "RAID": {
         "check": "ssacli controller all show config detail | grep -i firmware\ version | cut -d: -f2 | tr -d ' '| head -1",
         "ver": "7.00",
@@ -135,20 +127,12 @@ firmwares["ProLiant DL360 Gen9"] = {
 
 firmwares["ProLiant DL380 Gen9"] = copy.deepcopy(
     firmwares["ProLiant DL360 Gen9"])
+
 firmwares["ProLiant DL380 Gen9"]["SYSTEM"] = {
     "check": "hpasmcli -s \"show server\" | grep ROM | cut -d: -f2- | tr -d ' '",
-    "ver": "02/17/2017",
-    "fwpkg": "hp-firmware-system-p89-2.40_2017_02_17-2.1.i386.rpm",
-    "md5": "4506ed3576c05989070fbe75bb58d65e",
-    "inp": "y\nn\n",
-    "ret": 1
-}
-
-firmwares["ProLiant DL380 Gen9"]["SYSTEM-MELTDOWN"] = {
-    "check": "hpasmcli -s \"show server\" | grep ROM | cut -d: -f2- | tr -d ' '",
-    "ver": "10/21/2019",
-    "fwpkg": "hp-firmware-system-p89-2.76_2019_10_21-1.1.i386.rpm",
-    "md5": "952e3b3244dd818084fbd09cc3f8c14e",
+    "ver": "10/16/2020",
+    "fwpkg": "hp-firmware-system-p89-2.80_2020_10_16-1.1.i386.rpm",
+    "md5": "386b87b8364f98ae013178324aa86c5e",
     "inp": "y\nn\n",
     "ret": 1
 }
@@ -166,14 +150,6 @@ firmwares["ProLiant DL360 Gen10"] = {
         "ret": 1
     },
     "SYSTEM": {
-        "check": "ipmitool fru |grep 'MB BIOS' -A5 |awk -F ': ' '/Product Version/ {print $2}'",
-        "ver": "03/09/2020",
-        "fwpkg": "hp-firmware-system-u32-2.32_2020_03_09-1.1.x86_64.rpm",
-        "md5": "5d8377fee36b74635699a5ec9f62b9b3",
-        "inp": "y\nn\n",
-        "ret": 1
-    },
-    "SYSTEM-MELTDOWN": {
         "check": "ipmitool fru |grep 'MB BIOS' -A5 |awk -F ': ' '/Product Version/ {print $2}'",
         "ver": "03/09/2020",
         "fwpkg": "hp-firmware-system-u32-2.32_2020_03_09-1.1.x86_64.rpm",
@@ -218,16 +194,8 @@ firmwares["ProLiant DL360 Gen10"] = {
 
 firmwares["ProLiant DL380 Gen10"] = copy.deepcopy(
     firmwares["ProLiant DL360 Gen10"])
-firmwares["ProLiant DL380 Gen10"]["SYSTEM"] = {
-    "check": "ipmitool fru |grep 'MB BIOS' -A5 |awk -F ': ' '/Product Version/ {print $2}'",
-    "ver": "11/13/2019",
-    "fwpkg": "hp-firmware-system-u30-2.22_2019_11_13-1.1.x86_64.rpm",
-    "md5": "071d68e372601a62ecaee54bf119daf8",
-    "inp": "y\nn\n",
-    "ret": 1
-}
 
-firmwares["ProLiant DL380 Gen10"]["SYSTEM-MELTDOWN"] = {
+firmwares["ProLiant DL380 Gen10"]["SYSTEM"] = {
     "check": "ipmitool fru |grep 'MB BIOS' -A5 |awk -F ': ' '/Product Version/ {print $2}'",
     "ver": "11/13/2019",
     "fwpkg": "hp-firmware-system-u30-2.22_2019_11_13-1.1.x86_64.rpm",
@@ -250,8 +218,6 @@ def parse_args(args):
                         action="store_const", const=True, default=False)
     parser.add_argument("-r", help="Generate JSON report of current versions", dest="report", action="store_const",
                         const=True, default=False)
-    parser.add_argument("--meltdown", help="Use a firmware mitigated for Meltdown/Spectre", dest="use_meltdown", action="store_const",
-                        const=True, default=True)
     parser.add_argument("--NIC", help="Flash NIC firmware",
                         dest="do", action="append_const", const="NIC")
     parser.add_argument("--SYS", help="Flash System BIOS",
@@ -489,8 +455,6 @@ def main(debug=False, **kwargs):
         report[servernum] = {}
         for part in firmwares[sysType]:
             if not part == 'INIC':
-                if part == 'SYSTEM' and args.use_meltdown:
-                    part = 'SYSTEM-MELTDOWN'
 
                 verProc = subprocess.Popen(firmwares[sysType][part]["check"], stdin=PIPE, stdout=PIPE, stderr=PIPE,
                                            shell=True)
@@ -529,9 +493,6 @@ def main(debug=False, **kwargs):
     if not args.report:
         for part in args.do:
             partUpdate = False
-
-            if part == 'SYSTEM' and args.use_meltdown:
-                part = 'SYSTEM-MELTDOWN'
 
             if not part == 'INIC':
                 sys.stdout.write("\n")
