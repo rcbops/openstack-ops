@@ -20,9 +20,9 @@ from subprocess import PIPE
 import argparse
 import copy
 import datetime as dt
+import distro
 import json
 import os
-import platform
 import pprint
 
 import re
@@ -267,7 +267,7 @@ def parse_args(args):
 
 
 def isRedhatOS():
-    if 'Red Hat Enterprise Linux Server' in platform.linux_distribution():
+    if 'Red Hat Enterprise Linux' in distro.name():
         return True
     return False
 
