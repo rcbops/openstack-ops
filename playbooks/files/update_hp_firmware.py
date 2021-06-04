@@ -151,9 +151,9 @@ firmwares["ProLiant DL360 Gen10"] = {
     },
     "SYSTEM": {
         "check": "ipmitool fru |grep 'MB BIOS' -A5 |awk -F ': ' '/Product Version/ {print $2}'",
-        "ver": "03/09/2020",
-        "fwpkg": "hp-firmware-system-u32-2.32_2020_03_09-1.1.x86_64.rpm",
-        "md5": "5d8377fee36b74635699a5ec9f62b9b3",
+        "ver": "01/23/2021",
+        "fwpkg": "hp-firmware-system-u32-2.42_2021_01_23-1.1.x86_64.rpm",
+        "md5": "6487b2544db7f88d4c5b2d0a0154c524",
         "inp": "y\nn\n",
         "ret": 1
     },
@@ -197,9 +197,9 @@ firmwares["ProLiant DL380 Gen10"] = copy.deepcopy(
 
 firmwares["ProLiant DL380 Gen10"]["SYSTEM"] = {
     "check": "ipmitool fru |grep 'MB BIOS' -A5 |awk -F ': ' '/Product Version/ {print $2}'",
-    "ver": "11/13/2019",
-    "fwpkg": "hp-firmware-system-u30-2.22_2019_11_13-1.1.x86_64.rpm",
-    "md5": "071d68e372601a62ecaee54bf119daf8",
+    "ver": "01/23/2021",
+    "fwpkg": "hp-firmware-system-u30-2.42_2021_01_23-1.1.x86_64.rpm",
+    "md5": "fa6e834d524e3e09a15e157774345949",
     "inp": "y\nn\n",
     "ret": 1
 }
