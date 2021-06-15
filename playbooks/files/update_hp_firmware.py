@@ -83,7 +83,7 @@ firmwares["ProLiant DL360 Gen9"] = {
         "ret": 1
     },
     "SYSTEM": {
-        "check": "hpasmcli -s \"show server\" | grep ROM | cut -d: -f2- | tr -d ' '",
+        "check": "ipmitool fru |grep 'MB BIOS' -A5 |awk -F ': ' '/Product Version/ {print $2}'",
         "ver": "10/16/2020",
         "fwpkg": "hp-firmware-system-p89-2.80_2020_10_16-1.1.i386.rpm",
         "md5": "386b87b8364f98ae013178324aa86c5e",
@@ -129,7 +129,7 @@ firmwares["ProLiant DL380 Gen9"] = copy.deepcopy(
     firmwares["ProLiant DL360 Gen9"])
 
 firmwares["ProLiant DL380 Gen9"]["SYSTEM"] = {
-    "check": "hpasmcli -s \"show server\" | grep ROM | cut -d: -f2- | tr -d ' '",
+    "check": "ipmitool fru |grep 'MB BIOS' -A5 |awk -F ': ' '/Product Version/ {print $2}'",
     "ver": "10/16/2020",
     "fwpkg": "hp-firmware-system-p89-2.80_2020_10_16-1.1.i386.rpm",
     "md5": "386b87b8364f98ae013178324aa86c5e",

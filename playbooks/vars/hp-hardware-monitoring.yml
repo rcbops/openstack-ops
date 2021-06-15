@@ -27,8 +27,8 @@ ops_hp_tools_apt_firmware_packages:
   - dmidecode
   - ethtool
   - ssacli
-  - hp-health
   - hponcfg
+  - ipmitool
   - python3-distro
 
 ops_hp_tools_monitoring_packages:
