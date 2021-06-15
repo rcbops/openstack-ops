@@ -84,17 +84,17 @@ firmwares["ProLiant DL360 Gen9"] = {
     },
     "SYSTEM": {
         "check": "hpasmcli -s \"show server\" | grep ROM | cut -d: -f2- | tr -d ' '",
-        "ver": "10/21/2019",
-        "fwpkg": "hp-firmware-system-p89-2.76_2019_10_21-1.1.i386.rpm",
-        "md5": "952e3b3244dd818084fbd09cc3f8c14e",
+        "ver": "10/16/2020",
+        "fwpkg": "hp-firmware-system-p89-2.80_2020_10_16-1.1.i386.rpm",
+        "md5": "386b87b8364f98ae013178324aa86c5e",
         "inp": "y\nn\n",
         "ret": 1
     },
     "SYSTEM-MELTDOWN": {
         "check": "hpasmcli -s \"show server\" | grep ROM | cut -d: -f2- | tr -d ' '",
-        "ver": "10/21/2019",
-        "fwpkg": "hp-firmware-system-p89-2.76_2019_10_21-1.1.i386.rpm",
-        "md5": "952e3b3244dd818084fbd09cc3f8c14e",
+        "ver": "10/16/2020",
+        "fwpkg": "hp-firmware-system-p89-2.80_2020_10_16-1.1.i386.rpm",
+        "md5": "386b87b8364f98ae013178324aa86c5e",
         "inp": "y\nn\n",
         "ret": 1
     },
@@ -137,18 +137,18 @@ firmwares["ProLiant DL380 Gen9"] = copy.deepcopy(
     firmwares["ProLiant DL360 Gen9"])
 firmwares["ProLiant DL380 Gen9"]["SYSTEM"] = {
     "check": "hpasmcli -s \"show server\" | grep ROM | cut -d: -f2- | tr -d ' '",
-    "ver": "02/17/2017",
-    "fwpkg": "hp-firmware-system-p89-2.40_2017_02_17-2.1.i386.rpm",
-    "md5": "4506ed3576c05989070fbe75bb58d65e",
+    "ver": "10/16/2020",
+    "fwpkg": "hp-firmware-system-p89-2.80_2020_10_16-1.1.i386.rpm",
+    "md5": "386b87b8364f98ae013178324aa86c5e",
     "inp": "y\nn\n",
     "ret": 1
 }
 
 firmwares["ProLiant DL380 Gen9"]["SYSTEM-MELTDOWN"] = {
     "check": "hpasmcli -s \"show server\" | grep ROM | cut -d: -f2- | tr -d ' '",
-    "ver": "10/21/2019",
-    "fwpkg": "hp-firmware-system-p89-2.76_2019_10_21-1.1.i386.rpm",
-    "md5": "952e3b3244dd818084fbd09cc3f8c14e",
+    "ver": "10/16/2020",
+    "fwpkg": "hp-firmware-system-p89-2.80_2020_10_16-1.1.i386.rpm",
+    "md5": "386b87b8364f98ae013178324aa86c5e",
     "inp": "y\nn\n",
     "ret": 1
 }
