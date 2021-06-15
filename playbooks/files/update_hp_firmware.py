@@ -108,9 +108,9 @@ firmwares["ProLiant DL360 Gen9"] = {
     },
     "ILO": {
         "check": "hponcfg -h | awk '/Firmware/ {print $4}'",
-        "ver": "2.73",
-        "fwpkg": "hp-firmware-ilo4-2.73-1.1.i386.rpm",
-        "md5": "c436f2200c8341cdb4c44899954038bc",
+        "ver": "2.77",
+        "fwpkg": "hp-firmware-ilo4-2.77-1.1.i386.rpm",
+        "md5": "b68558aa595585ea2424a56ffa6c5d93",
         "inp": "y\n",
         "ret": 0
     },
@@ -191,9 +191,9 @@ firmwares["ProLiant DL360 Gen10"] = {
     },
     "ILO": {
         "check": "hponcfg -h | awk '/Firmware/ {print $4}'",
-        "ver": "2.14",
-        "fwpkg": "hp-firmware-ilo5-2.14-1.1.x86_64.rpm",
-        "md5": "5049dcb80f0af9b63ceb5aba051750c2",
+        "ver": "2.77",
+        "fwpkg": "hp-firmware-ilo4-2.77-1.1.i386.rpm",
+        "md5": "b68558aa595585ea2424a56ffa6c5d93",
         "inp": "y\n",
         "ret": 0
     },
