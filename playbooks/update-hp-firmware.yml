@@ -63,7 +63,7 @@
 
     - name: Execute HP firmware upgrade as background task
       command: |
-        {{ screen_binary.stdout }} -d -m -L -t "hp_firmware_update" bash -c "source {{ ops_venv + '/bin/activate' }} || true; /usr/local/bin/update_hp_firmware.py -f {{ firmware_use_meltdown | default(false) | bool | ternary('--meltdown', '') }}"
+        {{ screen_binary.stdout }} -d -m -L -t "hp_firmware_update" bash -c "source {{ ops_venv + '/bin/activate' }} || true; /usr/local/bin/update_hp_firmware.py -f"
       changed_when: false
       when:
         - screen_binary |changed
