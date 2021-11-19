@@ -84,9 +84,9 @@ firmwares["ProLiant DL360 Gen9"] = {
     },
     "SYSTEM": {
         "check": "ipmitool fru |grep 'MB BIOS' -A5 |awk -F ': ' '/Product Version/ {print $2}'",
-        "ver": "10/16/2020",
-        "fwpkg": "hp-firmware-system-p89-2.80_2020_10_16-1.1.i386.rpm",
-        "md5": "386b87b8364f98ae013178324aa86c5e",
+        "ver": "04/29/2021",
+        "fwpkg": "hp-firmware-system-p89-2.90_2021_04_29-1.1.i386.rpm",
+        "md5": "577b795a2a23479ac1a8cbdf5b8aac89",
         "inp": "y\nn\n",
         "ret": 1
     },
@@ -100,9 +100,9 @@ firmwares["ProLiant DL360 Gen9"] = {
     },
     "ILO": {
         "check": "hponcfg -h | awk '/Firmware/ {print $4}'",
-        "ver": "2.77",
-        "fwpkg": "hp-firmware-ilo4-2.77-1.1.i386.rpm",
-        "md5": "b68558aa595585ea2424a56ffa6c5d93",
+        "ver": "2.78",
+        "fwpkg": "hp-firmware-ilo4-2.78-1.1.i386.rpm",
+        "md5": "d9d6bccba6307a623596aa4d44415431",
         "inp": "y\n",
         "ret": 0
     },
