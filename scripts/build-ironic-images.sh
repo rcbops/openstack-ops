@@ -39,10 +39,7 @@ export DIB_MODPROBE_BLACKLIST='usb-storage cramfs freevxfs jffs2 hfs hfsplus squ
 export DIB_BOOTLOADER_DEFAULT_CMDLINE='biosdevname=1 net.ifnames=0 rdblacklist=bfa,lpfc nofb nomodeset vga=normal console=tty0 console=ttyS0,115200 audit=1'
 export DIB_CLOUD_INIT_DATASOURCES="Ec2, ConfigDrive, OpenStack"
 
-#export DIB_DEV_USER_PASSWORD='Secrete'
-#export DIB_DEV_USER_PWDLESS_SUDO='Yes'
 #### Disk Image Builder variables (DIB)
-
 
 case $DIST in
   focal)
@@ -223,8 +220,8 @@ mkdir -p $OUTPUT_DIR
 
 pushd $OUTPUT_DIR
   disk-image-create $DISTRO_NAME \
-    $(test "$DISTRO_NAME" = "centos" && echo epel) $(test -n "$DIB_DEV_USER_PASSWORD" && echo devuser) \
-    baremetal grub2 rackspace -o $IMG_NAME
+    $(test "$DISTRO_NAME" = "centos" && echo epel) \
+    baremetal grub2 dynamic-login rackspace -o $IMG_NAME
 popd
 
 if [ $? -eq 0 ]; then
