@@ -96,7 +96,7 @@ openstack_images:
       img_config_drive: "optional"
   - name: Ubuntu 16.04
     format: qcow2
-    url: https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img
+    url: https://cloud-images.ubuntu.com/releases/xenial/release/ubuntu-16.04-server-cloudimg-amd64-disk1.img
     properties:
       hw_scsi_model: "virtio-scsi"
       hw_disk_bus: "scsi"
@@ -107,7 +107,18 @@ openstack_images:
       img_config_drive: "optional"
   - name: Ubuntu 18.04
     format: qcow2
-    url: https://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img
+    url: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+    properties:
+      hw_scsi_model: "virtio-scsi"
+      hw_disk_bus: "scsi"
+      hw_vif_multiqueue_enabled: "true"
+      hw_qemu_guest_agent: "yes"
+      hypervisor_type: "kvm"
+      os_require_quiesce: "yes"
+      img_config_drive: "optional"
+  - name: Ubuntu 20.04
+    format: qcow2
+    url: https://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64.img
     properties:
       hw_scsi_model: "virtio-scsi"
       hw_disk_bus: "scsi"
