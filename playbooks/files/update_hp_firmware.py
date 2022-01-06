@@ -33,7 +33,7 @@ import subprocess
 import xml.dom.minidom
 
 # Globals
-VERSION = '2021-06-15'
+VERSION = '2022-01-06'
 PP = pprint.PrettyPrinter(indent=4)
 
 # Command to package name mappings
@@ -100,9 +100,9 @@ firmwares["ProLiant DL360 Gen9"] = {
     },
     "ILO": {
         "check": "hponcfg -h | awk '/Firmware/ {print $4}'",
-        "ver": "2.78",
-        "fwpkg": "hp-firmware-ilo4-2.78-1.1.i386.rpm",
-        "md5": "d9d6bccba6307a623596aa4d44415431",
+        "ver": "2.79",
+        "fwpkg": "hp-firmware-ilo4-2.79-1.1.i386.rpm",
+        "md5": "9a1b387240bf0ee7056a5df6375438b0",
         "inp": "y\n",
         "ret": 0
     },
