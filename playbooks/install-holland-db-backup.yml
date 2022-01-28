@@ -25,6 +25,7 @@
   tasks:
     - name: Create rpc_support backup user
       mysql_user:
+        login_host: "{{ inventory_hostname }}"
         name: "{{ item.name }}"
         host: "{{ item.host }}"
         password: "{{ item.password }}"
