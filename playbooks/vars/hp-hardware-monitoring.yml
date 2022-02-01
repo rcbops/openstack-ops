@@ -56,6 +56,10 @@ ops_hp_tools_apt_firmware_packages: >
   {% endif -%}
   {{ _var }}
 
-ops_hp_tools_monitoring_packages:
-  - ssacli
-  - hponcfg
+ops_hp_tools_monitoring_packages: >
+  {% set _var = ['ssacli','hponcfg'] -%}
+  {% if ansible_lsb.codename in ['trusty','xenial','bionic'] -%}
+  {%   if _var.append('hp-health') -%}
+  {%   endif -%}
+  {% endif -%}
+  {{ _var }}
