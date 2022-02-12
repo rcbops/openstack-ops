@@ -15,6 +15,7 @@
 
 ops_pip_packages:
   - shade
+  - distro
   - python-openstackclient
   - python-neutronclient
 
