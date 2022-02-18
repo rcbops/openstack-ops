@@ -43,11 +43,9 @@ ops_apt_host_packages:
   - lvm2
   - vlan
   - virtualenv
-  - python-pip
   - python3-pip
   - sysfsutils
   - unattended-upgrades
-  - python-setuptools
   - python3-setuptools
 
 ops_neutron_debug_packages:
