@@ -31,9 +31,7 @@ ops_apt_util_packages:
   - vim
   - screen
   - virtualenv
-  - python-pip
   - python3-pip
-  - python-setuptools
   - python3-setuptools
 
 ops_apt_host_packages:
