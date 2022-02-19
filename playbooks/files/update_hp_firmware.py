@@ -33,7 +33,7 @@ import subprocess
 import xml.dom.minidom
 
 # Globals
-VERSION = '2022-01-06'
+VERSION = '2022-02-18'
 PP = pprint.PrettyPrinter(indent=4)
 
 # Command to package name mappings
@@ -76,9 +76,9 @@ firmwares["ProLiant DL360 Gen9"] = {
     "spp-version": "2019.12.0",
     "NIC": {
         "check": "ethtool -i {} | grep firmware | cut -d:  -f2- | tr -d ' '".format(testnic),
-        "ver": "5719-v1.46NCSIv1.5.12.0",
-        "fwpkg": "hp-firmware-nic-broadcom-2.25.1-1.1.x86_64.rpm",
-        "md5": "c0d1d2a1199e59c020b54aee844e2fb4",
+        "ver": "571914615300",
+        "fwpkg": "hp-firmware-nic-broadcom-2.28.4-1.1.x86_64.rpm",
+        "md5": "005ea2d76ff7558650c7afb590e02f2b",
         "inp": "\n",
         "ret": 1
     },
@@ -143,9 +143,9 @@ firmwares["ProLiant DL360 Gen10"] = {
     "spp-version": "2019.12.0",
     "NIC": {
         "check": "ethtool -i {} | grep firmware | cut -d:  -f2- | tr -d ' '".format(testnic),
-        "ver": "5719-v1.46NCSIv1.5.12.0",
-        "fwpkg": "hp-firmware-nic-broadcom-2.25.1-1.1.x86_64.rpm",
-        "md5": "c0d1d2a1199e59c020b54aee844e2fb4",
+        "ver": "571914615300",
+        "fwpkg": "hp-firmware-nic-broadcom-2.28.4-1.1.x86_64.rpm",
+        "md5": "005ea2d76ff7558650c7afb590e02f2b",
         "inp": "\n",
         "ret": 1
     },
@@ -501,20 +501,33 @@ def main(debug=False, **kwargs):
                 verProc = subprocess.Popen(firmwares[sysType][part]["check"], stdin=PIPE, stdout=PIPE, stderr=PIPE,
                                            shell=True)
                 (version, stderr) = verProc.communicate()
-                version = version.decode(encoding='UTF-8')
+                version = version.decode(encoding='UTF-8').strip()
 
-                if verProc.returncode == 0 and firmwares[sysType][part]["ver"] in version.strip():
+                if part == 'NIC':
+                  origVersion = version
+                  version=''
+
+                  for i in origVersion:
+                     if i.isdigit():
+                       version += str(i)
+
+                if verProc.returncode == 0 and firmwares[sysType][part]["ver"] in version:
                     print("Already current ({}). Nothing to do.".format(
                         version.strip()))
                 else:
                     if verProc.returncode != 0:
                         print("Detection Failed! {}".format(stderr.decode(encoding='UTF-8')))
                         exit(5)
+                    if version.isdigit() and version > firmwares[sysType][part]["ver"]:
+                        needsUpdate = True
+                        partUpdate = True
                     else:
                         needsUpdate = True
                         partUpdate = True
+
+                    if needsUpdate:
                         sys.stdout.write(
-                            "Needs update ({} -> {})\n".format(version.strip(), firmwares[sysType][part]["ver"]))
+                            "Needs update ({} -> {})\n".format(version, firmwares[sysType][part]["ver"]))
                         sys.stdout.flush()
 
             elif part == 'INIC':
