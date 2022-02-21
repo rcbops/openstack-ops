@@ -26,7 +26,7 @@
 set -e
 
 OSA_PYEXE=/opt/ansible-runtime/bin/python3
-OSA_RELEASE="${OSA_RELEASE:-21.2.4}"
+OSA_RELEASE="${OSA_RELEASE:-22.4.0}"
 OSA_TOKEN_GEN="/opt/openstack-ansible/scripts/pw-token-gen.py"
 OSA_INVENTORY="/opt/openstack-ansible/inventory/dynamic_inventory.py"
 OSA_RUN_PLAY="${OSA_RUN_PLAY:-true}"
@@ -48,7 +48,7 @@ case ${OSA_RELEASE%%\.*} in
     ;;
   22)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
-    RPCO_CONFIG_BRANCH="master"
+    RPCO_CONFIG_BRANCH="stable/victoria"
     ;;
   *)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
