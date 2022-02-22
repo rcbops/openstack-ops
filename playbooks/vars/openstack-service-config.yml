@@ -90,7 +90,7 @@ openstack_images:
       img_config_drive: "optional"
   - name: Debian 11
     format: qcow2
-    url: https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-generic-arm64.qcow2
+    url: https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-generic-amd64.qcow2
     properties:
       hw_vif_multiqueue_enabled: "true"
       hw_qemu_guest_agent: "yes"
