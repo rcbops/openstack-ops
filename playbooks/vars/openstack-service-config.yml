@@ -79,15 +79,6 @@ openstack_images:
     url: http://download.cirros-cloud.net/0.4.0/cirros-0.4.0-x86_64-disk.img
     properties:
       hypervisor_type: "qemu"
-  - name: Debian 9
-    format: qcow2
-    url: http://cdimage.debian.org/cdimage/openstack/current-9/debian-9-openstack-amd64.qcow2
-    properties:
-      hw_vif_multiqueue_enabled: "true"
-      hw_qemu_guest_agent: "yes"
-      hypervisor_type: "kvm"
-      os_require_quiesce: "yes"
-      img_config_drive: "optional"
   - name: Debian 10
     format: qcow2
     url: http://cdimage.debian.org/cdimage/openstack/current-10/debian-10-openstack-amd64.qcow2
@@ -97,18 +88,27 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
-  - name: OpenSuse Leap 42.3
+  - name: Debian 11
     format: qcow2
-    url: http://download.opensuse.org/repositories/Cloud:/Images:/Leap_42.3/images/openSUSE-Leap-42.3-OpenStack.x86_64.qcow2
+    url: https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-generic-arm64.qcow2
     properties:
       hw_vif_multiqueue_enabled: "true"
       hw_qemu_guest_agent: "yes"
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
-  - name: Ubuntu 16.04
+  - name: OpenSuse Leap 15.3
     format: qcow2
-    url: https://cloud-images.ubuntu.com/releases/xenial/release/ubuntu-16.04-server-cloudimg-amd64-disk1.img
+    url: https://download.opensuse.org/distribution/leap/15.3/appliances/openSUSE-Leap-15.3-JeOS.x86_64-OpenStack-Cloud.qcow2
+    properties:
+      hw_vif_multiqueue_enabled: "true"
+      hw_qemu_guest_agent: "yes"
+      hypervisor_type: "kvm"
+      os_require_quiesce: "yes"
+      img_config_drive: "optional"
+  - name: OpenSuse Tumbleweed
+    format: qcow2
+    url: https://downloadcontent.opensuse.org/tumbleweed/appliances/openSUSE-Tumbleweed-JeOS.x86_64-OpenStack-Cloud.qcow2
     properties:
       hw_vif_multiqueue_enabled: "true"
       hw_qemu_guest_agent: "yes"
