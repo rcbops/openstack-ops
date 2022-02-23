@@ -20,6 +20,8 @@ ops_autoupdate_excluded_packages:
   - multipath-tools
   - tgt
   - ceph
+  - cephadm
   - 'ceph-.*'
   - 'libcephfs*'
   - python-cephfs
+  - python3-cephfs
