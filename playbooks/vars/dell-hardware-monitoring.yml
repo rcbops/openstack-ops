@@ -16,9 +16,26 @@
 #
 # Dell server utilities
 #
-ops_dell_tools_apt_repos:
-  - { repo: "deb http://linux.dell.com/repo/community/openmanage/930/{{ ansible_lsb.codename }} {{ ansible_lsb.codename }} main", state: "present", filename: "linux.dell.com.sources" }
+_ops_dell_tools_apt_repos:
+  xenial:
+    - { repo: "deb http://linux.dell.com/repo/community/openmanage/910/{{ ansible_lsb.codename }} {{ ansible_lsb.codename }} main", state: "present", filename: "linux.dell.com.sources" }
+  bionic:
+    - { repo: "deb http://linux.dell.com/repo/community/openmanage/930/{{ ansible_lsb.codename }} {{ ansible_lsb.codename }} main", state: "present", filename: "linux.dell.com.sources" }
+  focal:
+    - { repo: "deb http://linux.dell.com/repo/community/openmanage/10101/{{ ansible_lsb.codename }} {{ ansible_lsb.codename }} main", state: "present", filename: "linux.dell.com.sources" }
+  other:
+    - { repo: "deb http://linux.dell.com/repo/community/openmanage/930/{{ ansible_lsb.codename }} {{ ansible_lsb.codename }} main", state: "present", filename: "linux.dell.com.sources" }
+
+ops_dell_tools_apt_repos: >
+  {% set _var = [] -%}
+  {% for repo in _ops_dell_tools_apt_repos[ansible_distribution_release] | default(_ops_dell_tools_apt_repos['other']) -%}
+  {%   if _var.append(repo) -%}
+  {%   endif -%}
+  {% endfor -%}
+  {{ _var }}
+
 ops_dell_tools_apt_repo_keys:
   - { keyserver: "hkp://keyserver.ubuntu.com:80", id: "1285491434D8786F", state: "present" }
+
 ops_dell_tools_monitoring_packages:
   - srvadmin-all
