@@ -19,6 +19,15 @@
   hosts: designate_bind_all
   gather_facts: "{{ gather_facts | default(true) }}"
   tasks:
+    # Disable dnsmasq as it bind on all interfaces
+    # libvirt networking uses a separate dnsmasq instance to
+    # service DNS/DHCP requests for potential kvm instances
+    - name: Disable dnsmasq
+      service:
+        name: dnsmasq
+        state: stopped
+        enabled: false
+
     - name: Install Base Packages
       package:
         name: "bind9"
