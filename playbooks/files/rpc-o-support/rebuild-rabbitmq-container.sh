@@ -41,7 +41,7 @@ fi;
 echo "Running OSA Plays with tag: $TAGS"
 
 if [ -n "$TAGS" ]; then
-  openstack-ansible setup-openstack.yml --tags rabbitmq-user
+  openstack-ansible setup-openstack.yml --tags "$TAGS"
 
   if [ -d /opt/rpc-maas/playbooks ]; then
     pushd /opt/rpc-maas/playbooks
