@@ -47,6 +47,7 @@ ops_apt_host_packages:
   - sysfsutils
   - unattended-upgrades
   - python3-setuptools
+  - libffi-dev
 
 ops_neutron_debug_packages:
   - iputils-arping
