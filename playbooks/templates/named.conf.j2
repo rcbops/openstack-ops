@@ -1,13 +1,17 @@
+acl internals { {%- for designate in groups['designate_all'] %} {{hostvars[designate]['ansible_host']}}; {%- endfor -%} 10.0.0.0/8; 172.16.0.0/12; 192.16.0.0/16; };
+acl externals { {{ ops_bind_externals |default('127.0.0.1;') }} };
+
 options {
         listen-on port 53 { {{ ops_bind_listen }}  };
         directory       "/var/cache/bind";
         dump-file       "/var/cache/bind/data/cache_dump.db";
         statistics-file "/var/cache/bind/data/named_stats.txt";
         memstatistics-file "/var/cache/bind/data/named_mem_stats.txt";
-        allow-query     { any; };
+        allow-query     { {{ ops_bind_allow_query |default('any;') }} };
         allow-notify    { {{ ansible_host }}; };
+        allow-recursion { internals; };
 
-        recursion no;
+        forwarders { {{ ops_bind_forwarders |default('8.8.8.8; 8.8.4.4;') }} };
 
         dnssec-enable yes;
         dnssec-validation yes;
