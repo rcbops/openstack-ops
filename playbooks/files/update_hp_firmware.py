@@ -125,17 +125,9 @@ firmwares["ProLiant DL360 Gen9"] = {
     }
 }
 
+# DL380 shares largely the same firmwares as the DL360
 firmwares["ProLiant DL380 Gen9"] = copy.deepcopy(
     firmwares["ProLiant DL360 Gen9"])
-
-firmwares["ProLiant DL380 Gen9"]["SYSTEM"] = {
-    "check": "ipmitool fru |grep 'MB BIOS' -A5 |awk -F ': ' '/Product Version/ {print $2}'",
-    "ver": "05/17/2022",
-    "fwpkg": "hp_firmware-system-p89-2.96_2022_05_17-1.1.i386.rpm",
-    "md5": "1399a7387b3c21f46e31ffe5d868577a",
-    "inp": "y\nn\n",
-    "ret": 1
-}
 
 # GEN10 definition
 firmwares["ProLiant DL360 Gen10"] = {
