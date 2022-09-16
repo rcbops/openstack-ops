@@ -16,6 +16,7 @@
 - import_playbook: "common-playbooks/register-openstack-release.yml"
 
 - import_playbook: "common-playbooks/install-dependencies.yml"
+  tags: install-dependencies
   vars:
     host_group: "hosts:osds:mons"
 
