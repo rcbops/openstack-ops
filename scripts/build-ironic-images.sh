@@ -36,7 +36,7 @@ export ELEMENTS_PATH=/opt/openstack-ops/dib-elements
 
 export COMPRESS_IMAGE='1'
 export DIB_MODPROBE_BLACKLIST='usb-storage cramfs freevxfs jffs2 hfs hfsplus squashfs udf vfat bluetooth'
-export DIB_BOOTLOADER_DEFAULT_CMDLINE='biosdevname=1 net.ifnames=0 rdblacklist=bfa,lpfc nofb nomodeset vga=normal console=tty0 console=ttyS1,115200n8 audit=1 audit_backlog_limit=8192'
+export DIB_BOOTLOADER_DEFAULT_CMDLINE='rdblacklist=bfa,lpfc nofb nomodeset vga=normal console=tty0 console=ttyS1,115200n8 audit=1 audit_backlog_limit=8192'
 export DIB_CLOUD_INIT_DATASOURCES="Ec2, ConfigDrive, OpenStack"
 
 #### Disk Image Builder variables (DIB)
@@ -49,11 +49,13 @@ case $DIST in
   bionic)
     export DISTRO_NAME=ubuntu
     export DIB_RELEASE=bionic
+    export DIB_BOOTLOADER_DEFAULT_CMDLINE+=" biosdevname=1 net.ifnames=0"
   ;;
 
   centos7)
     export DISTRO_NAME=centos
     export DIB_RELEASE=7
+    export DIB_BOOTLOADER_DEFAULT_CMDLINE+=" biosdevname=1 net.ifnames=0"
   ;;
 
   centos8)
