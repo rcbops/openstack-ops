@@ -53,7 +53,7 @@ openstack_vm_flavors:
 openstack_images:
   - name: CentOS 7
     format: qcow2
-    url: http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2
+    url: https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2
     properties:
       hw_vif_multiqueue_enabled: "true"
       hw_qemu_guest_agent: "yes"
@@ -62,26 +62,26 @@ openstack_images:
       img_config_drive: "optional"
   - name: CentOS 8
     format: qcow2
-    url: http://cloud.centos.org/centos/8/x86_64/images/CentOS-8-GenericCloud-8.2.2004-20200611.2.x86_64.qcow2
+    url: https://cloud.centos.org/centos/8/x86_64/images/CentOS-8-GenericCloud-8.4.2105-20210603.0.x86_64.qcow2
     properties:
       hw_vif_multiqueue_enabled: "true"
       hw_qemu_guest_agent: "yes"
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
-  - name: Cirros-0.4.0 (kvm)
+  - name: Cirros-0.6.0 (kvm)
     format: qcow2
-    url: http://download.cirros-cloud.net/0.4.0/cirros-0.4.0-x86_64-disk.img
+    url: https://download.cirros-cloud.net/0.6.0/cirros-0.6.0-x86_64-disk.img
     properties:
       hypervisor_type: "kvm"
-  - name: Cirros-0.4.0
+  - name: Cirros-0.6.0
     format: qcow2
-    url: http://download.cirros-cloud.net/0.4.0/cirros-0.4.0-x86_64-disk.img
+    url: https://download.cirros-cloud.net/0.6.0/cirros-0.6.0-x86_64-disk.img
     properties:
       hypervisor_type: "qemu"
   - name: Debian 10
     format: qcow2
-    url: http://cdimage.debian.org/cdimage/openstack/current-10/debian-10-openstack-amd64.qcow2
+    url: https://cdimage.debian.org/cdimage/openstack/current-10/debian-10-openstack-amd64.qcow2
     properties:
       hw_vif_multiqueue_enabled: "true"
       hw_qemu_guest_agent: "yes"
