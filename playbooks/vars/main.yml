@@ -81,3 +81,6 @@ ops_bind_listen: "{{ ansible_host }};"
 # Allocate 80% for static hugepages when enabled
 hugepage_size: '2M'
 hugepage_nr: "{{ (ansible_memtotal_mb * 0.8 /2) |int }}"
+
+# Service Configuration toggles
+ops_import_glance_images: true
