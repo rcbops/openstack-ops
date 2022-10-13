@@ -39,7 +39,6 @@
 
 - name: Configure settings for OpenStack Nova
   hosts: localhost
-  environment: "{{ deployment_environment_variables | default({}) }}"
   gather_facts: "{{ gather_facts | default(true) }}"
   tasks:
     - name: Create flavors of nova VMs

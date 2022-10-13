@@ -22,8 +22,8 @@
 
 - name: Configure Linux CPU governor
   hosts: hosts:mons:osds
-  environment: "{{ deployment_environment_variables | default({}) }}"
   gather_facts: "{{ gather_facts | default(true) }}"
+  environment: "{{ deployment_environment_variables | default({}) }}"
   vars:
     governor: "{{ cpu_governor | default('performance') }}"
   tasks:

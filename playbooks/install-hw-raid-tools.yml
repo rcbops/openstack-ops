@@ -22,6 +22,7 @@
 - name: Install hwraid tools onto storage and swift object hosts
   hosts: storage_hosts:swift_obj
   gather_facts: "{{ gather_facts | default(true) }}"
+  environment: "{{ deployment_environment_variables | default({}) }}"
   pre_tasks:
     - name: Determine if OS is supported
       set_fact:

@@ -21,7 +21,6 @@
 
 - name: Configure package manager
   hosts: hosts
-  environment: "{{ deployment_environment_variables | default({}) }}"
   gather_facts: "{{ gather_facts | default(true) }}"
   tasks:
     - name: Update deb selections

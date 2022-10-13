@@ -36,7 +36,6 @@
 
 - name: Configure OpenStack Neutron
   hosts: localhost
-  environment: "{{ deployment_environment_variables | default({}) }}"
   gather_facts: "{{ gather_facts | default(true) }}"
   tasks:
     - name: Check for rpc_support security group
