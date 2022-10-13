@@ -22,6 +22,7 @@
 - name: Install HP server monitoring
   hosts: hosts:osds:mons
   gather_facts: "{{ gather_facts | default(true) }}"
+  environment: "{{ deployment_environment_variables | default({}) }}"
   pre_tasks:
     - name: Remove outdated MCP repo
       file:

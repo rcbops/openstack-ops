@@ -17,7 +17,6 @@
 
 - name: Configure bash environment on hosts
   hosts: hosts:utility_container
-  environment: "{{ deployment_environment_variables | default({}) }}"
   gather_facts: "{{ gather_facts | default(true) }}"
   tasks:
     - name: Create Openstack Completion directory

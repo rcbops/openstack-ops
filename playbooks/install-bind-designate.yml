@@ -18,6 +18,7 @@
 - name: Install Bind Package
   hosts: designate_bind_all
   gather_facts: "{{ gather_facts | default(true) }}"
+  environment: "{{ deployment_environment_variables | default({}) }}"
   tasks:
     # Disable dnsmasq as it bind on all interfaces
     # libvirt networking uses a separate dnsmasq instance to
@@ -78,6 +79,7 @@
 - name: Install rndc.key
   hosts: designate_all
   gather_facts: "{{ gather_facts | default(true) }}"
+  environment: "{{ deployment_environment_variables | default({}) }}"
   tasks:
     - block:
         - name: Create designate folder
