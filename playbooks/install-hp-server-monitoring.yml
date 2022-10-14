@@ -38,7 +38,7 @@
       ignore_errors: True
       when:
         - ansible_os_family == 'Debian'
-        - ansible_system_vendor == "HP"
+        - "(ansible_system_vendor == 'HP' or ansible_system_vendor == 'HPE')"
       retries: 2
   tasks:
     - include: "common-tasks/install-hp-tools.yml"

@@ -21,7 +21,7 @@
   register: add_keys
   when:
     - ansible_os_family == 'Debian'
-    - ansible_system_vendor == "HP"
+    - "(ansible_system_vendor == 'HP' or ansible_system_vendor == 'HPE')"
   until: add_keys is success
   ignore_errors: True
   retries: 2
@@ -36,7 +36,7 @@
   register: add_repos
   when:
     - ansible_os_family == 'Debian'
-    - ansible_system_vendor == "HP"
+    - "(ansible_system_vendor == 'HP' or ansible_system_vendor == 'HPE')"
   until: add_repos is success
   retries: 2
   delay: 2
@@ -61,7 +61,7 @@
     force: yes
   when:
     - ansible_os_family == 'Debian'
-    - ansible_system_vendor == "HP"
+    - "(ansible_system_vendor == 'HP' or ansible_system_vendor == 'HPE')"
   register: support_package_installs
   until: support_package_installs is success
   retries: 2
