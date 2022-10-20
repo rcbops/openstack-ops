@@ -14,7 +14,7 @@
 # limitations under the License.
 
 ops_requires_pip_packages:
-  - virtualenv
+  - 'virtualenv<=16.7.9'
 
 ops_pip_dependencies:
   - shade
