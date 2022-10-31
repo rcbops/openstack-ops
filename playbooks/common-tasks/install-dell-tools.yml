@@ -67,6 +67,14 @@
   retries: 2
   delay: 10
 
+- name: Register OMSA version
+  shell: |
+    /opt/dell/srvadmin/bin/omreport about |awk -F': ' '/Version.*/ {str=$2; gsub("\\.","",str); print str }'
+  register: omsa_version
+  when: support_package_installs is success
+  retries: 2
+  delay: 10
+
 - name: Start Dell dataeng service
   service:
     name: dataeng
@@ -75,5 +83,30 @@
   when:
     - ansible_os_family == 'Debian'
     - ansible_system_vendor == "Dell Inc."
+    - omsa_version.stdout < '1000'
+  retries: 2
+  delay: 2
+
+- name: Start Dell dsm_om_connsvc service
+  service:
+    name: dsm_om_connsvc.service
+    enabled: yes
+  ignore_errors: yes
+  when:
+    - ansible_os_family == 'Debian'
+    - ansible_system_vendor == "Dell Inc."
+    - omsa_version.stdout >= '1000'
+  retries: 2
+  delay: 2
+
+- name: Start Dell dsm_sa_snmpd service
+  service:
+    name: dsm_om_connsvc.service
+    enabled: yes
+  ignore_errors: yes
+  when:
+    - ansible_os_family == 'Debian'
+    - ansible_system_vendor == "Dell Inc."
+    - omsa_version.stdout >= '1000'
   retries: 2
   delay: 2
