@@ -28,7 +28,8 @@
         name: dnsmasq
         state: stopped
         enabled: false
-
+      ignore_errors: True
+      
     - name: Install Base Packages
       package:
         name: "bind9"
