@@ -49,7 +49,7 @@ if [ -n "$TAGS" ]; then
     popd
   else
     pushd /opt/rpc-openstack/rpcd/playbooks
-      openstack-ansible setup-maas.yml --tags rabbitmq-user
+      openstack-ansible setup-maas.yml --tags rabbitmq-user,maas-infra-rabbitmq
     popd
   fi
 fi
