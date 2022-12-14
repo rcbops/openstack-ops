@@ -92,17 +92,17 @@ firmwares["ProLiant DL360 Gen9"] = {
     },
     "RAID": {
         "check": "ssacli controller all show config detail | grep -i firmware\ version | cut -d: -f2 | tr -d ' '| head -1",
-        "ver": "7.00",
-        "fwpkg": "hp-firmware-smartarray-ea3138d8e8-7.00-1.1.x86_64.rpm",
-        "md5": "84261221942a6dd6bd6898620f460f56",
+        "ver": "7.20",
+        "fwpkg": "hp-firmware-smartarray-ea3138d8e8-7.20-1.1.x86_64.rpm",
+        "md5": "8d8d0cf7fe0cfab9dc4963384da3041b",
         "inp": "A\n",
         "ret": 1
     },
     "ILO": {
         "check": "hponcfg -h | awk '/Firmware/ {print $4}'",
-        "ver": "2.80",
-        "fwpkg": "hp-firmware-ilo4-2.80-1.1.i386.rpm",
-        "md5": "fbacb509bb0f50eac6e8b792f652c01f",
+        "ver": "2.81",
+        "fwpkg": "hp-firmware-ilo4-2.81-1.1.i386.rpm",
+        "md5": "3de78fcb64f45e365de0d6bc8dd54d14",
         "inp": "y\n",
         "ret": 0
     },
