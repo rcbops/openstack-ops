@@ -35,7 +35,7 @@
         name: "{{ ops_apt_host_packages }}"
         state: present
       when:
-        - ansible_virtualization_role == 'host'
+        - ansible_facts['virtualization_role'] == 'host'
 
     - name: Install packages required for RPC support
       vars:
