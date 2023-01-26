@@ -108,7 +108,7 @@ openstack_images:
       img_config_drive: "optional"
   - name: OpenSuse Tumbleweed
     format: qcow2
-    url: https://downloadcontent.opensuse.org/tumbleweed/appliances/openSUSE-Tumbleweed-JeOS.x86_64-OpenStack-Cloud.qcow2
+    url: https://download.opensuse.org/tumbleweed/appliances/openSUSE-Tumbleweed-Minimal-VM.x86_64-Cloud.qcow2
     properties:
       hw_vif_multiqueue_enabled: "true"
       hw_qemu_guest_agent: "yes"
