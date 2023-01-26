@@ -14,7 +14,7 @@
 # limitations under the License.
 
 ops_sos_git_repo: https://github.com/sosreport/sos.git
-ops_sos_git_install_branch: 4e7ecf0f2ffb6789247b4b742b154508f83bdc72
+ops_sos_git_install_branch: sos-4.4
 ops_sos_git_dest: /opt/sos
 
 ops_sos_packages:
