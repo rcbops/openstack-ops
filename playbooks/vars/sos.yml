@@ -22,4 +22,5 @@ ops_sos_packages:
 
 ops_sos_pip_dependencies:
   - six
+  - python_magic>=0.4.20
 
