@@ -21,7 +21,7 @@
 # 20.x = Train
 # 21.x = Ussuri
 # 22.x = Victoria
-
+# 23.x = Wallaby
 
 set -e
 
@@ -50,9 +50,13 @@ case ${OSA_RELEASE%%\.*} in
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/victoria"
     ;;
+  23)
+    OSA_PYEXE=/opt/ansible-runtime/bin/python3
+    RPCO_CONFIG_BRANCH="stable/wallaby"
+    ;;
   *)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
-    RPCO_CONFIG_BRANCH="stable/ussuri"
+    RPCO_CONFIG_BRANCH="stable/victoria"
     ;;
 
 esac
