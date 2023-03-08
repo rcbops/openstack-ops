@@ -2,7 +2,8 @@ acl internals { {%- for designate in groups['designate_all'] %} {{hostvars[desig
 acl externals { {{ ops_bind_externals |default('127.0.0.1;') }} };
 
 options {
-        listen-on port 53 { {{ ops_bind_listen }}  };
+        listen-on port 53 { {{ ops_bind_listen }} };
+        listen-on-v6 port 53 { {%- if ops_bind_listen_v6 is defined -%}{{ ops_bind_listen_v6 }}{%- endif -%} };
         directory       "/var/cache/bind";
         dump-file       "/var/cache/bind/data/cache_dump.db";
         statistics-file "/var/cache/bind/data/named_stats.txt";
