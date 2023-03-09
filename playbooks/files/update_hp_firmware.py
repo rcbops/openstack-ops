@@ -100,9 +100,9 @@ firmwares["ProLiant DL360 Gen9"] = {
     },
     "ILO": {
         "check": "hponcfg -h | awk '/Firmware/ {print $4}'",
-        "ver": "2.81",
-        "fwpkg": "hp-firmware-ilo4-2.81-1.1.i386.rpm",
-        "md5": "3de78fcb64f45e365de0d6bc8dd54d14",
+        "ver": "2.82",
+        "fwpkg": "hp-firmware-ilo4-2.82-1.1.i386.rpm",
+        "md5": "aaa71a8a62d228b2486c493dcf0cd4d9",
         "inp": "y\n",
         "ret": 0
     },
