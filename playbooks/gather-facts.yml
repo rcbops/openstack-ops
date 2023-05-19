@@ -14,7 +14,7 @@
 # limitations under the License.
 
 - name: Gather Facts
-  hosts: hosts:all_containers
+  hosts: localhost:hosts:all_containers
   tasks:
     - setup:
         gather_subset:
