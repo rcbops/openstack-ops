@@ -22,6 +22,7 @@
 # 21.x = Ussuri
 # 22.x = Victoria
 # 23.x = Wallaby
+# 24.x = Xena
 
 set -e
 
@@ -37,22 +38,31 @@ case ${OSA_RELEASE%%\.*} in
   19)
     OSA_PYEXE=/opt/ansible-runtime/bin/python2
     RPCO_CONFIG_BRANCH="stable/stein"
+    OSA_RELEASE="stein-em"
     ;;
   20)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/train"
+    OSA_RELEASE="train-em"
     ;;
   21)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/ussuri"
+    OSA_RELEASE="ussuri-em"
     ;;
   22)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/victoria"
+    OSA_RELEASE="victoria-em"
     ;;
   23)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/wallaby"
+    OSA_RELEASE="wallaby-em"
+  24)
+    OSA_PYEXE=/opt/ansible-runtime/bin/python3
+    RPCO_CONFIG_BRANCH="stable/xena"
+    OSA_RELEASE="24.6.1"
     ;;
   *)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
