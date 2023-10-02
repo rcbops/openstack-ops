@@ -31,6 +31,10 @@
         state: stopped
         enabled: false
 
+    - name: Install sysfsutils
+      package:
+        name: sysfsutils
+        
     - name: Install cpufrequtils
       package:
         name: cpufrequtils
