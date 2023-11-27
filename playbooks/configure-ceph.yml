@@ -15,17 +15,26 @@
 
 - import_playbook: "common-playbooks/register-openstack-release.yml"
 
-- name: Configure ceph monitors
-  hosts: mons
+- name: Print Config
+  hosts: localhost
   environment: "{{ deployment_environment_variables | default({}) }}"
   gather_facts: "{{ gather_facts | default(true) }}"
   tasks:
-    - name: Config Dump
+    - name: Ceph
       ansible.builtin.debug:
         msg:
           - "Ceph Cluster: {{ ceph_cluster }}"
           - "Ceph Release: {{ ceph_stable_release }}"
+  vars_files:
+    - "vars/main.yml"
+    - "vars/ceph.yml"
+    - "vars/{{ ansible_os_family | lower }}.yml"
 
+- name: Configure ceph
+  hosts: mons:osds:rgws
+  environment: "{{ deployment_environment_variables | default({}) }}"
+  gather_facts: "{{ gather_facts | default(true) }}"
+  tasks:
     - name: Install ceph base backage
       package:
         name: "{{ item }}"
