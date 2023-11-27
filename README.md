@@ -42,6 +42,7 @@ Playbooks
 | configure-glance.yml | None | Install standard RPC OSS images like CentOS, Ubuntu etc.  |
 | configure-neutron.yml | None | Setup RPC security group and install neutron debugging tools inside agent container |
 | configure-nova.yml | None | Install standard nova flavor (e.g. m1.small) |
+| configure-ceph.yml | Defaults ceph_stable_release to pacific, options include octopus for older releases.  | Configure ceph for openstack (mainly pools at this time) |
 | gather-facts.yml | None | Rebuild ansible facts when necessary |
 | fix-lxc-container-bindmount.yml | None | Optional mitigation for RO-4387 on Newton+ containers when needed |
 | install-holland-db-backup.yml| None | Installs Holland DB backup into the galera container |
