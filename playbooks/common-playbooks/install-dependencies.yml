@@ -36,6 +36,9 @@
         state: present
       when:
         - ansible_facts['virtualization_role'] == 'host'
+      tags:
+        - always
+        - package-install
 
     - name: Install packages required for RPC support
       vars:
@@ -47,6 +50,9 @@
       until: support_package_installs is success
       retries: 2
       delay: 10
+      tags:
+        - always
+        - package-install
 
     - name: Create venv base directory
       file:
@@ -56,8 +62,9 @@
         mode: "0755"
         state: "directory"
       tags:
-       - always
-       - pip-install
+        - always
+        - pip-install
+        - package-install
 
     - name: Create virtualenv and upgrade setuptools
       pip:
@@ -70,6 +77,7 @@
       tags:
         - always
         - pip-install
+        - package-install
 
     - name: Install pip packages
       pip:
@@ -85,6 +93,7 @@
       tags:
         - always
         - pip-install
+        - package-install
 
     - name: Fallback pip packages  install (--isolated)
       pip:
@@ -101,6 +110,7 @@
       tags:
         - always
         - pip-install
+        - package-install
 
   vars_files:
     - "../vars/main.yml"
