@@ -33,7 +33,7 @@ import subprocess
 import xml.dom.minidom
 
 # Globals
-VERSION = '204-01-25'
+VERSION = '2024-01-25'
 PP = pprint.PrettyPrinter(indent=4)
 
 # Command to package name mappings
