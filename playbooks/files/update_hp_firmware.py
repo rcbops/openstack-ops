@@ -33,7 +33,7 @@ import subprocess
 import xml.dom.minidom
 
 # Globals
-VERSION = '2024-01-25'
+VERSION = '2024-01-30'
 PP = pprint.PrettyPrinter(indent=4)
 
 # Command to package name mappings
@@ -91,7 +91,7 @@ firmwares["ProLiant DL360 Gen9"] = {
         "ret": 1
     },
     "RAID": {
-        "check": "ssacli controller all show config detail | grep -i firmware\ version | cut -d: -f2 | tr -d ' '| head -1",
+        "check": "ssacli controller all show config detail | grep -i firmware\ version | cut -d: -f2 | tr -d ' '| sort -n | head -1",
         "ver": "7.20",
         "fwpkg": "hp-firmware-smartarray-ea3138d8e8-7.20-1.1.x86_64.rpm",
         "md5": "8d8d0cf7fe0cfab9dc4963384da3041b",
@@ -150,7 +150,7 @@ firmwares["ProLiant DL360 Gen10"] = {
         "ret": 1
     },
     "RAID": {
-        "check": "ssacli controller all show config detail | grep -i firmware\ version | cut -d: -f2 | tr -d ' '| head -1",
+        "check": "ssacli controller all show config detail | grep -i firmware\ version | cut -d: -f2 | tr -d ' '| sort -n | head -1",
         "ver": "2.65",
         "fwpkg": "hp-firmware-smartarray-f7c07bdbbd-2.65-1.1.x86_64.rpm",
         "md5": "4e950035ad39eec3dc013c998d6acde0",
