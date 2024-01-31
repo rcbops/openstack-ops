@@ -63,7 +63,7 @@ case ${OSA_RELEASE%%\.*} in
   24)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/xena"
-    OSA_RELEASE="xena-em"
+    OSA_RELEASE="e40beef76b22854a57a3fc7e5e291c0f83d3e1c9" #Bugfix for #2038315
     ;;
   *)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
