@@ -54,6 +54,7 @@ openstack_images:
   - name: CentOS 8
     format: qcow2
     url: https://cloud.centos.org/centos/8/x86_64/images/CentOS-8-GenericCloud-8.4.2105-20210603.0.x86_64.qcow2
+    min_disk: 10
     properties:
       hw_vif_multiqueue_enabled: "true"
       hw_qemu_guest_agent: "yes"
@@ -63,16 +64,19 @@ openstack_images:
   - name: Cirros-0.6.2 (kvm)
     format: qcow2
     url: https://download.cirros-cloud.net/0.6.2/cirros-0.6.2-x86_64-disk.img
+    min_disk: 1
     properties:
       hypervisor_type: "kvm"
   - name: Cirros-0.6.2
     format: qcow2
     url: https://download.cirros-cloud.net/0.6.2/cirros-0.6.2-x86_64-disk.img
+    min_disk: 1
     properties:
       hypervisor_type: "qemu"
   - name: Debian 11
     format: qcow2
     url: https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-generic-amd64.qcow2
+    min_disk: 2
     properties:
       hw_vif_multiqueue_enabled: "true"
       hw_qemu_guest_agent: "yes"
@@ -82,6 +86,7 @@ openstack_images:
   - name: OpenSuse Leap 15.6
     format: qcow2
     url: https://download.opensuse.org/distribution/leap/15.6/appliances/openSUSE-Leap-15.6-Minimal-VM.x86_64-kvm-and-xen.qcow2
+    min_disk: 24
     properties:
       hw_vif_multiqueue_enabled: "true"
       hw_qemu_guest_agent: "yes"
@@ -91,6 +96,7 @@ openstack_images:
   - name: OpenSuse Tumbleweed
     format: qcow2
     url: https://download.opensuse.org/tumbleweed/appliances/openSUSE-Tumbleweed-Minimal-VM.x86_64-Cloud.qcow2
+    min_disk: 1
     properties:
       hw_vif_multiqueue_enabled: "true"
       hw_qemu_guest_agent: "yes"
@@ -100,6 +106,7 @@ openstack_images:
   - name: Ubuntu 20.04
     format: qcow2
     url: https://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64.img
+    min_disk: 3
     properties:
       hw_vif_multiqueue_enabled: "true"
       hw_qemu_guest_agent: "yes"
@@ -109,6 +116,7 @@ openstack_images:
   - name: Ubuntu 22.04
     format: qcow2
     url: https://cloud-images.ubuntu.com/releases/jammy/release/ubuntu-22.04-server-cloudimg-amd64.img
+    min_disk: 3
     properties:
       hw_vif_multiqueue_enabled: "true"
       hw_qemu_guest_agent: "yes"
