@@ -9,18 +9,6 @@ Version **1.3.x** is intended for all releases of OSA up to Rocky (18).
 All following releases (19 and later) will use the **master** branch.
 
 
-
-Build status
-------------
-
-Travis is now used to lint various scripts in order to guarantee minimal coding standards.
-
-| Relase             | Build status     |
-|--------------------|------------------|
-| 1.3.3 | [![Build Status: 1.3.3](https://travis-ci.org/rcbops/openstack-ops.svg?branch=1.3.3)](https://travis-ci.org/rcbops/openstack-ops) |
-| Master | [![Build Status: Master](https://travis-ci.org/rcbops/openstack-ops.svg?branch=master)](https://travis-ci.org/rcbops/openstack-ops) |
-
-
 Intent
 ------
 
