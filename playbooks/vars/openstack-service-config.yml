@@ -57,7 +57,7 @@ openstack_images:
     min_disk: 10
     properties:
       hw_vif_multiqueue_enabled: "true"
-      hw_qemu_guest_agent: "yes"
+      #hw_qemu_guest_agent: "yes"
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
@@ -79,7 +79,7 @@ openstack_images:
     min_disk: 2
     properties:
       hw_vif_multiqueue_enabled: "true"
-      hw_qemu_guest_agent: "yes"
+      #hw_qemu_guest_agent: "yes"
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
@@ -89,7 +89,7 @@ openstack_images:
     min_disk: 24
     properties:
       hw_vif_multiqueue_enabled: "true"
-      hw_qemu_guest_agent: "yes"
+      #hw_qemu_guest_agent: "yes"
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
@@ -99,7 +99,7 @@ openstack_images:
     min_disk: 1
     properties:
       hw_vif_multiqueue_enabled: "true"
-      hw_qemu_guest_agent: "yes"
+      #hw_qemu_guest_agent: "yes"
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
@@ -109,7 +109,7 @@ openstack_images:
     min_disk: 3
     properties:
       hw_vif_multiqueue_enabled: "true"
-      hw_qemu_guest_agent: "yes"
+      #hw_qemu_guest_agent: "yes"
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
@@ -119,7 +119,7 @@ openstack_images:
     min_disk: 3
     properties:
       hw_vif_multiqueue_enabled: "true"
-      hw_qemu_guest_agent: "yes"
+      #hw_qemu_guest_agent: "yes"
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
