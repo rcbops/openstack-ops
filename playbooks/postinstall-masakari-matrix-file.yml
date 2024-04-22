@@ -1,0 +1,21 @@
+---
+    - name: Create Matrix file
+      hosts: masakari-monitor_hosts
+      become: yes
+      gather_facts: yes
+     
+      tasks:
+        - name: Install required packages
+          template:
+            src: templates/matrix.yaml.j2
+            dest: /etc/masakarimonitors/matrix.yaml
+            owner: root
+            group: masakari
+            mode: "0640"
+          notify: Restart Masakari HostMonitor
+      
+      handlers:
+        - include: "handlers/main.yml"
+
+      vars_files:
+        - "vars/consul.yml"
