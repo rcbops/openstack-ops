@@ -44,11 +44,8 @@
     name: bind9
     state: restarted
 
-- name: Reload Consul
+- name: reload Consul
   shell: consul reload
-
-- name: Reload daemon
-  shell: systemctl daemon-reload
 
 - name: Restart Masakari HostMonitor
   service:
