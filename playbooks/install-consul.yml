@@ -24,19 +24,15 @@
           ignore_errors: True
           retries: 2
           delay: 2
-          when:
-            - ansible_os_family == 'Debian'
 
         - name: Add Consul Repo
           apt_repository:
             repo: "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com {{ ansible_distribution_release  }} main"
             state: "present"
             filename: "/etc/apt/sources.list.d/hashicorp"
-          when:
-            - ansible_os_family == 'Debian'
 
         - name: Install Consul Agent
-          apt:
+          package:
             name: "consul"
             state: "present"
           register: package_install
@@ -76,4 +72,4 @@
       vars_files:
         - "vars/consul.yml"
         - "vars/main.yml"
-        - "vars/debian.yml"
+        - "vars/{{ ansible_os_family | lower }}.yml"
