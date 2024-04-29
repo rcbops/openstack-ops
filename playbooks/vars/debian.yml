@@ -41,3 +41,8 @@ ceph_base_packages:
   pacific:
     - "ceph-common={{ ceph_release_version['pacific']}}"
 
+consul_pre_req_packages:
+  - unzip
+  - curl
+  - jq
+  - dnsutils

@@ -43,3 +43,11 @@
   service:
     name: bind9
     state: restarted
+
+- name: reload Consul
+  shell: consul reload
+
+- name: Restart Masakari HostMonitor
+  service:
+    name: masakari-hostmonitor
+    state: restarted

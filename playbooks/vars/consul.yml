@@ -1,0 +1,4 @@
+consul_version: '1.18.0'
+management_dc_name: 'storage'
+# Masakari Matrix
+sequence_name: 'storage'
