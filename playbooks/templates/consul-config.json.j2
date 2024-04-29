@@ -3,12 +3,12 @@
     "datacenter": "{{ management_dc_name }}",
     "data_dir": "/var/lib/consul_m",
     "log_level": "INFO",
-    {% if inventory_hostname in groups['masakari-infra_hosts'] %}
+{% if inventory_hostname in groups['masakari-infra_hosts'] %}
     "server": true,
     "bootstrap_expect": {{ groups['masakari-infra_hosts'] | default([]) | length }},
-    {% elif inventory_hostname in groups['masakari-monitor_hosts'] %}
+{% elif inventory_hostname in groups['masakari-monitor_hosts'] %}
     "server": false,
-    {% endif %} 
+{% endif %} 
     "node_name": "{{ inventory_hostname_short }}",
     "addresses": {
         "http": "{{ hostvars[inventory_hostname]['ansible_br_storage']['ipv4']['address'] }}"
@@ -18,9 +18,9 @@
         "serf_lan": 8501
     },
     "retry_join": [
-        {% for server in groups['masakari-infra_hosts'] %}
-            "{{ hostvars[server]['ansible_br_storage']['ipv4']['address'] }}:8501"{% if not loop.last %},{% endif %}
-        {% endfor %}
+{%- for server in groups['masakari-infra_hosts'] -%}
+       "{{ hostvars[server]['ansible_br_storage']['ipv4']['address'] }}:8501"{%- if not loop.last -%},{%- endif -%}
+{%- endfor -%}
     ]
  
 }
