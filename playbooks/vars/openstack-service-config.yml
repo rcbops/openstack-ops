@@ -106,7 +106,7 @@ openstack_images:
   - name: RockyLinux 9
     format: qcow2
     url: https://dl.rockylinux.org/pub/rocky/9/images/x86_64/Rocky-9-GenericCloud.latest.x86_64.qcow2
-    min_disk: 1
+    min_disk: 10
     properties:
       hw_vif_multiqueue_enabled: "true"
       #hw_qemu_guest_agent: "yes"
