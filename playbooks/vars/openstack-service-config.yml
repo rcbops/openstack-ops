@@ -103,6 +103,16 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
+  - name: RockyLinux 9
+    format: qcow2
+    url: https://dl.rockylinux.org/pub/rocky/9/images/x86_64/Rocky-9-GenericCloud.latest.x86_64.qcow2
+    min_disk: 1
+    properties:
+      hw_vif_multiqueue_enabled: "true"
+      #hw_qemu_guest_agent: "yes"
+      hypervisor_type: "kvm"
+      os_require_quiesce: "yes"
+      img_config_drive: "optional"
   - name: Ubuntu 20.04
     format: qcow2
     url: https://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64.img
