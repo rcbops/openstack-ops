@@ -24,6 +24,7 @@
 # 23.x = Wallaby
 # 24.x = Xena
 # 25.x = Yoga
+# 26.x = Zed
 
 set -e
 
@@ -70,6 +71,11 @@ case ${OSA_RELEASE%%\.*} in
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/yoga"
     OSA_RELEASE="76a3176385e63007c4dd31852dc5f12f1bc99f17"
+    ;;
+  26)
+    OSA_PYEXE=/opt/ansible-runtime/bin/python3
+    RPCO_CONFIG_BRANCH="stable/zed"
+    OSA_RELEASE="dfc5a989b79f91b5503746a922857a462811e192"
     ;;
   *)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
