@@ -34,7 +34,8 @@ ceph_stable_release: pacific
 ceph_release_version:
   octopus: "15.2.17-1{{ ansible_distribution_release }}"
   pacific: "16.2.15-1{{ ansible_distribution_release }}"
-
+  quincy: "17.2.7-1{{ ansible_distribution_release }}"
+  
 ceph_base_packages:
   octopus:
     - "ceph-common={{ ceph_release_version['octopus']}}"
