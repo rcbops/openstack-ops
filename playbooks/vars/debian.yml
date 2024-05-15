@@ -41,7 +41,9 @@ ceph_base_packages:
     - "ceph-common={{ ceph_release_version['octopus']}}"
   pacific:
     - "ceph-common={{ ceph_release_version['pacific']}}"
-
+  quincy:
+    - "ceph-common={{ ceph_release_version['quincy']}}"
+    
 consul_pre_req_packages:
   - unzip
   - curl
