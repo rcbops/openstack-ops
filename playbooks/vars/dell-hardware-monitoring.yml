@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# NOTE: End of Life of Open Manage Server Administrator
+#       OpenManage Server Administrator (OMSA) will reach its End of Life status during 2027
+
 #
 # Dell server utilities
 #
@@ -23,6 +26,8 @@ _ops_dell_tools_apt_repos:
     - { repo: "deb http://linux.dell.com/repo/community/openmanage/930/{{ ansible_lsb.codename }} {{ ansible_lsb.codename }} main", state: "present", filename: "linux.dell.com.sources" }
   focal:
     - { repo: "deb http://linux.dell.com/repo/community/openmanage/10101/{{ ansible_lsb.codename }} {{ ansible_lsb.codename }} main", state: "present", filename: "linux.dell.com.sources" }
+  jammy:
+    - { repo: "deb http://linux.dell.com/repo/community/openmanage/11010/{{ ansible_lsb.codename }} {{ ansible_lsb.codename }} main", state: "present", filename: "linux.dell.com.sources" }
   other:
     - { repo: "deb http://linux.dell.com/repo/community/openmanage/930/{{ ansible_lsb.codename }} {{ ansible_lsb.codename }} main", state: "present", filename: "linux.dell.com.sources" }
 
