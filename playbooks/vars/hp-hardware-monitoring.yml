@@ -24,9 +24,11 @@ _ops_hp_tools_apt_repos:
   bionic:
     - { repo: "deb http://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_lsb.codename }}/10.80 non-free", state: "present" }
   focal:
-    - { repo: "deb http://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_lsb.codename }}/12.05 non-free", state: "present" }
+    - { repo: "deb http://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_lsb.codename }}/12.90 non-free", state: "present" }
+  jammy:
+    - { repo: "deb http://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_lsb.codename }}/12.90 non-free", state: "present" }
   other:
-    - { repo: "deb http://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_lsb.codename }}/12.05 non-free", state: "present" }
+    - { repo: "deb http://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_lsb.codename }}/12.90 non-free", state: "present" }
 
 ops_hp_tools_apt_repos: >
   {% set _var = [] -%}
