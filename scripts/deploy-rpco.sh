@@ -65,17 +65,17 @@ case ${OSA_RELEASE%%\.*} in
   24)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/xena"
-    OSA_RELEASE="5064a6d10f9123700c6b4438af26565d38a16d14"
+    OSA_RELEASE="76a3176385e63007c4dd31852dc5f12f1bc99f17"
     ;;
   25)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/yoga"
-    OSA_RELEASE="76a3176385e63007c4dd31852dc5f12f1bc99f17"
+    OSA_RELEASE="52f79cd337409bd245f4b023a73382b6b2dee5a2"
     ;;
   26)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/zed"
-    OSA_RELEASE="a9ec8568585b818d15f2c87d730718a8ca39ce78"
+    OSA_RELEASE="26679e3b4e6950b20f7f6e99cbeb6f04328b4de2"
     ;;
   *)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
