@@ -14,7 +14,6 @@ options {
 
         forwarders { {{ ops_bind_forwarders |default('8.8.8.8; 8.8.4.4;') }} };
 
-        dnssec-enable yes;
         dnssec-validation yes;
 
         managed-keys-directory "/var/cache/bind/dynamic";
