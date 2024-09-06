@@ -29,7 +29,7 @@
 set -e
 
 OSA_PYEXE=/opt/ansible-runtime/bin/python3
-OSA_RELEASE="${OSA_RELEASE:-24.6.1}"
+OSA_RELEASE="${OSA_RELEASE:-25.6.0}"
 OSA_TOKEN_GEN="/opt/openstack-ansible/scripts/pw-token-gen.py"
 OSA_INVENTORY="/opt/openstack-ansible/inventory/dynamic_inventory.py"
 OSA_RUN_PLAY="${OSA_RUN_PLAY:-true}"
@@ -65,12 +65,12 @@ case ${OSA_RELEASE%%\.*} in
   24)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/xena"
-    OSA_RELEASE="76a3176385e63007c4dd31852dc5f12f1bc99f17"
+    OSA_RELEASE="52f79cd337409bd245f4b023a73382b6b2dee5a2"
     ;;
   25)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/yoga"
-    OSA_RELEASE="52f79cd337409bd245f4b023a73382b6b2dee5a2"
+    OSA_RELEASE="76a3176385e63007c4dd31852dc5f12f1bc99f17"
     ;;
   26)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
@@ -79,7 +79,7 @@ case ${OSA_RELEASE%%\.*} in
     ;;
   *)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
-    RPCO_CONFIG_BRANCH="stable/victoria"
+    RPCO_CONFIG_BRANCH="stable/yoga"
     ;;
 
 esac
