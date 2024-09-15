@@ -70,7 +70,7 @@ case ${OSA_RELEASE%%\.*} in
   25)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/yoga"
-    OSA_RELEASE="76a3176385e63007c4dd31852dc5f12f1bc99f17"
+    OSA_RELEASE="70a48ec19df21ba6a4f902e21f0c087dcb5f652b"
     ;;
   26)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
