@@ -26,6 +26,7 @@
 
 - name: Install host packages required for RPC support
   hosts: "{{ host_group }}"
+  gather_facts: "{{ gather_facts | default(true) }}"
   environment: "{{ deployment_environment_variables | default({}) }}"
   tasks:
     - name: Install host packages
