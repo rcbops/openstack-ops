@@ -33,7 +33,7 @@ import subprocess
 import xml.dom.minidom
 
 # Globals
-VERSION = '2024-01-25'
+VERSION = '2024-09-20'
 PP = pprint.PrettyPrinter(indent=4)
 
 # Command to package name mappings
@@ -84,9 +84,9 @@ firmwares["ProLiant DL360 Gen9"] = {
     },
     "SYSTEM": {
         "check": "ipmitool fru |grep 'MB BIOS' -A5 |awk -F ': ' '/Product Version/ {print $2}'",
-        "ver": "09/21/2023",
-        "fwpkg": "hp-firmware-system-p89-3.30_2023_09_21-1.1.i386.rpm",
-        "md5": "4da047f3a3af91811f264a642afcd096",
+        "ver": "08/29/2024",
+        "fwpkg": "hp-firmware-system-p89-3.40_2024_08_29-1.1.i386.rpm",
+        "md5": "0a6149193363e84705b01e8569246b44",
         "inp": "y\nn\n",
         "ret": 1
     },
