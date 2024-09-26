@@ -45,7 +45,9 @@
     state: restarted
 
 - name: reload Consul
-  shell: consul reload
+  systemd:
+    name: consul
+    state: reloaded
 
 - name: Restart Masakari HostMonitor
   service:
