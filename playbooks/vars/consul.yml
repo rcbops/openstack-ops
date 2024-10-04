@@ -1,4 +1,5 @@
-consul_version: '1.18.0'
-management_dc_name: 'storage'
+# Consul DC Name
+management_dc_name: 'management'
+
 # Masakari Matrix
-sequence_name: 'storage'
+sequence_name: 'manage'
