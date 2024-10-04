@@ -1,5 +1,5 @@
 {
-    "bind_addr": "{{ hostvars[inventory_hostname]['ansible_br_storage']['ipv4']['address'] }}",
+    "bind_addr": "{{ hostvars[inventory_hostname]['ansible_br_mgmt']['ipv4']['address'] }}",
     "datacenter": "{{ management_dc_name }}",
     "data_dir": "/var/lib/consul_m",
     "log_level": "INFO",
@@ -11,7 +11,7 @@
 {% endif %} 
     "node_name": "{{ inventory_hostname_short }}",
     "addresses": {
-        "http": "{{ hostvars[inventory_hostname]['ansible_br_storage']['ipv4']['address'] }}"
+        "http": "{{ hostvars[inventory_hostname]['ansible_br_mgmt']['ipv4']['address'] }}"
     },
     "ports": {
         "http": 8500,
@@ -19,7 +19,7 @@
     },
     "retry_join": [
 {%- for server in groups['masakari-infra_hosts'] -%}
-       "{{ hostvars[server]['ansible_br_storage']['ipv4']['address'] }}:8501"{%- if not loop.last -%},{%- endif -%}
+       "{{ hostvars[server]['ansible_br_mgmt']['ipv4']['address'] }}:8501"{%- if not loop.last -%},{%- endif -%}
 {%- endfor -%}
     ]
  
