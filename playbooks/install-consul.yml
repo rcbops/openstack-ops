@@ -2,8 +2,8 @@
     - name: Install and configure Consul
       hosts: masakari-infra_hosts:masakari-monitor_hosts
       become: yes
-      gather_facts: yes
-     
+      gather_facts: "{{ gather_facts | default(true) }}"
+      environment: "{{ deployment_environment_variables | default({}) }}"
       tasks:
         - name: Install pre-req packages
           package:

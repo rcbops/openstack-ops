@@ -17,4 +17,5 @@
 - import_playbook: install-hw-raid-tools.yml
 - import_playbook: install-pccommon.yml
 - import_playbook: install-sos-tool.yml
+- import_playbook: install-consul.yml
 - import_playbook: support-key.yml
