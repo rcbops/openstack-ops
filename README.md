@@ -33,6 +33,7 @@ Playbooks
 | configure-ceph.yml | Defaults ceph_stable_release to pacific, options include octopus for older releases.  | Configure ceph for openstack (mainly pools at this time) |
 | gather-facts.yml | None | Rebuild ansible facts when necessary |
 | fix-lxc-container-bindmount.yml | None | Optional mitigation for RO-4387 on Newton+ containers when needed |
+| install-consul.yml | None | Playbook used to install consul on the infra hosts, used as consensus service for masakari |
 | install-holland-db-backup.yml| None | Installs Holland DB backup into the galera container |
 | install-hp-server-monitoring.yml | None | Installs the HP Server Monitoring Tools |
 | install-dell-server-monitoring.yml | None | Installs the Dell Server Monitoring Tools |
