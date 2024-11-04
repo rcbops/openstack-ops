@@ -19,6 +19,7 @@ sysfsutil_service: "sysfsutils.service"
 ops_autoupdate_excluded_packages:
   - openvswitch-switch
   - openvswitch-common
+  - python3-openvswitch
   - open-iscsi
   - multipath-tools
   - tgt
