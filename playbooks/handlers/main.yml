@@ -53,3 +53,8 @@
   service:
     name: masakari-hostmonitor
     state: restarted
+
+- name: Restart Masakari IntrospectionMonitor
+  service:
+    name: masakari-introspectiveinstancemonitor 
+    state: restarted
