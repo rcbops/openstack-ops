@@ -47,8 +47,8 @@
       ceph_pool:
         name: "{{ item.name }}"
         cluster: "{{ ceph_cluster }}"
-        pg_num: "{{ item.pg_num | default(omit) }}"
-        pgp_num: "{{ item.pgp_num | default(omit) }}"
+        pg_num: "{{ item.pg_num }}"
+        pgp_num: "{{ item.pgp_num }}"
         size: "{{ item.size | default(omit) }}"
         min_size: "{{ item.min_size | default(omit) }}"
         pool_type: "{{ item.type | default('replicated') }}"

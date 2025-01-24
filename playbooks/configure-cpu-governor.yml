@@ -19,6 +19,7 @@
   environment: "{{ deployment_environment_variables | default({}) }}"
   vars:
     governor: "{{ cpu_governor | default('performance') }}"
+    disable_cpuidle_states: [2,3,4]
   tasks:
     - name: Check for cpuidle
       stat:
@@ -30,6 +31,7 @@
         name: ondemand
         state: stopped
         enabled: false
+      ignore_errors: true
 
     - name: Install sysfsutils
       package:
@@ -55,16 +57,18 @@
         state: started
 
     - name: Retrieve available cpuidle states
-      shell: "ls -1 /sys/devices/system/cpu/cpu*/cpuidle/state[2-4]/disable"
+      shell: "ls -1 /sys/devices/system/cpu/cpu*/cpuidle/state{{ item }}/disable"
       register: cpus_cpuidle
+      with_items: "{{ disable_cpuidle_states }}"
       when: cpuidle_check.stat.exists
+      ignore_errors: true
 
     - name: Persist cpuidle states
       lineinfile:
         dest: "/etc/sysfs.conf"
         line: "{{ item.lstrip('/sys/') }} = 1"
-      with_items: "{{ cpus_cpuidle.stdout_lines }}"
-      when: cpuidle_check.stat.exists
+      with_items: "{{ cpus_cpuidle.results[0].stdout_lines }}"
+      when: "{{ cpus_cpuidle.results[0].stdout_lines | length > 0 }}"
       notify: "restart sysfs"
 
     - name: Check cpufreq

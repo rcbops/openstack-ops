@@ -17,6 +17,7 @@ openstack_glance_pool:
   min_size: "{{ osd_pool_default_min_size }}"
   pg_num: "{{ osd_pool_default_pg_num }}"
   pgp_num: "{{ osd_pool_default_pgp_num }}"
+  pg_autoscale_mode: "off"
   target_size_ratio: 0.2
 openstack_cinder_pool:
   name: "volumes"
@@ -29,6 +30,7 @@ openstack_cinder_pool:
   min_size: "{{ osd_pool_default_min_size }}"
   pg_num: "{{ osd_pool_default_pg_num }}"
   pgp_num: "{{ osd_pool_default_pgp_num }}"
+  pg_autoscale_mode: "off"
   target_size_ratio: 1.0
 openstack_nova_pool:
   name: "vms"
@@ -41,6 +43,7 @@ openstack_nova_pool:
   min_size: "{{ osd_pool_default_min_size }}"
   pg_num: "{{ osd_pool_default_pg_num }}"
   pgp_num: "{{ osd_pool_default_pgp_num }}"
+  pg_autoscale_mode: "off"
   target_size_ratio: 0.2
 openstack_cinder_backup_pool:
   name: "backups"
@@ -53,6 +56,7 @@ openstack_cinder_backup_pool:
   min_size: "{{ osd_pool_default_min_size }}"
   pg_num: "{{ osd_pool_default_pg_num }}"
   pgp_num: "{{ osd_pool_default_pgp_num }}"
+  pg_autoscale_mode: "off"
   target_size_ratio: 0.2
 openstack_gnocchi_pool:
   name: "metrics"
@@ -65,6 +69,7 @@ openstack_gnocchi_pool:
   min_size: "{{ osd_pool_default_min_size }}"
   pg_num: "{{ osd_pool_default_pg_num }}"
   pgp_num: "{{ osd_pool_default_pgp_num }}"
+  pg_autoscale_mode: "off"
 
 openstack_ceph_pools:
   - "{{ openstack_glance_pool }}"

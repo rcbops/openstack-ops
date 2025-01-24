@@ -39,6 +39,7 @@ ops_holland_packages:
   - libssl-dev
   - libmariadb-dev-compat
   - mariadb-backup
+  - pkg-config
 
 ops_holland_requires_dependencies:
   - virtualenv
