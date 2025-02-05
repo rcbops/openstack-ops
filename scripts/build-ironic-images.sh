@@ -53,6 +53,10 @@ case $DIST in
     export DISTRO_NAME=ubuntu
     export DIB_RELEASE=bionic
   ;;
+  jammy)
+    export DISTRO_NAME=ubuntu
+    export DIB_RELEASE=jammy
+  ;;
 
   centos7)
     export DISTRO_NAME=centos
