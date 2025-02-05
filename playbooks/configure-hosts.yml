@@ -17,7 +17,7 @@
 
 - import_playbook: "common-playbooks/install-dependencies.yml"
   vars:
-    host_group: "hosts"
+    host_group: "hosts:!haproxy_all"
 
 - name: Configure hosts
   hosts: hosts

@@ -21,7 +21,6 @@
 
 - name: Configure package manager
   hosts: hosts
-  environment: "{{ deployment_environment_variables | default({}) }}"
   gather_facts: "{{ gather_facts | default(true) }}"
   tasks:
     - name: Update deb selections
@@ -56,4 +55,4 @@
     - include: "handlers/main.yml"
   vars_files:
     - "vars/main.yml"
-    - "vars/main-{{ ansible_distribution | lower }}.yml"
+    - "vars/{{ ansible_os_family | lower }}.yml"

@@ -2,19 +2,20 @@
 #
 # Execute all RPC support playbooks
 #
-- include: configure-packagemanager.yml
-- include: configure-bash-environment.yml
-- include: configure-hosts.yml
-- include: configure-neutron.yml
-- include: configure-nova.yml
-- include: configure-glance.yml
+- import_playbook: configure-packagemanager.yml
+- import_playbook: configure-bash-environment.yml
+- import_playbook: configure-hosts.yml
+- import_playbook: configure-neutron.yml
+- import_playbook: configure-nova.yml
+- import_playbook: configure-glance.yml
 # Disabled due to incompatiblities with
 # the upstream version
-#- include: configure-spice-console.yml
-- include: install-holland-db-backup.yml
-- include: install-dell-server-monitoring.yml
-- include: install-hp-server-monitoring.yml
-- include: install-hw-raid-tools.yml
-- include: install-pccommon.yml
-- include: install-sos-tool.yml
-- include: support-key.yml
+#- import_playbook: configure-spice-console.yml
+- import_playbook: install-holland-db-backup.yml
+- import_playbook: install-dell-server-monitoring.yml
+- import_playbook: install-hp-server-monitoring.yml
+- import_playbook: install-hw-raid-tools.yml
+- import_playbook: install-pccommon.yml
+- import_playbook: install-sos-tool.yml
+- import_playbook: install-consul.yml
+- import_playbook: support-key.yml

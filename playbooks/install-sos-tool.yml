@@ -22,6 +22,7 @@
 - name: Install the sos utility
   hosts: hosts
   gather_facts: "{{ gather_facts | default(true) }}"
+  environment: "{{ deployment_environment_variables | default({}) }}"
   tasks:
     - name: Install packages required by sos
       package:

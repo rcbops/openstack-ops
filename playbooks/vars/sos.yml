@@ -14,7 +14,7 @@
 # limitations under the License.
 
 ops_sos_git_repo: https://github.com/sosreport/sos.git
-ops_sos_git_install_branch: 4e7ecf0f2ffb6789247b4b742b154508f83bdc72
+ops_sos_git_install_branch: 4.4
 ops_sos_git_dest: /opt/sos
 
 ops_sos_packages:
@@ -22,4 +22,5 @@ ops_sos_packages:
 
 ops_sos_pip_dependencies:
   - six
+  - python_magic>=0.4.20
 

@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: gather facts
-  hosts: hosts:all_containers
-  gather_facts: true
+- name: Gather Facts
+  hosts: localhost:hosts:all_containers
   tasks:
-    - debug: msg="facts gathered"
+    - setup:
+        gather_subset:
+          - all

@@ -9,18 +9,6 @@ Version **1.3.x** is intended for all releases of OSA up to Rocky (18).
 All following releases (19 and later) will use the **master** branch.
 
 
-
-Build status
-------------
-
-Travis is now used to lint various scripts in order to guarantee minimal coding standards.
-
-| Relase             | Build status     |
-|--------------------|------------------|
-| 1.3.3 | [![Build Status: 1.3.3](https://travis-ci.org/rcbops/openstack-ops.svg?branch=1.3.3)](https://travis-ci.org/rcbops/openstack-ops) |
-| Master | [![Build Status: Master](https://travis-ci.org/rcbops/openstack-ops.svg?branch=master)](https://travis-ci.org/rcbops/openstack-ops) |
-
-
 Intent
 ------
 
@@ -42,8 +30,10 @@ Playbooks
 | configure-glance.yml | None | Install standard RPC OSS images like CentOS, Ubuntu etc.  |
 | configure-neutron.yml | None | Setup RPC security group and install neutron debugging tools inside agent container |
 | configure-nova.yml | None | Install standard nova flavor (e.g. m1.small) |
+| configure-ceph.yml | Defaults ceph_stable_release to pacific, options include octopus for older releases.  | Configure ceph for openstack (mainly pools at this time) |
 | gather-facts.yml | None | Rebuild ansible facts when necessary |
 | fix-lxc-container-bindmount.yml | None | Optional mitigation for RO-4387 on Newton+ containers when needed |
+| install-consul.yml | None | Playbook used to install consul on the infra hosts, used as consensus service for masakari |
 | install-holland-db-backup.yml| None | Installs Holland DB backup into the galera container |
 | install-hp-server-monitoring.yml | None | Installs the HP Server Monitoring Tools |
 | install-dell-server-monitoring.yml | None | Installs the Dell Server Monitoring Tools |

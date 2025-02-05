@@ -1,0 +1,80 @@
+---
+    - name: Install and configure Consul
+      hosts: masakari-infra_hosts:masakari-monitor_hosts
+      become: yes
+      gather_facts: "{{ gather_facts | default(true) }}"
+      environment: "{{ deployment_environment_variables | default({}) }}"
+      tasks:
+        - name: Install pre-req packages
+          package:
+            name: "{{ consul_pre_req_packages }}"
+            state: present
+            update_cache: "{{ (ansible_pkg_mgr == 'apt') | ternary('yes', omit) }}"
+            cache_valid_time: "{{ (ansible_pkg_mgr == 'apt') | ternary(ops_package_cache_timeout, omit) }}"
+          when:
+            - ansible_os_family == 'Debian'
+
+        - block:
+          - name: Add Hashicorp Repo Keys
+            apt_key:
+              url: "https://apt.releases.hashicorp.com/gpg"
+              state: "present"
+              keyring: "/usr/share/keyrings/hashicorp-archive-keyring.gpg"
+            register: add_keys
+            until: add_keys is success
+            ignore_errors: True
+            retries: 2
+            delay: 2
+            when:
+              - ansible_os_family == 'Debian'
+
+          - name: Add Consul Repo
+            apt_repository:
+              repo: "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com {{ ansible_distribution_release  }} main"
+              state: "present"
+              filename: "/etc/apt/sources.list.d/hashicorp"
+            when:
+              - ansible_os_family == 'Debian'
+
+          - name: Install Consul Agent
+            package:
+              name: "consul={{ consul_version }}"
+              state: "present"
+            register: package_install
+            until: package_install is success
+            retries: 2
+            delay: 10
+
+          - name: Set Consul data directory permissions
+            file:
+              path: "/var/lib/consul_m"
+              state: directory
+              owner: consul
+              group: consul
+              mode: "0755"
+
+          - name: Create systemd service file for Consul
+            template:
+              src: templates/consul.service.j2
+              dest: /etc/systemd/system/consul.service
+            notify: systemd reload
+
+          - name: Copy Consul configuration
+            template:
+              src: templates/consul-config.json.j2
+              dest: /etc/consul.d/consul.json
+            notify: reload Consul
+
+          - name: Start and enable Consul service
+            systemd:
+              name: consul
+              state: restarted
+              enabled: yes
+
+      handlers:
+        - include: "handlers/main.yml"
+
+      vars_files:
+        - "vars/main.yml"
+        - "vars/consul.yml"
+        - "vars/{{ ansible_os_family | lower }}.yml"

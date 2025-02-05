@@ -25,6 +25,7 @@
   tasks:
     - name: Create rpc_support backup user
       mysql_user:
+        login_host: "{{ inventory_hostname }}"
         name: "{{ item.name }}"
         host: "{{ item.host }}"
         password: "{{ item.password }}"
@@ -53,6 +54,7 @@
 - name: Install holland OpenStack DB backup utility
   hosts: galera
   gather_facts: "{{ gather_facts | default(true) }}"
+  environment: "{{ deployment_environment_variables | default({}) }}"
   tasks:
     - name: Create venv dir for holland
       file:

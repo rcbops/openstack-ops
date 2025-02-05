@@ -33,7 +33,7 @@ import subprocess
 import xml.dom.minidom
 
 # Globals
-VERSION = '2021-06-03'
+VERSION = '2024-09-20'
 PP = pprint.PrettyPrinter(indent=4)
 
 # Command to package name mappings
@@ -76,33 +76,33 @@ firmwares["ProLiant DL360 Gen9"] = {
     "spp-version": "2019.12.0",
     "NIC": {
         "check": "ethtool -i {} | grep firmware | cut -d:  -f2- | tr -d ' '".format(testnic),
-        "ver": "5719-v1.46NCSIv1.5.12.0",
-        "fwpkg": "hp-firmware-nic-broadcom-2.25.1-1.1.x86_64.rpm",
-        "md5": "c0d1d2a1199e59c020b54aee844e2fb4",
+        "ver": "571914615300",
+        "fwpkg": "hp-firmware-nic-broadcom-2.28.4-1.1.x86_64.rpm",
+        "md5": "005ea2d76ff7558650c7afb590e02f2b",
         "inp": "\n",
         "ret": 1
     },
     "SYSTEM": {
         "check": "ipmitool fru |grep 'MB BIOS' -A5 |awk -F ': ' '/Product Version/ {print $2}'",
-        "ver": "04/29/2021",
-        "fwpkg": "hp-firmware-system-p89-2.90_2021_04_29-1.1.i386.rpm",
-        "md5": "577b795a2a23479ac1a8cbdf5b8aac89",
+        "ver": "08/29/2024",
+        "fwpkg": "hp-firmware-system-p89-3.40_2024_08_29-1.1.i386.rpm",
+        "md5": "0a6149193363e84705b01e8569246b44",
         "inp": "y\nn\n",
         "ret": 1
     },
     "RAID": {
         "check": "ssacli controller all show config detail | grep -i firmware\ version | cut -d: -f2 | tr -d ' '| head -1",
-        "ver": "7.00",
-        "fwpkg": "hp-firmware-smartarray-ea3138d8e8-7.00-1.1.x86_64.rpm",
-        "md5": "84261221942a6dd6bd6898620f460f56",
+        "ver": "7.20",
+        "fwpkg": "hp-firmware-smartarray-ea3138d8e8-7.20-1.1.x86_64.rpm",
+        "md5": "8d8d0cf7fe0cfab9dc4963384da3041b",
         "inp": "A\n",
         "ret": 1
     },
     "ILO": {
         "check": "hponcfg -h | awk '/Firmware/ {print $4}'",
-        "ver": "2.78",
-        "fwpkg": "hp-firmware-ilo4-2.78-1.1.i386.rpm",
-        "md5": "d9d6bccba6307a623596aa4d44415431",
+        "ver": "2.82",
+        "fwpkg": "hp-firmware-ilo4-2.82-1.1.i386.rpm",
+        "md5": "aaa71a8a62d228b2486c493dcf0cd4d9",
         "inp": "y\n",
         "ret": 0
     },
@@ -125,17 +125,9 @@ firmwares["ProLiant DL360 Gen9"] = {
     }
 }
 
+# DL380 shares largely the same firmwares as the DL360
 firmwares["ProLiant DL380 Gen9"] = copy.deepcopy(
     firmwares["ProLiant DL360 Gen9"])
-
-firmwares["ProLiant DL380 Gen9"]["SYSTEM"] = {
-    "check": "ipmitool fru |grep 'MB BIOS' -A5 |awk -F ': ' '/Product Version/ {print $2}'",
-    "ver": "04/29/2021",
-    "fwpkg": "hp-firmware-system-p89-2.90_2021_04_29-1.1.i386.rpm",
-    "md5": "577b795a2a23479ac1a8cbdf5b8aac89",
-    "inp": "y\nn\n",
-    "ret": 1
-}
 
 # GEN10 definition
 firmwares["ProLiant DL360 Gen10"] = {
@@ -143,9 +135,9 @@ firmwares["ProLiant DL360 Gen10"] = {
     "spp-version": "2019.12.0",
     "NIC": {
         "check": "ethtool -i {} | grep firmware | cut -d:  -f2- | tr -d ' '".format(testnic),
-        "ver": "5719-v1.46NCSIv1.5.12.0",
-        "fwpkg": "hp-firmware-nic-broadcom-2.25.1-1.1.x86_64.rpm",
-        "md5": "c0d1d2a1199e59c020b54aee844e2fb4",
+        "ver": "571914615300",
+        "fwpkg": "hp-firmware-nic-broadcom-2.28.4-1.1.x86_64.rpm",
+        "md5": "005ea2d76ff7558650c7afb590e02f2b",
         "inp": "\n",
         "ret": 1
     },
@@ -167,9 +159,9 @@ firmwares["ProLiant DL360 Gen10"] = {
     },
     "ILO": {
         "check": "hponcfg -h | awk '/Firmware/ {print $4}'",
-        "ver": "2.42",
-        "fwpkg": "hp-firmware-ilo5-2.42-1.1.x86_64.rpm",
-        "md5": "aba0aa9bbc6659e6d0af269c83f1ecde",
+        "ver": "2.65",
+        "fwpkg": "hp-firmware-ilo5-2.65-1.1.x86_64.rpm",
+        "md5": "fa1273b421e91de0bb9f3eeac8a6f10d",
         "inp": "y\n",
         "ret": 0
     },
@@ -501,20 +493,33 @@ def main(debug=False, **kwargs):
                 verProc = subprocess.Popen(firmwares[sysType][part]["check"], stdin=PIPE, stdout=PIPE, stderr=PIPE,
                                            shell=True)
                 (version, stderr) = verProc.communicate()
-                version = version.decode(encoding='UTF-8')
+                version = version.decode(encoding='UTF-8').strip()
 
-                if verProc.returncode == 0 and firmwares[sysType][part]["ver"] in version.strip():
+                if part == 'NIC':
+                  origVersion = version
+                  version=''
+
+                  for i in origVersion:
+                     if i.isdigit():
+                       version += str(i)
+
+                if verProc.returncode == 0 and firmwares[sysType][part]["ver"] in version:
                     print("Already current ({}). Nothing to do.".format(
                         version.strip()))
                 else:
                     if verProc.returncode != 0:
                         print("Detection Failed! {}".format(stderr.decode(encoding='UTF-8')))
                         exit(5)
+                    if version.isdigit() and version > firmwares[sysType][part]["ver"]:
+                        needsUpdate = True
+                        partUpdate = True
                     else:
                         needsUpdate = True
                         partUpdate = True
+
+                    if needsUpdate:
                         sys.stdout.write(
-                            "Needs update ({} -> {})\n".format(version.strip(), firmwares[sysType][part]["ver"]))
+                            "Needs update ({} -> {})\n".format(version, firmwares[sysType][part]["ver"]))
                         sys.stdout.flush()
 
             elif part == 'INIC':

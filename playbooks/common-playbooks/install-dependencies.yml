@@ -26,6 +26,8 @@
 
 - name: Install host packages required for RPC support
   hosts: "{{ host_group }}"
+  gather_facts: "{{ gather_facts | default(true) }}"
+  environment: "{{ deployment_environment_variables | default({}) }}"
   tasks:
     - name: Install host packages
       vars:
@@ -34,7 +36,10 @@
         name: "{{ ops_apt_host_packages }}"
         state: present
       when:
-        - ansible_virtualization_role == 'host'
+        - ansible_facts['virtualization_role'] == 'host'
+      tags:
+        - always
+        - package-install
 
     - name: Install packages required for RPC support
       vars:
@@ -46,6 +51,9 @@
       until: support_package_installs is success
       retries: 2
       delay: 10
+      tags:
+        - always
+        - package-install
 
     - name: Create venv base directory
       file:
@@ -55,7 +63,9 @@
         mode: "0755"
         state: "directory"
       tags:
-       - always
+        - always
+        - pip-install
+        - package-install
 
     - name: Create virtualenv and upgrade setuptools
       pip:
@@ -67,6 +77,8 @@
         virtualenv: "{{ ops_venv }}"
       tags:
         - always
+        - pip-install
+        - package-install
 
     - name: Install pip packages
       pip:
@@ -81,6 +93,8 @@
       ignore_errors: true
       tags:
         - always
+        - pip-install
+        - package-install
 
     - name: Fallback pip packages  install (--isolated)
       pip:
@@ -96,6 +110,8 @@
       retries: 2
       tags:
         - always
+        - pip-install
+        - package-install
 
   vars_files:
     - "../vars/main.yml"

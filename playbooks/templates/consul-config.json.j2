@@ -1,0 +1,26 @@
+{
+    "bind_addr": "{{ consul_cluster_address }}",
+    "datacenter": "{{ consul_management_dc_name }}",
+    "data_dir": "/var/lib/consul_m",
+    "log_level": "INFO",
+{% if inventory_hostname in groups['masakari-infra_hosts'] %}
+    "server": true,
+    "bootstrap_expect": {{ groups['masakari-infra_hosts'] | default([]) | length }},
+{% elif inventory_hostname in groups['masakari-monitor_hosts'] %}
+    "server": false,
+{% endif %} 
+    "node_name": "{{ inventory_hostname_short }}",
+    "addresses": {
+        "http": "{{ consul_cluster_address }}"
+    },
+    "ports": {
+        "http": 8500,
+        "serf_lan": 8501
+    },
+    "retry_join": [
+{%- for server in groups['masakari-infra_hosts'] -%}
+       "{{ hostvars[server]['ansible_br_mgmt']['ipv4']['address'] }}:8501"{%- if not loop.last -%},{%- endif -%}
+{%- endfor -%}
+    ]
+ 
+}

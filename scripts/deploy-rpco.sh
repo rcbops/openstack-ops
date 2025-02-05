@@ -20,11 +20,16 @@
 # 19.x = Stein
 # 20.x = Train
 # 21.x = Ussuri
+# 22.x = Victoria
+# 23.x = Wallaby
+# 24.x = Xena
+# 25.x = Yoga
+# 26.x = Zed
 
 set -e
 
 OSA_PYEXE=/opt/ansible-runtime/bin/python3
-OSA_RELEASE="${OSA_RELEASE:-21.2.4}"
+OSA_RELEASE="${OSA_RELEASE:-26.5.3}"
 OSA_TOKEN_GEN="/opt/openstack-ansible/scripts/pw-token-gen.py"
 OSA_INVENTORY="/opt/openstack-ansible/inventory/dynamic_inventory.py"
 OSA_RUN_PLAY="${OSA_RUN_PLAY:-true}"
@@ -35,19 +40,46 @@ case ${OSA_RELEASE%%\.*} in
   19)
     OSA_PYEXE=/opt/ansible-runtime/bin/python2
     RPCO_CONFIG_BRANCH="stable/stein"
+    OSA_RELEASE="stein-em"
     ;;
-
   20)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/train"
+    OSA_RELEASE="train-em"
     ;;
   21)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/ussuri"
+    OSA_RELEASE="ussuri-em"
+    ;;
+  22)
+    OSA_PYEXE=/opt/ansible-runtime/bin/python3
+    RPCO_CONFIG_BRANCH="stable/victoria"
+    OSA_RELEASE="victoria-em"
+    ;;
+  23)
+    OSA_PYEXE=/opt/ansible-runtime/bin/python3
+    RPCO_CONFIG_BRANCH="stable/wallaby"
+    OSA_RELEASE="wallaby-em"
+    ;;
+  24)
+    OSA_PYEXE=/opt/ansible-runtime/bin/python3
+    RPCO_CONFIG_BRANCH="stable/xena"
+    OSA_RELEASE="52f79cd337409bd245f4b023a73382b6b2dee5a2"
+    ;;
+  25)
+    OSA_PYEXE=/opt/ansible-runtime/bin/python3
+    RPCO_CONFIG_BRANCH="stable/yoga"
+    OSA_RELEASE="70a48ec19df21ba6a4f902e21f0c087dcb5f652b"
+    ;;
+  26)
+    OSA_PYEXE=/opt/ansible-runtime/bin/python3
+    RPCO_CONFIG_BRANCH="stable/zed"
+    OSA_RELEASE="26679e3b4e6950b20f7f6e99cbeb6f04328b4de2"
     ;;
   *)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
-    RPCO_CONFIG_BRANCH="stable/ussuri"
+    RPCO_CONFIG_BRANCH="stable/zed"
     ;;
 
 esac
@@ -86,7 +118,7 @@ fi
 
 rm -rf /opt/openstack-ansible
 test "$rpc_config_inplace" = true || git clone -o template -b ${RPCO_CONFIG_BRANCH} https://github.com/rpc-environments/RPCO-OSA-Template /opt/rpc-config
-git clone -b "$OSA_RELEASE" https://opendev.org/openstack/openstack-ansible /opt/openstack-ansible
+git clone https://opendev.org/openstack/openstack-ansible /opt/openstack-ansible && ( cd /opt/openstack-ansible && git checkout "$OSA_RELEASE" )
 
 if [ "$rpc_config_inplace" = false ]; then
   cp -r /opt/rpc-config/global /opt/rpc-config/$OSA_ENV_LCASE

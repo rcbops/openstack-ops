@@ -16,13 +16,32 @@
 #
 # HP server utilities
 #
-ops_hp_tools_apt_repos:
-  - { repo: "deb http://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_lsb.codename }}/12.05 non-free", state: "present" }
+_ops_hp_tools_apt_repos:
+  trusty:
+    - { repo: "deb http://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_lsb.codename }}/10.62 non-free", state: "present" }
+  xenial:
+    - { repo: "deb http://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_lsb.codename }}/10.80 non-free", state: "present" }
+  bionic:
+    - { repo: "deb http://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_lsb.codename }}/10.80 non-free", state: "present" }
+  focal:
+    - { repo: "deb http://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_lsb.codename }}/12.90 non-free", state: "present" }
+  jammy:
+    - { repo: "deb http://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_lsb.codename }}/12.90 non-free", state: "present" }
+  other:
+    - { repo: "deb http://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_lsb.codename }}/12.90 non-free", state: "present" }
+
+ops_hp_tools_apt_repos: >
+  {% set _var = [] -%}
+  {% for repo in _ops_hp_tools_apt_repos[ansible_distribution_release] | default(_ops_hp_tools_apt_repos['other']) -%}
+  {%   if _var.append(repo) -%}
+  {%   endif -%}
+  {% endfor -%}
+  {{ _var }}
 
 ops_hp_tools_apt_repo_keys:
   - { url: "https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key1.pub", state: "present" }
 
-ops_hp_tools_apt_firmware_packages:
+ops_hp_tools_apt_firmware_packages_base:
   - rpm2cpio
   - dmidecode
   - ethtool
@@ -31,6 +50,18 @@ ops_hp_tools_apt_firmware_packages:
   - ipmitool
   - python3-distro
 
-ops_hp_tools_monitoring_packages:
-  - ssacli
-  - hponcfg
+ops_hp_tools_apt_firmware_packages: >
+  {% set _var = ops_hp_tools_apt_firmware_packages_base -%}
+  {% if ansible_lsb.codename in ['trusty','xenial','bionic'] -%}
+  {%   if _var.append('hp-health') -%}
+  {%   endif -%}
+  {% endif -%}
+  {{ _var }}
+
+ops_hp_tools_monitoring_packages: >
+  {% set _var = ['ssacli','hponcfg'] -%}
+  {% if ansible_lsb.codename in ['trusty','xenial','bionic'] -%}
+  {%   if _var.append('hp-health') -%}
+  {%   endif -%}
+  {% endif -%}
+  {{ _var }}

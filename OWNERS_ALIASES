@@ -2,8 +2,5 @@
 aliases:
   project-approvers:
     - bjoernt
-    - antonym
   project-reviewers:
     - bjoernt
-    - antonym
-    - toxick

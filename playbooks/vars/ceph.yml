@@ -1,0 +1,85 @@
+---
+
+ceph_cluster: 'ceph'
+osd_pool_default_size: 3
+osd_pool_default_min_size: 2
+osd_pool_default_pg_num: 32
+osd_pool_default_pgp_num: 32
+
+openstack_glance_pool:
+  name: "images"
+  rule_name: "replicated_rule"
+  type: 1
+  erasure_profile: ""
+  expected_num_objects: ""
+  application: "rbd"
+  size: "{{ osd_pool_default_size }}"
+  min_size: "{{ osd_pool_default_min_size }}"
+  pg_num: "{{ osd_pool_default_pg_num }}"
+  pgp_num: "{{ osd_pool_default_pgp_num }}"
+  pg_autoscale_mode: "off"
+  target_size_ratio: 0.2
+openstack_cinder_pool:
+  name: "volumes"
+  rule_name: "replicated_rule"
+  type: 1
+  erasure_profile: ""
+  expected_num_objects: ""
+  application: "rbd"
+  size: "{{ osd_pool_default_size }}"
+  min_size: "{{ osd_pool_default_min_size }}"
+  pg_num: "{{ osd_pool_default_pg_num }}"
+  pgp_num: "{{ osd_pool_default_pgp_num }}"
+  pg_autoscale_mode: "off"
+  target_size_ratio: 1.0
+openstack_nova_pool:
+  name: "vms"
+  rule_name: "replicated_rule"
+  type: 1
+  erasure_profile: ""
+  expected_num_objects: ""
+  application: "rbd"
+  size: "{{ osd_pool_default_size }}"
+  min_size: "{{ osd_pool_default_min_size }}"
+  pg_num: "{{ osd_pool_default_pg_num }}"
+  pgp_num: "{{ osd_pool_default_pgp_num }}"
+  pg_autoscale_mode: "off"
+  target_size_ratio: 0.2
+openstack_cinder_backup_pool:
+  name: "backups"
+  rule_name: "replicated_rule"
+  type: 1
+  erasure_profile: ""
+  expected_num_objects: ""
+  application: "rbd"
+  size: "{{ osd_pool_default_size }}"
+  min_size: "{{ osd_pool_default_min_size }}"
+  pg_num: "{{ osd_pool_default_pg_num }}"
+  pgp_num: "{{ osd_pool_default_pgp_num }}"
+  pg_autoscale_mode: "off"
+  target_size_ratio: 0.2
+openstack_gnocchi_pool:
+  name: "metrics"
+  rule_name: "replicated_rule"
+  type: 1
+  erasure_profile: ""
+  expected_num_objects: ""
+  application: "rbd"
+  size: "{{ osd_pool_default_size }}"
+  min_size: "{{ osd_pool_default_min_size }}"
+  pg_num: "{{ osd_pool_default_pg_num }}"
+  pgp_num: "{{ osd_pool_default_pgp_num }}"
+  pg_autoscale_mode: "off"
+
+openstack_ceph_pools:
+  - "{{ openstack_glance_pool }}"
+  - "{{ openstack_cinder_pool }}"
+  - "{{ openstack_nova_pool }}"
+  - "{{ openstack_cinder_backup_pool }}"
+  - "{{ openstack_gnocchi_pool }}"
+
+openstack_ceph_keys:
+  - { name: client.glance, caps: { mon: "profile rbd", osd: "allow class-read object_prefix rbd_children, profile rbd pool=volumes, profile rbd pool={{ openstack_glance_pool.name }}"}, mode: "0600" }
+  - { name: client.cinder, caps: { mon: "profile rbd", osd: "allow class-read object_prefix rbd_children, profile rbd pool={{ openstack_cinder_pool.name }}, profile rbd pool={{ openstack_nova_pool.name }}, profile rbd pool={{ openstack_glance_pool.name }}"}, mode: "0600" }
+  - { name: client.cinder-backup, caps: { mon: "profile rbd", osd: "profile rbd pool={{ openstack_cinder_backup_pool.name }}"}, mode: "0600" }
+

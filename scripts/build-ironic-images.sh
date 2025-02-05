@@ -36,13 +36,10 @@ export ELEMENTS_PATH=/opt/openstack-ops/dib-elements
 
 export COMPRESS_IMAGE='1'
 export DIB_MODPROBE_BLACKLIST='usb-storage cramfs freevxfs jffs2 hfs hfsplus squashfs udf vfat bluetooth'
-export DIB_BOOTLOADER_DEFAULT_CMDLINE='biosdevname=1 net.ifnames=0 rdblacklist=bfa,lpfc nofb nomodeset vga=normal console=tty0 console=ttyS0,115200 audit=1'
+export DIB_BOOTLOADER_DEFAULT_CMDLINE='rdblacklist=bfa,lpfc nofb nomodeset vga=normal console=tty0 console=ttyS1,115200n8 audit=1 audit_backlog_limit=8192'
 export DIB_CLOUD_INIT_DATASOURCES="Ec2, ConfigDrive, OpenStack"
 
-#export DIB_DEV_USER_PASSWORD='Secrete'
-#export DIB_DEV_USER_PWDLESS_SUDO='Yes'
 #### Disk Image Builder variables (DIB)
-
 
 case $DIST in
   focal)
@@ -52,6 +49,7 @@ case $DIST in
   bionic)
     export DISTRO_NAME=ubuntu
     export DIB_RELEASE=bionic
+    export DIB_BOOTLOADER_DEFAULT_CMDLINE+=" biosdevname=1 net.ifnames=0"
   ;;
   jammy)
     export DISTRO_NAME=ubuntu
@@ -61,6 +59,7 @@ case $DIST in
   centos7)
     export DISTRO_NAME=centos
     export DIB_RELEASE=7
+    export DIB_BOOTLOADER_DEFAULT_CMDLINE+=" biosdevname=1 net.ifnames=0"
   ;;
 
   centos8)
@@ -227,8 +226,8 @@ mkdir -p $OUTPUT_DIR
 
 pushd $OUTPUT_DIR
   disk-image-create $DISTRO_NAME \
-    $(test "$DISTRO_NAME" = "centos" && echo epel) $(test -n "$DIB_DEV_USER_PASSWORD" && echo devuser) \
-    baremetal grub2 rackspace -o $IMG_NAME
+    $(test "$DISTRO_NAME" = "centos" && echo epel) \
+    baremetal grub2 dynamic-login rackspace -o $IMG_NAME
 popd
 
 if [ $? -eq 0 ]; then

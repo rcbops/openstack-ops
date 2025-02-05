@@ -15,6 +15,7 @@
 
 ops_pip_packages:
   - shade
+  - distro
   - python-openstackclient
   - python-neutronclient
 
@@ -29,11 +30,11 @@ ops_apt_util_packages:
   - tcpdump
   - vim
   - screen
+  - gcc
   - virtualenv
-  - python-pip
   - python3-pip
-  - python-setuptools
   - python3-setuptools
+  - python3-dev
 
 ops_apt_host_packages:
   - openssh-server
@@ -44,12 +45,12 @@ ops_apt_host_packages:
   - lvm2
   - vlan
   - virtualenv
-  - python-pip
   - python3-pip
+  - python3-setuptools
+  - python3-dev
   - sysfsutils
   - unattended-upgrades
-  - python-setuptools
-  - python3-setuptools
+  - libffi-dev
 
 ops_neutron_debug_packages:
   - iputils-arping
@@ -83,3 +84,6 @@ ops_bind_listen: "{{ ansible_host }};"
 # Allocate 80% for static hugepages when enabled
 hugepage_size: '2M'
 hugepage_nr: "{{ (ansible_memtotal_mb * 0.8 /2) |int }}"
+
+# Service Configuration toggles
+ops_import_glance_images: true

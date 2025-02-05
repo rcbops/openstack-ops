@@ -17,7 +17,6 @@
 
 - name: Update spice console
   hosts: nova_console
-  environment: "{{ deployment_environment_variables | default({}) }}"
   gather_facts: "{{ gather_facts | default(true) }}"
   tasks:
     - name: Add ctrl_alt_del to spice_auto

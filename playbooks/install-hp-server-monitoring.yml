@@ -22,6 +22,7 @@
 - name: Install HP server monitoring
   hosts: hosts:osds:mons
   gather_facts: "{{ gather_facts | default(true) }}"
+  environment: "{{ deployment_environment_variables | default({}) }}"
   pre_tasks:
     - name: Remove outdated MCP repo
       file:
@@ -37,7 +38,7 @@
       ignore_errors: True
       when:
         - ansible_os_family == 'Debian'
-        - ansible_system_vendor == "HP"
+        - "(ansible_system_vendor == 'HP' or ansible_system_vendor == 'HPE')"
       retries: 2
   tasks:
     - include: "common-tasks/install-hp-tools.yml"

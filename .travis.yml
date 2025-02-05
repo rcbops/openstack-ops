@@ -10,7 +10,7 @@ notifications:
 
 matrix:
   include:
-    - python: 2.7
+    - python: 3.6
       env: TOXENV=ansible-lint
 
 sudo: false
