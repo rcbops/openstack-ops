@@ -1,0 +1,19 @@
+---
+#Prevents permission-denied error in Masakari Introspection service from connecting with Libvirt
+
+    - name: Add user masakari to libvirt Group
+      hosts: masakari-monitor_hosts
+      become: yes
+      gather_facts: yes
+      
+      tasks:
+        - name: Add masakari user to libvirt Group
+          user: 
+            name: masakari
+            groups: libvirt
+            append: yes
+          notify: Restart Masakari IntrospectionMonitor 
+
+      handlers:
+        - include: "handlers/main.yml"
+     
