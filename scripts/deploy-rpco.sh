@@ -40,27 +40,27 @@ case ${OSA_RELEASE%%\.*} in
   19)
     OSA_PYEXE=/opt/ansible-runtime/bin/python2
     RPCO_CONFIG_BRANCH="stable/stein"
-    OSA_RELEASE="stein-em"
+    OSA_RELEASE="stein-eol"
     ;;
   20)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/train"
-    OSA_RELEASE="train-em"
+    OSA_RELEASE="train-eol"
     ;;
   21)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/ussuri"
-    OSA_RELEASE="ussuri-em"
+    OSA_RELEASE="ussuri-eol"
     ;;
   22)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/victoria"
-    OSA_RELEASE="victoria-em"
+    OSA_RELEASE="victoria-eol"
     ;;
   23)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3
     RPCO_CONFIG_BRANCH="stable/wallaby"
-    OSA_RELEASE="wallaby-em"
+    OSA_RELEASE="wallaby-eol"
     ;;
   24)
     OSA_PYEXE=/opt/ansible-runtime/bin/python3

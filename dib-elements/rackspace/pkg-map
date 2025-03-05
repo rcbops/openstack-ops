@@ -28,6 +28,20 @@
         "lvm": "",
         "networkmgr": "",
         "pkgmgr": ""
+      },
+      "jammy": {
+        "kernel": "linux-image-generic",
+        "ifenslave": "ifenslave",
+        "bridge-utils": "bridge-utils",
+        "vlan": "vlan",
+        "tcpdump": "tcpdump",
+        "biosdevname": "",
+        "python-dev": "",
+        "python3-dev": "python3-dev",
+        "virtualenv": "virtualenv",
+        "lvm": "",
+        "networkmgr": "",
+        "pkgmgr": ""
       }
     }
   },
