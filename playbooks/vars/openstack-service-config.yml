@@ -133,3 +133,13 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
+  - name: Ubuntu 24.04
+    format: qcow2
+    url: https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-arm64.img
+    min_disk: 3
+    properties:
+      hw_vif_multiqueue_enabled: "true"
+      #hw_qemu_guest_agent: "yes"
+      hypervisor_type: "kvm"
+      os_require_quiesce: "yes"
+      img_config_drive: "optional"      
