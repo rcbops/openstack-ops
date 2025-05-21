@@ -161,3 +161,5 @@
           ignore_errors: yes
           tags:
             - update-designate-pools
+  vars_files:
+    - "vars/main.yml"

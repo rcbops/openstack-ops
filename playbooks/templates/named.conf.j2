@@ -1,5 +1,6 @@
-acl internals { {%- for designate in groups['designate_all'] %} {{hostvars[designate]['ansible_host']}}; {%- endfor -%} 10.0.0.0/8; 172.16.0.0/12; 192.16.0.0/16; };
+acl internals { {%- for designate in groups['designate_bind_all'] %} /*{{designate}}*/ {{hostvars[designate][ 'ansible_' + ops_bind_interface |replace('-','_')  ].ipv4.address}};{{hostvars[designate]['ansible_host']}}; {%- endfor -%}  10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
 acl externals { {{ ops_bind_externals |default('127.0.0.1;') }} };
+acl servers { {%- for designate in groups['designate_bind_all'] %} {{hostvars[designate][ 'ansible_' + ops_bind_interface |replace('-','_')  ].ipv4.address}};{{hostvars[designate]['ansible_host']}};{{hostvars[designate]['ansible_host']}}; {%- endfor -%} };
 
 options {
         listen-on port 53 { {{ ops_bind_listen }} };
@@ -9,12 +10,12 @@ options {
         statistics-file "/var/cache/bind/data/named_stats.txt";
         memstatistics-file "/var/cache/bind/data/named_mem_stats.txt";
         allow-query     { {{ ops_bind_allow_query |default('any;') }} };
-        allow-notify    { {{ ansible_host }}; };
+        allow-notify    { servers; };
         allow-recursion { internals; };
 
-        forwarders { {{ ops_bind_forwarders |default('8.8.8.8; 8.8.4.4;') }} };
+        forwarders { {{ ops_bind_forwarders |default('1.1.1.1; 1.0.0.1;') }} };
 
-        dnssec-validation yes;
+        dnssec-validation {{ ops_bind_dnssec |default('auto') }};
 
         managed-keys-directory "/var/cache/bind/dynamic";
 
@@ -31,7 +32,7 @@ include "/etc/bind/rndc.key";
 
 controls {
   inet {{ ansible_host }} port 953
-    allow { {%- for designate in groups['designate_all'] %} {{hostvars[designate]['ansible_host']}}; {%- endfor -%} } keys {"rndc-key"; };
+    allow { servers; } keys {"rndc-key"; };
   inet 127.0.0.1 port 953
     allow { 127.0.0.1; } keys {"rndc-key"; };
 };
