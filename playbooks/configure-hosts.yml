@@ -24,6 +24,7 @@
   environment: "{{ deployment_environment_variables | default({}) }}"
   gather_facts: "{{ gather_facts | default(true) }}"
   tasks:
+
     - name: "Ensure kernel module(s)"
       modprobe:
         name: "{{ item }}"
@@ -47,6 +48,15 @@
       ignore_errors: true
       with_items: "{{ ops_host_kernel_sysctl }}"
       when: ops_host_kernel_sysctl is defined
+
+    - name: Configure multipath
+      template:
+        src: "templates/multipath.conf.j2"
+        dest: '/etc/multipath.conf'
+        owner: "root"
+        group: "root"
+      when: ansible_os_family == 'Debian'
+
   handlers:
     - include: "handlers/main.yml"
   vars_files:

@@ -1,0 +1,62 @@
+# {{ ansible_managed }}
+
+# Based off https://dl.dell.com/topicspdf/pwrstr-hcg_en-us.pdf?dgc=SM&cid=268781&lid=spr6166208862&RefID=dtw22_sm6166208862&linkId=147129000 
+# and other vendors recommended configurations
+
+defaults {
+    polling_interval 5
+    checker_timeout 15
+    user_friendly_names yes
+    find_multipaths no
+    enable_foreign nvme
+}
+
+blacklist {
+    devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st|nbd)[0-9]*"
+    devnode "^hd[a-z]"
+    device {
+        vendor  ".*"
+        product ".*"
+    }
+}
+
+blacklist_exceptions {
+    device {
+        vendor  "Nimble"
+        product "Server"
+    }
+}
+
+devices {
+    device {
+        vendor               "Nimble"
+        product              "Server"
+        path_grouping_policy group_by_prio
+        prio                 "alua"
+        hardware_handler     "1 alua"
+        path_selector        "service-time 0"
+        path_checker         tur
+        features             "no_path_retry queue"
+        no_path_retry        30
+        failback             immediate
+        fast_io_fail_tmo     5
+        dev_loss_tmo         infinity
+        rr_min_io_rq         1
+        rr_weight            uniform
+    }
+    device {
+        vendor DellEMC
+        product PowerStore
+        detect_prio "yes"
+        path_selector "queue-length 0"
+        path_grouping_policy "group_by_prio"
+        path_checker tur
+        failback immediate
+        fast_io_fail_tmo 5
+        no_path_retry 3
+        rr_min_io_rq 1
+        max_sectors_kb 1024
+        dev_loss_tmo 10
+        hardware_handler "1 alua"
+   }
+}

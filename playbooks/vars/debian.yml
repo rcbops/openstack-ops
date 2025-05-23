@@ -16,6 +16,45 @@
 sysfsutil_package: "sysfsutils"
 sysfsutil_service: "sysfsutils.service"
 
+ops_util_packages:
+  - bash-completion
+  - curl
+  - dstat
+  - htop
+  - iotop
+  - lsof
+  - sudo
+  - tcpdump
+  - vim
+  - screen
+  - gcc
+  - virtualenv
+  - python3-pip
+  - python3-setuptools
+  - python3-dev
+
+ops_host_packages:
+  - openssh-server
+  - bridge-utils
+  - iptables-persistent
+  - linux-crashdump
+  - debootstrap
+  - lvm2
+  - vlan
+  - virtualenv
+  - python3-pip
+  - python3-setuptools
+  - python3-dev
+  - sysfsutils
+  - unattended-upgrades
+  - libffi-dev
+  - multipath-tools
+
+ops_neutron_debug_packages:
+  - iputils-arping
+  - ethtool
+  - curl
+
 ops_autoupdate_excluded_packages:
   - openvswitch-switch
   - openvswitch-common

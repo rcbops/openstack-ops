@@ -19,44 +19,6 @@ ops_pip_packages:
   - python-openstackclient
   - python-neutronclient
 
-ops_apt_util_packages:
-  - bash-completion
-  - curl
-  - dstat
-  - htop
-  - iotop
-  - lsof
-  - sudo
-  - tcpdump
-  - vim
-  - screen
-  - gcc
-  - virtualenv
-  - python3-pip
-  - python3-setuptools
-  - python3-dev
-
-ops_apt_host_packages:
-  - openssh-server
-  - bridge-utils
-  - iptables-persistent
-  - linux-crashdump
-  - debootstrap
-  - lvm2
-  - vlan
-  - virtualenv
-  - python3-pip
-  - python3-setuptools
-  - python3-dev
-  - sysfsutils
-  - unattended-upgrades
-  - libffi-dev
-
-ops_neutron_debug_packages:
-  - iputils-arping
-  - ethtool
-  - curl
-
 # All OPS tools are now installed inside a python venv
 ops_venv: "/openstack/venvs/rcbops-{{ openstack_release |default('0.0.0') }}"
 ops_python_interpreter: "{% if inventory_hostname == 'localhost' -%}/usr/bin/python3{% else -%}{{ ansible_python['executable'] }}{% endif -%}"

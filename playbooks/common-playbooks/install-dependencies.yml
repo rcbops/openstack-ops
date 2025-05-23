@@ -29,11 +29,21 @@
   gather_facts: "{{ gather_facts | default(true) }}"
   environment: "{{ deployment_environment_variables | default({}) }}"
   tasks:
+    - name: Gather variables for each operating system
+      include_vars: "{{ item }}"
+      with_first_found:
+        - "../vars/{{ ansible_distribution | lower }}-{{ ansible_distribution_version | lower }}.yml"
+        - "../vars/{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
+        - "../vars/{{ ansible_os_family | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
+        - "../vars/{{ ansible_distribution | lower }}.yml"
+        - "../vars/{{ ansible_os_family | lower }}-{{ ansible_distribution_version.split('.')[0] }}.yml"
+        - "../vars/{{ ansible_os_family | lower }}.yml"
+
     - name: Install host packages
       vars:
         ansible_python_interpreter: "{{ ops_python_interpreter }}"
       package:
-        name: "{{ ops_apt_host_packages }}"
+        name: "{{ ops_host_packages }}"
         state: present
       when:
         - ansible_facts['virtualization_role'] == 'host'
@@ -45,7 +55,7 @@
       vars:
         ansible_python_interpreter: "{{ ops_python_interpreter }}"
       package:
-        name: "{{ ops_apt_util_packages }}"
+        name: "{{ ops_util_packages }}"
         state: present
       register: support_package_installs
       until: support_package_installs is success
