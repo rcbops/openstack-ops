@@ -10,7 +10,7 @@ designate_pools_yaml:
 {% endfor %}
     nameservers:
 {% for designate_bind in groups['designate_bind_all'] %}
-      - host: {{ hostvars[designate_bind]['ansible_host'] }}
+      - host: {{ hostvars[designate_bind][ 'ansible_' + ops_bind_interface |replace('-','_')  ].ipv4.address |default(hostvars[designate_bind]['ansible_host']) }}
         port: 53
 {% endfor %}
     targets:
@@ -23,7 +23,7 @@ designate_pools_yaml:
             port: 5354
 {% endfor %}
         options:
-          host: {{ hostvars[designate_bind]['ansible_host'] }}
+          host: {{ hostvars[designate_bind][ 'ansible_' + ops_bind_interface |replace('-','_')  ].ipv4.address |default(hostvars[designate_bind]['ansible_host']) }}
           port: 53
           rndc_host: {{ hostvars[designate_bind]['ansible_host'] }}
           rndc_port: 953

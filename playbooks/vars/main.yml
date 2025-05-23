@@ -41,7 +41,10 @@ ops_host_kernel_sysctl:
 
 
 # Listen IP for the bind servers which get's used by designate
-ops_bind_listen: "{{ ansible_host }};"
+ops_bind_interface: 'br-host'
+ops_bind_listen: "{{ ansible_facts[ ops_bind_interface |replace('-','_')  ].ipv4.address |default (ansible_host) }};"
+ops_bind_dnssec: "auto" #options include yes, no or auto
+
 
 # Allocate 80% for static hugepages when enabled
 hugepage_size: '2M'
