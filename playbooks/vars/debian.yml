@@ -48,6 +48,7 @@ ops_host_packages:
   - sysfsutils
   - unattended-upgrades
   - libffi-dev
+  - open-iscsi
   - multipath-tools
 
 ops_neutron_debug_packages:
