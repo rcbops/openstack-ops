@@ -49,13 +49,32 @@
       with_items: "{{ ops_host_kernel_sysctl }}"
       when: ops_host_kernel_sysctl is defined
 
-    - name: Configure multipath
-      template:
-        src: "templates/multipath.conf.j2"
-        dest: '/etc/multipath.conf'
-        owner: "root"
-        group: "root"
-      when: ansible_os_family == 'Debian'
+    - name: Configure iscsi and multipath
+      block:
+        - name: Determine initiator name
+          set_fact:
+            initiator_name: >
+              {% set _iqn = "iqn.2004-10.com." + ansible_distribution |lower() + ":" + ansible_hostname -%}
+              {% if ansible_iscsi_iqn is defined -%}
+              {% if (ansible_iscsi_iqn |length >= 15) -%}
+              {% set _iqn = ansible_iscsi_iqn  -%}
+              {% endif -%}
+              {% endif -%}
+              {{ _iqn }}
+
+        - name: Set iscsi initiator name
+          ansible.builtin.lineinfile:
+            path: /etc/iscsi/initiatorname.iscsi
+            regexp: '^InitiatorName=.*'
+            line: "InitiatorName={{ initiator_name }}"
+          notify: restart iscsid
+
+        - name: Configure multipath
+          template:
+            src: "templates/multipath.conf.j2"
+            dest: '/etc/multipath.conf'
+            owner: "root"
+            group: "root"
 
   handlers:
     - include: "handlers/main.yml"

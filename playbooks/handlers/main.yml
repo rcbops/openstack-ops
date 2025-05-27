@@ -49,6 +49,11 @@
     name: consul
     state: reloaded
 
+- name: restart iscsid
+  service:
+    name: iscsid
+    state: restarted
+
 - name: Restart Masakari HostMonitor
   service:
     name: masakari-hostmonitor
