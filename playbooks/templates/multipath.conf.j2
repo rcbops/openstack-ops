@@ -29,20 +29,20 @@ blacklist_exceptions {
 
 devices {
     device {
-        vendor               "Nimble"
-        product              "Server"
+        vendor "Nimble"
+        product "Server"
         path_grouping_policy group_by_prio
-        prio                 "alua"
-        hardware_handler     "1 alua"
-        path_selector        "service-time 0"
-        path_checker         tur
-        features             "no_path_retry queue"
-        no_path_retry        30
-        failback             immediate
-        fast_io_fail_tmo     5
-        dev_loss_tmo         infinity
-        rr_min_io_rq         1
-        rr_weight            uniform
+        prio "alua"
+        hardware_handler "1 alua"
+        path_selector "service-time 0"
+        path_checker tur
+        features "no_path_retry queue"
+        no_path_retry 30
+        failback immediate
+        fast_io_fail_tmo 5
+        dev_loss_tmo infinity
+        rr_min_io_rq 1
+        rr_weight uniform
     }
     device {
         vendor DellEMC
@@ -59,4 +59,19 @@ devices {
         dev_loss_tmo 10
         hardware_handler "1 alua"
    }
+   device {
+        vendor "SolidFir"
+        product "SSD SAN"
+        path_grouping_policy multibus
+        path_selector "round-robin 0"
+        path_checker tur
+        hardware_handler "0"
+        failback immediate
+        rr_weight uniform
+        rr_min_io 10
+        rr_min_io_rq 10
+        features "0"
+        no_path_retry 24
+        prio const
+    }
 }
