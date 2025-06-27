@@ -135,7 +135,7 @@ openstack_images:
       img_config_drive: "optional"
   - name: Ubuntu 24.04
     format: qcow2
-    url: https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-arm64.img
+    url: https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-amd64.img
     min_disk: 3
     properties:
       hw_vif_multiqueue_enabled: "true"
