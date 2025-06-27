@@ -27,7 +27,7 @@ success "Environment variables:"
 env | grep -E '^(SUDO|RPC_|ANSIBLE_|GENESTACK_|K8S|CONTAINER_|OPENSTACK_|OSH_)' | sort -u
 
 success "Installing base packages (git):"
-#apt update
+apt update
 
 DEBIAN_FRONTEND=noninteractive \
   apt-get -o "Dpkg::Options::=--force-confdef" \
