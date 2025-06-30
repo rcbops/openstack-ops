@@ -69,7 +69,7 @@
         src: "templates/sos.conf.j2"
         dest: /etc/sos.conf
   handlers:
-    - include: "handlers/main.yml"
+    - include_tasks: "handlers/main.yml"
   vars_files:
     - "vars/main.yml"
     - "vars/sos.yml"

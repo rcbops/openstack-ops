@@ -78,7 +78,7 @@
       no_log: "{{ no_log| default(True) }}"
 
   handlers:
-    - include: "handlers/main.yml"
+    - include_tasks: "handlers/main.yml"
   vars_files:
     - "vars/main.yml"
     - "vars/ceph.yml"

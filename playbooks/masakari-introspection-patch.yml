@@ -15,5 +15,5 @@
           notify: Restart Masakari IntrospectionMonitor 
 
       handlers:
-        - include: "handlers/main.yml"
+        - include_tasks: "handlers/main.yml"
      

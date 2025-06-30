@@ -24,7 +24,7 @@
   gather_facts: "{{ gather_facts | default(true) }}"
   environment: "{{ deployment_environment_variables | default({}) }}"
   pre_tasks:
-    - include: "common-tasks/install-hp-tools.yml"
+    - include_tasks: "common-tasks/install-hp-tools.yml"
   tasks:
     - name: Install HP firmware update dependencies
       package:

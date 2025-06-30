@@ -23,7 +23,7 @@
   hosts: utility[0]
   gather_facts: "{{ gather_facts | default(true) }}"
   tasks:
-    - include: "common-tasks/synchronize-file.yml"
+    - include_tasks: "common-tasks/synchronize-file.yml"
 
   vars:
     synchronize_files:
@@ -85,7 +85,7 @@
       changed_when: sec_group_rules_icmp.rc == 0
       when: sec_group_create is changed
   handlers:
-    - include: "handlers/main.yml"
+    - include_tasks: "handlers/main.yml"
   vars_files:
     - "vars/main.yml"
 

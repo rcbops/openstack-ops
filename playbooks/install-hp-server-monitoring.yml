@@ -41,9 +41,9 @@
         - "(ansible_system_vendor == 'HP' or ansible_system_vendor == 'HPE')"
       retries: 2
   tasks:
-    - include: "common-tasks/install-hp-tools.yml"
+    - include_tasks: "common-tasks/install-hp-tools.yml"
   handlers:
-    - include: "handlers/main.yml"
+    - include_tasks: "handlers/main.yml"
   vars_files:
     - "vars/main.yml"
     - "vars/hp-hardware-monitoring.yml"
