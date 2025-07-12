@@ -24,8 +24,8 @@ ops_venv: "/openstack/venvs/rcbops-{{ openstack_release |default('0.0.0') }}"
 ops_python_interpreter: "{% if inventory_hostname == 'localhost' -%}/usr/bin/python3{% else -%}{{ ansible_python['executable'] }}{% endif -%}"
 ops_package_cache_timeout: "{{ cache_timeout | default('3600') }}"
 
-# Limit openstack requirements to Stein when not automatically determined
-osa_requirements_hash: "{{ hostvars['localhost']['osa_requirements_hash'] |default('881814daf02179eb47be4f3ce248560b2b8199fd') }}"
+# Limit openstack requirements to Zed when not automatically determined
+osa_requirements_hash: "{{ hostvars['localhost']['osa_requirements_hash'] |default('9c379d80fceba448eebe6c3121184435b49c48ec') }}"
 osa_upper_constraints_url: "{{ requirements_git_url | default('https://git.openstack.org/cgit/openstack/requirements/plain/upper-constraints.txt?h=' ~ osa_requirements_hash) }} "
 
 # kernel modules required on hosts
