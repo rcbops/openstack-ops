@@ -51,16 +51,6 @@ openstack_vm_flavors:
     ephemeral: 0
 
 openstack_images:
-  - name: CentOS 8
-    format: qcow2
-    url: https://cloud.centos.org/centos/8/x86_64/images/CentOS-8-GenericCloud-8.4.2105-20210603.0.x86_64.qcow2
-    min_disk: 10
-    properties:
-      hw_vif_multiqueue_enabled: "true"
-      #hw_qemu_guest_agent: "yes"
-      hypervisor_type: "kvm"
-      os_require_quiesce: "yes"
-      img_config_drive: "optional"
   - name: Cirros-0.6.3 (kvm)
     format: qcow2
     url: https://download.cirros-cloud.net/0.6.3/cirros-0.6.3-x86_64-disk.img
