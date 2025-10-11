@@ -7,24 +7,17 @@ defaults {
     polling_interval 5
     checker_timeout 15
     user_friendly_names no #Disabled on recommendation of netapp
-    find_multipaths no
-    enable_foreign nvme
+    find_multipaths yes
 }
 
 blacklist {
-    devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st|nbd|nvme)[0-9]*"
-    devnode "^hd[a-z]"
-    device {
-        vendor  ".*"
-        product ".*"
-    }
-}
-
-blacklist_exceptions {
-    device {
-        vendor  "Nimble"
-        product "Server"
-    }
+    devnode "^nvme.*"
+    devnode "scini*"
+    devnode "^rbd[0-9]*"
+    devnode "^nbd[0-9]*"
+    devnode "sd[a-b]$"
+    devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st)[0-9]*"
+    devnode "^(td|ha)d[a-z]"
 }
 
 devices {
@@ -75,6 +68,7 @@ devices {
         rr_min_io_rq 1
         rr_weight uniform
     }
+    
     device {
         vendor DellEMC
         product PowerStore
@@ -90,6 +84,7 @@ devices {
         dev_loss_tmo 10
         hardware_handler "1 alua"
    }
+   
    device {
         vendor "SolidFir"
         product "SSD SAN"
