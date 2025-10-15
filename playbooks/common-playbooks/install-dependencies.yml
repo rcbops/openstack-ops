@@ -13,16 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+- import_playbook: "register-openstack-release.yml"
+
 - name: Determine upper OSA constraints
   hosts: localhost
   tasks:
-    - include_vars: "{{ item }}"
-      with_first_found:
-        - "/opt/openstack-ansible/playbooks/defaults/repo_packages/openstack_services.yml"
-      when: '"RPCO" in openstack_product'
+    - name: set hash
+      block:
+        - include_vars: "{{ item }}"
+          ignore_errors: true
+          with_first_found:
+            - "/opt/openstack-ansible/playbooks/defaults/repo_packages/openstack_services.yml"
 
-    - set_fact:
-        osa_requirements_hash: "{{ requirements_git_install_branch }}"
+        - set_fact:
+            osa_requirements_hash: "{{ requirements_git_install_branch }}"
+      when: openstack_product == "RPCO"
 
 - name: Install host packages required for RPC support
   hosts: "{{ host_group }}"

@@ -63,3 +63,31 @@
   service:
     name: masakari-introspectiveinstancemonitor 
     state: restarted
+
+- name: generate auditd rules
+  become: yes
+  command: augenrules --load
+
+- name: restart auditd (non RHEL)
+  become: yes
+  service:
+    name: auditd
+    state: restarted
+  when: ansible_distribution_file_variety != "RedHat"
+
+- name: stop auditd (RHEL)
+  become: yes
+  command: service auditd stop
+  when: ansible_distribution_file_variety == "RedHat"
+
+
+- name: start auditd (RHEL)
+  become: yes
+  command: service auditd start
+  when: ansible_distribution_file_variety == "RedHat"
+
+- name: restart splunk
+  become: yes
+  systemd:
+     name: SplunkForwarder
+     state: restarted

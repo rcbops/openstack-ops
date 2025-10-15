@@ -17,10 +17,10 @@
 
 - import_playbook: "common-playbooks/install-dependencies.yml"
   vars:
-    host_group: "hosts:!haproxy_all"
+    host_group: "hosts:k8s_cluster:!haproxy_all"
 
 - name: Configure hosts
-  hosts: hosts
+  hosts: hosts:k8s_cluster
   environment: "{{ deployment_environment_variables | default({}) }}"
   gather_facts: "{{ gather_facts | default(true) }}"
   tasks:
@@ -62,12 +62,22 @@
               {% endif -%}
               {{ _iqn }}
 
+        - name: Configure iscsid settings
+          ansible.builtin.lineinfile:
+            path: /etc/iscsi/iscsid.conf
+            regexp: '^{{ item.name }}.*'
+            line: "{{ item.name }} = {{ item.value }}"
+          with_items:
+            - { 'name': 'node.session.cmds_max', 'value': '128' }
+            - { 'name': 'node.session.queue_depth' , 'value': '128' }
+          register: iscsid_config
+
         - name: Set iscsi initiator name
           ansible.builtin.lineinfile:
             path: /etc/iscsi/initiatorname.iscsi
             regexp: '^InitiatorName=.*'
             line: "InitiatorName={{ initiator_name }}"
-          notify: restart iscsid
+          register: iscsi_name
 
         - name: Configure multipath
           template:
@@ -76,6 +86,15 @@
             owner: "root"
             group: "root"
 
+        - name: Restart iSCSId
+          ansible.builtin.service:
+            name: iscsid
+            state: restarted
+            enabled: true
+          when:
+            - ( iscsid_config is changed or iscsi_name is changed )
+
+      tags: iscsi
   handlers:
     - include_tasks: "handlers/main.yml"
   vars_files:
