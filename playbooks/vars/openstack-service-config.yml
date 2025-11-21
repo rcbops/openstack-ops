@@ -63,9 +63,9 @@ openstack_images:
     min_disk: 1
     properties:
       hypervisor_type: "qemu"
-  - name: Debian 11
+  - name: Debian 12
     format: qcow2
-    url: https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-generic-amd64.qcow2
+    url: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-amd64.qcow2
     min_disk: 2
     properties:
       hw_vif_multiqueue_enabled: "true"
@@ -73,9 +73,23 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
-  - name: OpenSuse Leap 15.6
+      os_distro: "Debian"
+      os_version: "12"
+  - name: Debian 13
     format: qcow2
-    url: https://download.opensuse.org/distribution/leap/15.6/appliances/openSUSE-Leap-15.6-Minimal-VM.x86_64-kvm-and-xen.qcow2
+    url: https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-amd64.qcow2
+    min_disk: 2
+    properties:
+      hw_vif_multiqueue_enabled: "true"
+      #hw_qemu_guest_agent: "yes"
+      hypervisor_type: "kvm"
+      os_require_quiesce: "yes"
+      img_config_drive: "optional"
+      os_distro: "Debian"
+      os_version: "13"
+  - name: OpenSuse Leap 16.0
+    format: qcow2
+    url: https://download.opensuse.org/distribution/leap/16.0/appliances/Leap-16.0-Minimal-VM.x86_64-kvm-and-xen.qcow2
     min_disk: 24
     properties:
       hw_vif_multiqueue_enabled: "true"
@@ -83,6 +97,8 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
+      os_distro: "CentOS"
+      os_version: "16"
   - name: OpenSuse Tumbleweed
     format: qcow2
     url: https://download.opensuse.org/tumbleweed/appliances/openSUSE-Tumbleweed-Minimal-VM.x86_64-Cloud.qcow2
@@ -93,6 +109,7 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
+      os_distro: "CentOS"
   - name: RockyLinux 9
     format: qcow2
     url: https://dl.rockylinux.org/pub/rocky/9/images/x86_64/Rocky-9-GenericCloud.latest.x86_64.qcow2
@@ -103,6 +120,8 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
+      os_distro: "CentOS"
+      os_version: "9"
   - name: RockyLinux 10
     format: qcow2
     url: https://dl.rockylinux.org/pub/rocky/10/images/x86_64/Rocky-10-GenericCloud-LVM.latest.x86_64.qcow2
@@ -113,6 +132,8 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
+      os_distro: "CentOS"
+      os_version: "10"
   - name: Ubuntu 20.04
     format: qcow2
     url: https://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64.img
@@ -123,6 +144,8 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
+      os_distro: "Ubuntu"
+      os_version: "20.04"
   - name: Ubuntu 22.04
     format: qcow2
     url: https://cloud-images.ubuntu.com/releases/jammy/release/ubuntu-22.04-server-cloudimg-amd64.img
@@ -133,6 +156,8 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
+      os_distro: "Ubuntu"
+      os_version: "22.04"
   - name: Ubuntu 24.04
     format: qcow2
     url: https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-amd64.img
@@ -143,3 +168,5 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"      
+      os_distro: "Ubuntu"
+      os_version: "24.04"
