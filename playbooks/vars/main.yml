@@ -25,8 +25,8 @@ ops_python_interpreter: "{% if inventory_hostname == 'localhost' -%}/usr/bin/pyt
 ops_package_cache_timeout: "{{ cache_timeout | default('3600') }}"
 
 # Limit openstack requirements to Zed when not automatically determined
-osa_requirements_hash: "{{ hostvars['localhost']['osa_requirements_hash'] |default('9c379d80fceba448eebe6c3121184435b49c48ec') }}"
-osa_upper_constraints_url: "{{ requirements_git_url | default('https://git.openstack.org/cgit/openstack/requirements/plain/upper-constraints.txt?h=' ~ osa_requirements_hash) }} "
+requirements_hash: "{{ hostvars['localhost']['osa_requirements_hash'] |default('9c379d80fceba448eebe6c3121184435b49c48ec') }}"
+upper_constraints_url: "{{ requirements_git_url | default('https://git.openstack.org/cgit/openstack/requirements/plain/upper-constraints.txt?h=' ~ requirements_hash) }} "
 
 # kernel modules required on hosts
 ops_host_kernel_modules:

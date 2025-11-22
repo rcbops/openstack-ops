@@ -15,10 +15,10 @@
 
 - import_playbook: "register-openstack-release.yml"
 
-- name: Determine upper OSA constraints
+- name: Determine upper constraints
   hosts: localhost
   tasks:
-    - name: set hash
+    - name: Set hash for OSA distro
       block:
         - include_vars: "{{ item }}"
           ignore_errors: true
@@ -26,8 +26,14 @@
             - "/opt/openstack-ansible/playbooks/defaults/repo_packages/openstack_services.yml"
 
         - set_fact:
-            osa_requirements_hash: "{{ requirements_git_install_branch }}"
+            requirements_hash: "{{ requirements_git_install_branch }}"
       when: openstack_product == "RPCO"
+
+    - name: Set hash for Genestack
+      block:
+        - set_fact:
+            requirements_hash: "4ba03e9c7d61106bfd81582406cdb623d1d7a2e1"
+      when: openstack_product == "GENESTACK"
 
 - name: Install host packages required for RPC support
   hosts: "{{ host_group }}"
@@ -100,7 +106,7 @@
         name: "{{ ops_pip_packages }}"
         virtualenv: "{{ ops_venv }}"
         extra_args: >-
-          {{ (pip_install_upper_constraints is defined) | ternary('--constraint ' + pip_install_upper_constraints | default(''), '--constraint ' + osa_upper_constraints_url) }}
+          {{ (pip_install_upper_constraints is defined) | ternary('--constraint ' + pip_install_upper_constraints | default(''), '--constraint ' + upper_constraints_url) }}
 
           {{ pip_install_options | default('') }}
       when: ops_pip_packages is defined
@@ -116,7 +122,7 @@
         name: "{{ ops_pip_packages }}"
         extra_args: >-
           --isolated
-          {{ (pip_install_upper_constraints is defined) | ternary('--constraint ' + pip_install_upper_constraints | default(''), '--constraint ' + osa_upper_constraints_url) }}
+          {{ (pip_install_upper_constraints is defined) | ternary('--constraint ' + pip_install_upper_constraints | default(''), '--constraint ' + upper_constraints_url) }}
           {{ pip_install_options|default('') }}
         virtualenv: "{{ ops_venv }}"
       when: ops_pip_packages is defined and not (pip_install is success)
