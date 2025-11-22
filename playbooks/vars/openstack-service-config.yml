@@ -73,7 +73,7 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
-      os_distro: "Debian"
+      os_distro: "debian"
       os_version: "12"
   - name: Debian 13
     format: qcow2
@@ -85,7 +85,7 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
-      os_distro: "Debian"
+      os_distro: "debian"
       os_version: "13"
   - name: OpenSuse Leap 16.0
     format: qcow2
@@ -97,7 +97,7 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
-      os_distro: "CentOS"
+      os_distro: "centos"
       os_version: "16"
   - name: OpenSuse Tumbleweed
     format: qcow2
@@ -109,7 +109,7 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
-      os_distro: "CentOS"
+      os_distro: "centos"
   - name: RockyLinux 9
     format: qcow2
     url: https://dl.rockylinux.org/pub/rocky/9/images/x86_64/Rocky-9-GenericCloud.latest.x86_64.qcow2
@@ -120,7 +120,7 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
-      os_distro: "CentOS"
+      os_distro: "centos"
       os_version: "9"
   - name: RockyLinux 10
     format: qcow2
@@ -132,7 +132,7 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
-      os_distro: "CentOS"
+      os_distro: "centos"
       os_version: "10"
   - name: Ubuntu 20.04
     format: qcow2
@@ -144,7 +144,7 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
-      os_distro: "Ubuntu"
+      os_distro: "ubuntu"
       os_version: "20.04"
   - name: Ubuntu 22.04
     format: qcow2
@@ -156,7 +156,7 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"
-      os_distro: "Ubuntu"
+      os_distro: "ubuntu"
       os_version: "22.04"
   - name: Ubuntu 24.04
     format: qcow2
@@ -168,5 +168,5 @@ openstack_images:
       hypervisor_type: "kvm"
       os_require_quiesce: "yes"
       img_config_drive: "optional"      
-      os_distro: "Ubuntu"
+      os_distro: "ubuntu"
       os_version: "24.04"
