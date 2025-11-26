@@ -1,4 +1,4 @@
-consul_version: '1.20.1-1'
+consul_version: '1.22.0-1'
 consul_management_dc_name: 'management'
 consul_cluster_address: "{{ hostvars[inventory_hostname]['ansible_br_mgmt']['ipv4']['address'] }}"
 consul_cluster_interface: "br_mgmt"
