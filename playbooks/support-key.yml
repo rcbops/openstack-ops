@@ -126,7 +126,7 @@
       register: local_support_key_check
 
 - name: Distribute RPC support key
-  hosts: shared-infra_hosts[1:999]:utility_container:neutron_agents_container
+  hosts: shared-infra_hosts[1:999]:utility_container:neutron_agents_container:openstack_control_plane
   gather_facts: "false"
   tasks:
     - name: Distribute support SSH key for cluster operations
@@ -142,8 +142,9 @@
         - dest: "/root/.ssh/rpc_support.pub"
           content: "{{ hostvars[groups['shared-infra_hosts'][0]]['support_pub_key'].content | b64decode }}"
       when:
-        - hostvars[groups['shared-infra_hosts'][0]]['support_pub_key'].content |default('') |length > 64
-        - hostvars[groups['shared-infra_hosts'][0]]['support_pub_key'].content |default('') |length > 64
-        - hostvars[groups['shared-infra_hosts'][0]]['support_key'].content |b64decode |hash('sha1') != local_support_key_check.stat.checksum |default('')
+        - ( hostvars[groups['shared-infra_hosts'][0]]['support_pub_key'].content |default('') |length > 64 or
+            hostvars[groups['openstack_control_plane'][0]]['support_pub_key'].content |default('') |length > 64 )
+        - ( hostvars[groups['shared-infra_hosts'][0]]['support_key'].content |b64decode |hash('sha1') != local_support_key_check.stat.checksum |default('') or
+            hostvars[groups['openstack_control_plane'][0]]['support_key'].content |b64decode |hash('sha1') != local_support_key_check.stat.checksum |default('') )
   vars_files:
     - "vars/main.yml"
