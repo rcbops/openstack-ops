@@ -23,7 +23,7 @@
   hosts: utility[0]
   gather_facts: "{{ gather_facts | default(true) }}"
   tasks:
-    - include: "common-tasks/synchronize-file.yml"
+    - include_tasks: "common-tasks/synchronize-file.yml"
 
   vars:
     synchronize_files:

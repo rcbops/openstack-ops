@@ -23,7 +23,7 @@
   hosts: utility[0]
   gather_facts: "{{ gather_facts | default(true) }}"
   tasks:
-    - include: "common-tasks/synchronize-file.yml"
+    - include_tasks: "common-tasks/synchronize-file.yml"
 
   vars:
     synchronize_files:
@@ -40,16 +40,16 @@
   tasks:
     - name: Check for rpc_support security group
       shell: |
-        . /root/openrc
-        neutron {{ openrc_insecure |default(false) |bool |ternary('--insecure','') }} security-group-list | /bin/grep -w "rpc-support"
+        {{ openstack_product != 'GENESTACK' |bool |ternary('. /root/openrc','') }}
+        openstack {{ openrc_insecure |default(false) |bool |ternary('--insecure','') }} security group list | /bin/grep -w "rpc-support"
       register: rpc_support_sec_group
       changed_when: false
       failed_when: rpc_support_sec_group.rc not in [0, 1]
 
     - name: Create rpc_support security group
       shell: |
-        . /root/openrc
-        neutron {{ openrc_insecure |default(false) |bool |ternary('--insecure','') }} security-group-create rpc-support
+        {{ openstack_product != 'GENESTACK' |bool |ternary('. /root/openrc','') }}
+        openstack {{ openrc_insecure |default(false) |bool |ternary('--insecure','') }} security group create rpc-support
       register: sec_group_create
       changed_when: sec_group_create.rc == 0
       failed_when: sec_group_create.rc != 0
@@ -57,13 +57,12 @@
 
     - name: Create rpc_support security group rules ports
       shell: |
-        . /root/openrc
-        neutron {{ openrc_insecure |default(false) |bool |ternary('--insecure','') }} security-group-rule-create \
-                --direction ingress \
+        {{ openstack_product != 'GENESTACK' |bool |ternary('. /root/openrc','') }}
+        openstack {{ openrc_insecure |default(false) |bool |ternary('--insecure','') }} security group rule create \
+                --ingress \
                 --protocol tcp \
-                --port-range-min {{ item }} \
-                --port-range-max {{ item }} \
-                --remote-ip-prefix 0.0.0.0/0 \
+                --dst-port {{ item }} \
+                --remote-ip 0.0.0.0/0 \
                 rpc-support
 
       register: sec_group_rules_ports
@@ -75,17 +74,25 @@
 
     - name: Create rpc_support security group rules icmp
       shell: |
-        . /root/openrc
-        neutron {{ openrc_insecure |default(false) |bool |ternary('--insecure','') }} security-group-rule-create \
-                 --direction ingress \
-                 --protocol icmp \
-                 --remote-ip-prefix 0.0.0.0/0 \
-                 rpc-support
+        {{ openstack_product != 'GENESTACK' |bool |ternary('. /root/openrc','') }}
+        openstack {{ openrc_insecure |default(false) |bool |ternary('--insecure','') }} security group rule create \
+                --ingress \
+                --protocol icmp \
+                --icmp-type 0 \
+                --remote-ip 0.0.0.0/0 \
+                rpc-support
+
+        openstack {{ openrc_insecure |default(false) |bool |ternary('--insecure','') }} security group rule create \
+                --ingress \
+                --protocol icmp \
+                --icmp-type 8 \
+                --remote-ip 0.0.0.0/0 \
+                rpc-support
       register: sec_group_rules_icmp
       changed_when: sec_group_rules_icmp.rc == 0
       when: sec_group_create is changed
   handlers:
-    - include: "handlers/main.yml"
+    - include_tasks: "handlers/main.yml"
   vars_files:
     - "vars/main.yml"
 

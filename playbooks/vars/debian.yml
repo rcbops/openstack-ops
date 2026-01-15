@@ -76,6 +76,7 @@ ceph_release_version:
   octopus: "15.2.17-1{{ ansible_distribution_release }}"
   pacific: "16.2.15-1{{ ansible_distribution_release }}"
   quincy: "17.2.8-1{{ ansible_distribution_release }}"
+  reef: "18.2.7-1{{ ansible_distribution_release }}"
   
 ceph_base_packages:
   octopus:
@@ -84,6 +85,8 @@ ceph_base_packages:
     - "ceph-common={{ ceph_release_version['pacific']}}"
   quincy:
     - "ceph-common={{ ceph_release_version['quincy']}}"
+  reef:
+    - "ceph-common={{ ceph_release_version['reef']}}"
     
 consul_pre_req_packages:
   - unzip

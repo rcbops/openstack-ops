@@ -28,6 +28,12 @@
       ignore_errors: yes
       register: osp_release_file
 
+    - name: Find genestack inventory
+      stat:
+        path: /etc/genestack/inventory/inventory.yaml
+      ignore_errors: yes
+      register: genestack_inventory
+
     - name: Determine OSA version
       shell: awk -F= '/^DISTRIB_RELEASE/ {print $2}' {{ osa_release_file.stat.path }} | tr -d \"\'
       when:
@@ -42,13 +48,60 @@
         - osp_release_file.stat.exists |bool
       register: osp_release_output
 
-    - name: Register openstack_release
+    - name: Determine genestack version
+      shell: |
+        grep tags: -A10 /opt/genestack/base-helm-configs/nova/nova-helm-overrides.yaml | awk '/nova_api:/{split($2,arr,":"); gsub("-.*$",vers,arr[2]); print arr[2]}'
+      when:
+        - genestack_inventory.stat.exists |bool
+      register: genestack_version
+
+    - name: Register openstack facts
       set_fact:
-        openstack_release: "{{ osa_release_output is defined |ternary(osa_release_output.stdout,osp_release_output.stdout) |default('0.0.0') }}"
-        openstack_product: "{{ osa_release_output is defined |ternary('RPCO','OSP') |default('RPCO') }}"
+        openstack_release: >-
+          {% set _var = [] -%}
+          {% if osa_release_output.stdout is defined -%}
+          {%   if osa_release_output.stdout |length > 7 -%}
+          {%     if _var.append(osa_release_output.stdout) -%}
+          {%     endif -%}
+          {%   endif -%}
+          {% endif -%}
+          {% if osp_release_output.stdout is defined -%}
+          {%   if osp_release_output.stdout |length > 7 -%}
+          {%     if _var.append(osp_release_output.stdout) -%}
+          {%     endif -%}
+          {%   endif -%}
+          {% endif -%}
+          {% if genestack_version.stdout is defined -%}
+          {%   if genestack_version.stdout |length > 4 -%}
+          {%     if _var.append(genestack_version.stdout) -%}
+          {%     endif -%}
+          {%   endif -%}
+          {% endif -%}
+          {{ _var[0] }}
+
+
+        openstack_product: >-
+          {% set _var = [] -%}
+          {% if osa_release_output.stdout is defined -%}
+          {%   if _var.append('RPCO') -%}
+          {%   endif -%}
+          {% endif -%}
+          {% if osp_release_output.stdout is defined -%}
+          {%   if _var.append('OSP') -%}
+          {%   endif -%}
+          {% endif -%}
+          {% if genestack_version.stdout is defined -%}
+          {%   if _var.append('GENESTACK') -%}
+          {%   endif -%}
+          {% endif -%}
+          {{ _var[0] }}
 
     - name: Print openstack_release version
       debug: var=openstack_release
 
+    - name: Print openstack product
+      debug: var=openstack_product
+
   tags:
     - always
+    - set-openstack-release

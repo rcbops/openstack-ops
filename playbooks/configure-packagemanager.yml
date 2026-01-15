@@ -52,7 +52,7 @@
         enabled: true
 
   handlers:
-    - include: "handlers/main.yml"
+    - include_tasks: "handlers/main.yml"
   vars_files:
     - "vars/main.yml"
     - "vars/{{ ansible_os_family | lower }}.yml"

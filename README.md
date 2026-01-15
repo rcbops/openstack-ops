@@ -52,7 +52,7 @@ Product scripts
 | Name                           | Parameters       |  Description                                  |
 |--------------------------------|------------------|-----------------------------------------------|
 | scripts/deploy-rpco.sh         | OSA_RELEASE      | Defaults to the latest greenfield OSA release |
-| scripts/build-ironic-images.sh | [centos7,centos8,ubuntu] | Builds the given OS image, only one at a time can be specified |
+| scripts/build-ironic-images.sh | [bionic,jammy,jammy-lvm,centos9] | Builds the given OS image, only one at a time can be specified |
 
 
 Support scripts
@@ -81,13 +81,21 @@ supported product lifecycle (RPC-O currently)
 
 
 Execution
-----------------
+---------
 
+    # Rocky and older releases
+    git checkout 1.3.x (Rocky and lower)
+    cd /opt/openstack-ops
+
+    . /usr/local/bin/openstack-ansible.rc
+    openstack-ansible playbooks/main.yml
+
+
+    # Newer releases
     git clone https://github.com/rcbops/openstack-ops.git /opt/openstack-ops
-    # git checkout 1.3.x (Rocky and lower)
-    source /usr/local/bin/openstack-ansible.rc
 
-    cd /opt/openstack-ops/playbooks; openstack-ansible main.yml
+    /opt/openstack-ops/bootstrap.sh
+    cd /opt/openstack-ops && ansible-playbook playbooks/main.yml
 
 
 License

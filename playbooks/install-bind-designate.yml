@@ -73,7 +73,7 @@
         dest: /etc/bind/rndc.key
       notify: Restart BIND
   handlers:
-    - include: "handlers/main.yml"
+    - include_tasks: "handlers/main.yml"
   vars_files:
     - "vars/main.yml"
 
@@ -105,7 +105,7 @@
           retries: 2
           delay: 2
   handlers:
-    - include: "handlers/main.yml"
+    - include_tasks: "handlers/main.yml"
   vars_files:
     - "vars/main.yml"
 
