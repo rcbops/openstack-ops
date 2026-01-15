@@ -74,4 +74,19 @@ devices {
         no_path_retry 24
         prio const
     }
+    device {
+        vendor "NFINIDAT"
+        product "InfiniBox.*"
+        path_grouping_policy "group_by_prio"
+        path_selector "round-robin 0"
+        path_checker "tur"
+        features "0"
+        hardware_handler "0"
+        prio "alua"
+        failback 30
+        rr_weight "priorities"
+        no_path_retry "fail"
+        flush_on_last_del "yes"
+        dev_loss_tmo 30
+    }
 }
