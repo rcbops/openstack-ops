@@ -28,6 +28,7 @@ ops_package_cache_timeout: "{{ cache_timeout | default('3600') }}"
 ops_host_kernel_modules:
   - bonding
   - 8021q
+  - rbd
 
 # sysctl parameters required on hosts
 ops_host_kernel_sysctl:
